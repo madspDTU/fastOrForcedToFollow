@@ -26,7 +26,7 @@ public class Link{
 	public double totalLaneLength;
 	public LinkedList<Double[]> speedTimeReport = new LinkedList<Double[]>();
 	public LinkedList<Double[]> outputTimeReport = new LinkedList<Double[]>(); 
-	public double tReady = 0;
+	public double tWakeUp = 0;  // The earliest possible time that the link can be used again (used when storage capacity is met).
 
 
 
@@ -107,17 +107,18 @@ public class Link{
 
 	private void sendNotificationForNextInQ(Cyclist cyclist){
 		if(!outQ.isEmpty()){
-			double notificationTime = Math.max(this.outQ.peek().time, this.tReady);
+			double notificationTime = Math.max(this.outQ.peek().time, this.tWakeUp);
 			cyclist.sendNotification(this.id, notificationTime);
-			this.tReady = notificationTime;
+			this.tWakeUp = notificationTime;
 		} 
 	}
 
 	private void sendNotificationDueToDelay(Cyclist cyclist, Link nextLink){
 		if(!outQ.isEmpty()){
-			double notificationTime = Math.max(nextLink.outQ.peek().time, nextLink.tReady);
+			System.out.println(nextLink.outQ.peek().time);
+			double notificationTime = Math.max(nextLink.outQ.peek().time, nextLink.tWakeUp);
 			cyclist.sendNotification(this.id, notificationTime);
-			this.tReady = notificationTime;
+			this.tWakeUp = notificationTime;
 		} 
 	}
 

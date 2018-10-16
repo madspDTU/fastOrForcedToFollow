@@ -32,12 +32,13 @@ public class Runner {
 	public static int seed = 5355633;
 	public static LinkedHashMap<Integer,Link> linksMap = new LinkedHashMap<Integer,Link>();
 
-	public static final boolean useLogisticDistribution = false; //Based on the data from Cowi, this could be reasonable.
-	public static final boolean useJohnsonDistribution = true; //Based on the data from Cowi, this seems reasonable.
-	public static double JohnsonGamma = -2.745957257392118;
-	public static double JohnsonXsi = 3.674350833333333;
-	public static double JohnsonDelta = 4.068155531972158;
-	public static double JohnsonLambda = 3.494609779450189;
+	private static final boolean useLogisticDistribution = false; //Based on the data from Cowi, this could be reasonable.
+	private static final boolean useJohnsonDistribution = true; //Based on the data from Cowi, this seems reasonable.
+	private static final double JohnsonGamma = -2.745957257392118;
+	private static final double JohnsonXsi = 3.674350833333333;
+	private static final double JohnsonDelta = 4.068155531972158;
+	private static final double JohnsonLambda = 3.494609779450189;
+	private static final double minimumAllowedSpeed = 2;  // Lowest allowed desired speed (lower truncation of distribution);
 
 
 	public static double k = 5d;
@@ -51,7 +52,8 @@ public class Runner {
 	//public static final double l = 1.73; //Average length of a bicycle measured in metres + minimum safety distance
 	//public static final double l = -1.970194143353036; //Average length of a bicycle measured in metres + minimum safety distance
 	public static final double l = -4.220641337789; //For square root model;
-	public static final double lambda_c = 1.73; //Average length of a bicycle according to Andresen (2014);
+	public static final double lambda_c = 1.73; //Average length of a bicycle according to
+	                                            //Andresen et al. (2014), Basic Driving Dynamics of Cyclists, In: Simulation of Urban Mobility;
 	
 
 	//public static final double t_safety = 0.72; //Safety time between cyclists according to Andresen.
@@ -63,8 +65,7 @@ public class Runner {
 	public static final double t_safety2Poly = 0; //Safety time between cyclists according to Andresen 0.
 	//public static final double t_safety2Poly = -0.07403800101957327; //Safety time between cyclists according to Andresen 0.
 	public static final double capacityMultiplier = 1;  // The totalLaneLength is multiplied with this number;
-	public static final double minimumAllowedSpeed = 2;  // Lowest allowed desired speed (lower truncation of distribution);
-
+	
 	public static final boolean useToyNetwork = true;
 
 	public static LinkedList<Cyclist> cyclists= new LinkedList<Cyclist>();
@@ -82,7 +83,7 @@ public class Runner {
 	@SuppressWarnings("unchecked")
 	public static HashMap<Integer, Double>[] notificationArray;
 	public static PriorityQueue<LinkQObject> shortTermPriorityQueue;
-	public static String baseDir = "Z:\\git\\fastOrForcedToFollow\\output";
+	public static String baseDir = "Z:/git/fastOrForcedToFollow/output";
 	public static double tieBreaker = 0;
 	public static final boolean waitingTimeCountsOnNextLink = false; // if false, then it counts on the previous link (i.e. spillback)
 
@@ -221,8 +222,8 @@ public class Runner {
 
 						// This is a little weird, but since -1 is the null value of Double, an empty set will contain the key -1 but with a null value.
 						if(notificationArray[i].get(linkId) != null){
-							double maxTime = Math.max(link.tReady, notificationArray[i].get(linkId));
-							link.tReady = maxTime;
+							double maxTime = Math.max(link.tWakeUp, notificationArray[i].get(linkId));
+							link.tWakeUp = maxTime;
 							linksMap.replace(linkId, link);
 							if( maxTime > t && notificationArray.length > i+1){
 								notificationArray[i+1].put(linkId, notificationArray[i+1].get(linkId));
@@ -256,6 +257,7 @@ public class Runner {
 
 			}
 			System.out.println("2nd part (Mobility Simul) finished after " + (System.currentTimeMillis()-startTime)/1000d + " seconds.");
+		
 			if(reportSpeeds){			
 				exportCyclistSpeeds(baseDir + "/Cyclists/" + (int) lengthOfLinks, itN);
 				exportCyclistDesiredSpeeds(baseDir + "/Cyclists/DesiredSpeeds");

@@ -74,15 +74,15 @@ public class Cyclist {
 			//if(true){
 			ltm.reduceOccupiedSpace(lqo.linkId, oldSpeed);
 			ltm.increaseOccupiedSpace(nextLink, this.speed);
-			this.tStart = Double.max(pseudoLane.tStart, lqo.time);
-			Runner.linksMap.get(lqo.linkId).tReady = this.tStart;
+			this.tStart = Double.max(pseudoLane.tReady, lqo.time);
+			Runner.linksMap.get(lqo.linkId).tWakeUp = this.tStart;
 			ltm.updatePseudoLane(pseudoLane, speed, lqo.time);
 			double tEnd = pseudoLane.tEnd - ltm.getSafetyBufferTime(speed);
 			if(Runner.waitingTimeCountsOnNextLink){
 				reportSpeed(nextLink.length, tEnd);
 			}
 			moveToNextQ(nextLink, tEnd);
-			sendNotification(nextLink.id, Math.max(tEnd,nextLink.tReady));
+			sendNotification(nextLink.id, Math.max(tEnd,nextLink.tWakeUp));
 			//reportSpeed(time);
 			if(Runner.circuit){
 				route.addLast(nextLink);

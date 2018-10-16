@@ -22,30 +22,21 @@ public abstract class LinkTransmissionModel {
 	}
 
 	public double getVMax(PseudoLane pseudoLane, double time){
-
-		double speed = pseudoLane.length / (pseudoLane.tEnd - pseudoLane.tStart);
-		if ( time - getSafetyBufferTime(speed) <= pseudoLane.tStart){
-			return speed;
+		double constants = Runner.lambda_c + pseudoLane.length - Runner.l;
+		if(time >= pseudoLane.tEnd - Runner.t_safetySqrt*Runner.t_safetySqrt/4./constants){ 
+			return 4*Math.pow((constants/Runner.t_safetySqrt),2); //Case 4 from paper
+		}
+		double speed = pseudoLane.length / (pseudoLane.tEnd - pseudoLane.tReady);
+		if ( time <= pseudoLane.tReady + getSafetyBufferTime(speed) ){ 
+			return speed; // Case 1 from paper
 		}
 		double timeDif = pseudoLane.tEnd - time;
-		double constants = Runner.l - Runner.lambda_c - pseudoLane.length;
-		speed = (Math.pow(Runner.t_safetySqrt, 2) - 2 * timeDif * constants - 
-				Runner.t_safetySqrt * Math.sqrt(Math.pow(Runner.t_safetySqrt,2) - 4 * timeDif * constants))     /     (2*Math.pow(timeDif,2));
-		if ( time - getSafetyBufferTime(speed) < pseudoLane.tEnd){
-			return speed;
-		}
-		return Double.MAX_VALUE;
-
-		/*
-		double tStartTemp = Double.max(pseudoLane.tStart, time);
-		double timeDif = (pseudoLane.tEnd - tStartTemp);
-		//  double spatiallyAllowedMaximumSpeed = (pseudoLane.link.totalLaneLength - Runner.l - pseudoLane.link.occupiedSpace) / Runner.t_safety;
-		if( timeDif <= 0){
-		  return Double.MAX_VALUE;
-		 // return Math.min(Double.MAX_VALUE, spatiallyAllowedMaximumSpeed);
-		}
-		 return pseudoLane.length  / timeDif; 
-		 */
+		if(timeDif == 0){ 
+			return Math.pow(constants/Runner.t_safetySqrt, 2); // Case 3 from paper
+		}	
+		return (Runner.t_safetySqrt * Runner.t_safetySqrt  - 2 * timeDif * constants - 
+				Runner.t_safetySqrt * Math.sqrt( Runner.t_safetySqrt * Runner.t_safetySqrt  + 4 * timeDif * constants))     /   
+				(2 * timeDif * timeDif); // Case 2 from paper;
 	}
 
 	public PseudoLane selectPseudoLaneAndAdaptSpeed(Link nextLink, Cyclist cyclist, double time){
@@ -69,9 +60,9 @@ public abstract class LinkTransmissionModel {
 	}
 
 	public void updatePseudoLane(PseudoLane pseudoLane, double speed, double time) {
-		double tStartBasis = Double.max(time, pseudoLane.tStart);
-		pseudoLane.tStart = tStartBasis + getSafetyBufferTime(speed);
-		pseudoLane.tEnd = pseudoLane.tStart + pseudoLane.length / speed;
+		double tStartBasis = Double.max(time, pseudoLane.tReady);
+		pseudoLane.tReady = tStartBasis + getSafetyBufferTime(speed);
+		pseudoLane.tEnd = pseudoLane.tReady + pseudoLane.length / speed;
 	}
 
 	public double getSafetyBufferDistance(double speed){

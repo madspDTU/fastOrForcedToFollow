@@ -34,7 +34,7 @@ public abstract class LinkTransmissionModel {
 		if(timeDif == 0){ 
 			return Math.pow(constants/Runner.t_safetySqrt, 2); // Case 3 from paper
 		}	
-		return (Runner.t_safetySqrt * Runner.t_safetySqrt  - 2 * timeDif * constants - 
+		return (Runner.t_safetySqrt * Runner.t_safetySqrt  + 2 * timeDif * constants - 
 				Runner.t_safetySqrt * Math.sqrt( Runner.t_safetySqrt * Runner.t_safetySqrt  + 4 * timeDif * constants))     /   
 				(2 * timeDif * timeDif); // Case 2 from paper;
 	}
@@ -44,6 +44,7 @@ public abstract class LinkTransmissionModel {
 		int maxLane = 0;
 		for(int i = 0; i < nextLink.Psi; i++){
 			double laneMaxSpeed = getVMax(nextLink.psi[i], time);
+			
 			if(laneMaxSpeed >= cyclist.desiredSpeed ){
 				cyclist.setSpeed(cyclist.desiredSpeed);
 				return nextLink.psi[i];

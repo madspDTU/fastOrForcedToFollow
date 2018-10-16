@@ -102,8 +102,6 @@ public class Runner {
 		//	System.out.println("Waiting for <Enter> until CPU Sampling has started");
 		//	System.in.read();
 
-		List<Integer> NOCyclists = Arrays.asList(100,200,350,500,750,1000,1300, 1600, 2000, 2500, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000,
-				12000, 14000, 16000, 18000, 20000, 22500, 25000, 27500, 30000, 35000, 40000, 45000, 50000, 60000, 70000, 80000, 90000, 100000);
 		int stepSize = 50;
 		for( int itN = 10000; itN >= stepSize; itN -= stepSize){
 			//int itN = 2050;{
@@ -274,8 +272,8 @@ public class Runner {
 
 
 			System.out.println("3rd part (Xporting stuff) finished after " + (System.currentTimeMillis()-startTime)/1000d + " seconds.");
-			System.out.println((System.currentTimeMillis()-startTime)/((double) N) +
-					" miliseconds per cyclist.\n");
+			System.out.println((System.currentTimeMillis()-startTime)/((double) N)/((double) L)*1000d +
+					" microseconds per cyclist-link-interaction.\n");
 
 		}
 	}

@@ -115,7 +115,6 @@ public class Link{
 
 	private void sendNotificationDueToDelay(Cyclist cyclist, Link nextLink){
 		if(!outQ.isEmpty()){
-			System.out.println(nextLink.outQ.peek().time);
 			double notificationTime = Math.max(nextLink.outQ.peek().time, nextLink.tWakeUp);
 			cyclist.sendNotification(this.id, notificationTime);
 			this.tWakeUp = notificationTime;

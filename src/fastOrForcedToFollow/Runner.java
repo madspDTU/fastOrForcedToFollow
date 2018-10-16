@@ -1,5 +1,6 @@
 package fastOrForcedToFollow;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Array;
@@ -31,7 +32,7 @@ public class Runner {
 	public static int seed = 5355633;
 	public static LinkedHashMap<Integer,Link> linksMap = new LinkedHashMap<Integer,Link>();
 
-	public static final boolean useLogisticDistribution = false; //Based on the data from Cowi, this seems reasonable.
+	public static final boolean useLogisticDistribution = false; //Based on the data from Cowi, this could be reasonable.
 	public static final boolean useJohnsonDistribution = true; //Based on the data from Cowi, this seems reasonable.
 	public static double JohnsonGamma = -2.745957257392118;
 	public static double JohnsonXsi = 3.674350833333333;
@@ -45,7 +46,7 @@ public class Runner {
 	//public static final double s = 0.610593;  // Interestingly, results have more (reasonable) curvature, when using a higher scale...
 	public static final double s = 0.610593;  // Interestingly, results have more (reasonable) curvature, when using a higher scale...
 	public static double tau = 1d;
-	public static final double deadSpace = 0.4;
+	public static final double deadSpace = 0.4; // Dead horizontal space on bicycle paths that no one will use. Based on Buch & Greibe (2015)
 	//public static final double l = 1.93; //Average length of a bicycle measured in metres + minimum safety distance
 	//public static final double l = 1.73; //Average length of a bicycle measured in metres + minimum safety distance
 	//public static final double l = -1.970194143353036; //Average length of a bicycle measured in metres + minimum safety distance
@@ -81,7 +82,7 @@ public class Runner {
 	@SuppressWarnings("unchecked")
 	public static HashMap<Integer, Double>[] notificationArray;
 	public static PriorityQueue<LinkQObject> shortTermPriorityQueue;
-	public static String baseDir = "/zhome/81/e/64390/CykelSmallScale/ToyNetwork";
+	public static String baseDir = "Z:\\git\\fastOrForcedToFollow\\output";
 	public static double tieBreaker = 0;
 	public static final boolean waitingTimeCountsOnNextLink = false; // if false, then it counts on the previous link (i.e. spillback)
 
@@ -164,16 +165,13 @@ public class Runner {
 				while( w < minimumAllowedSpeed){
 					double u = random.nextDouble();
 					if(useJohnsonDistribution){
-						w = JohnsonLambda * Math.sinh( (qNorm(u) - JohnsonGamma) / JohnsonDelta) + JohnsonXsi;
+						w = JohnsonLambda * Math.sinh( (AuxStats.qNorm(u) - JohnsonGamma) / JohnsonDelta) + JohnsonXsi;
 					} else if(useLogisticDistribution){
 						w = mu-Math.log(1/u-1)*s ;
 					} else {
 						//Weibull
 						w = lambda*Math.pow((-Math.log(1d-u)),(1d/k));
 					}
-
-					Random r = new Random();
-					r.nextGaussian();
 				}
 
 				double time = 0;
@@ -186,13 +184,13 @@ public class Runner {
 				for(int i = 0; i < L; i++){
 					defaultRoute.addLast(links[i]);
 				} */
-				int nL = random3.nextInt(290)+10;
-				LinkedList<Link> defaultRoute = new LinkedList<Link>();
+					LinkedList<Link> defaultRoute = new LinkedList<Link>();
 				if(useToyNetwork){
 					for( int i = 0; i < L; i++){
 						defaultRoute.addLast(links[i]);
 					}
 				} else {
+					int nL = random3.nextInt(290)+10;
 					for(int i = 0; i < nL; i++){
 						defaultRoute.addLast(links[random.nextInt(L)]);
 					}
@@ -260,7 +258,7 @@ public class Runner {
 			System.out.println("2nd part (Mobility Simul) finished after " + (System.currentTimeMillis()-startTime)/1000d + " seconds.");
 			if(reportSpeeds){			
 				exportCyclistSpeeds(baseDir + "/Cyclists/" + (int) lengthOfLinks, itN);
-				exportCyclistCruisingSpeeds(baseDir + "/Cyclists/DesiredSpeeds");
+				exportCyclistDesiredSpeeds(baseDir + "/Cyclists/DesiredSpeeds");
 
 
 				for(Link link : links){
@@ -280,8 +278,15 @@ public class Runner {
 		}
 	}
 
+	public static void createFolderIfNeeded(String folder){
+		File file = new File(folder);
+		if(!file.exists()){
+			file.mkdirs();
+		}
+	}
 
-	public static void exportCyclistCruisingSpeeds(String baseDir) throws IOException{
+	public static void exportCyclistDesiredSpeeds(String baseDir) throws IOException{
+		createFolderIfNeeded(baseDir);
 		FileWriter writer = new FileWriter(baseDir + "/CyclistCruisingSpeeds_" + Runner.ltm.getClass().getName() + "_" 
 				+ Runner.N + "Persons_" + Runner.circuitString + ".csv");
 		writer.append("CyclistId;CruisingSpeed\n");
@@ -293,6 +298,7 @@ public class Runner {
 	}
 
 	public static void exportCyclistSpeeds(String baseDir, int itN) throws IOException{
+		createFolderIfNeeded(baseDir);
 		FileWriter writer = new FileWriter(baseDir + "/CyclistSpeeds_" + Runner.ltm.getClass().getName() + "_" 
 				+ itN + "Persons_" + Runner.circuitString + ".csv");
 		
@@ -310,52 +316,5 @@ public class Runner {
 		writer.close();
 	}
 
-	public static double qNorm(double u){
-		double a1 = -3.969683028665376e+01;
-		double a2 =  2.209460984245205e+02;
-		double a3 = -2.759285104469687e+02;
-		double a4 =  1.383577518672690e+02;
-		double a5 = -3.066479806614716e+01;
-		double a6 =  2.506628277459239e+00;
-
-		double b1 = -5.447609879822406e+01;
-		double b2 =  1.615858368580409e+02;
-		double b3 = -1.556989798598866e+02;
-		double b4 =  6.680131188771972e+01;
-		double b5 = -1.328068155288572e+01;
-
-		double c1 = -7.784894002430293e-03;
-		double c2 = -3.223964580411365e-01;
-		double c3 = -2.400758277161838e+00;
-		double c4 = -2.549732539343734e+00;
-		double c5 =  4.374664141464968e+00;
-		double c6 =  2.938163982698783e+00;
-
-		double d1 =  7.784695709041462e-03;
-		double d2 =  3.224671290700398e-01;
-		double d3 =  2.445134137142996e+00;
-		double d4 =  3.754408661907416e+00;
-
-		double p_low  = 0.02425;
-		double p_high = 1 - p_low;
-
-		if(u < p_low){
-			double q = Math.sqrt(-2*Math.log(u));
-			return (((((c1*q+c2)*q+c3)*q+c4)*q+c5)*q+c6) /
-					((((d1*q+d2)*q+d3)*q+d4)*q+1);
-		}
-
-		if(u > p_high){
-			double q = Math.sqrt(-2*Math.log(1-u));
-			return -(((((c1*q+c2)*q+c3)*q+c4)*q+c5)*q+c6) /
-					((((d1*q+d2)*q+d3)*q+d4)*q+1);
-		}
-
-		double q = u - 0.5;
-		double r = q * q;
-		return (((((a1*r+a2)*r+a3)*r+a4)*r+a5)*r+a6)*q /
-				(((((b1*r+b2)*r+b3)*r+b4)*r+b5)*r+1);
-
-
-	}
+	
 }

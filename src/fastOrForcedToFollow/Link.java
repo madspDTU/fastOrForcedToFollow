@@ -221,6 +221,7 @@ public class Link{
 	}
 
 	public void exportSpeeds(String baseDir) throws IOException{
+		Runner.createFolderIfNeeded(baseDir);
 		FileWriter writer = new FileWriter(baseDir + "/speedsOfLinks_" + Runner.ltm.getClass().getName() + "_" +
 				id + "_" + Runner.N + "Persons_" + Runner.circuitString + ".csv");
 		for(int i = 0; i < Psi; i++){

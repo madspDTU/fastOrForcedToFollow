@@ -37,22 +37,22 @@ public class Cyclist {
 	 */
 	
 	public boolean advanceCyclist(int linkId, double time){
-		Link nextLink = route.peekFirst();
+		Link nextLink = this.route.peekFirst();
 		double originalSpeed = this.speed;
-		PseudoLane pseudoLane = ltm.selectPseudoLaneAndAdaptSpeed(nextLink, this, time); 
-		if(ltm.getSafetyBufferDistance(this.speed) <= nextLink.getTotalLaneLength() - nextLink.getOccupiedSpace()){
-			route.removeFirst();
-			ltm.reduceOccupiedSpace(linkId, originalSpeed);
-			ltm.increaseOccupiedSpace(nextLink.getId(), this.speed);
-			this.tStart = Double.max(pseudoLane.tReady, time);
+		PseudoLane pseudoLane = this.ltm.selectPseudoLaneAndAdaptSpeed(nextLink, this, time); 
+		if(this.ltm.getSafetyBufferDistance(this.speed) <= nextLink.getTotalLaneLength() - nextLink.getOccupiedSpace()){
+			this.route.removeFirst();
 			Link currentLink = Runner.linksMap.get(linkId);
-			currentLink.setWakeUpTime(this.tStart);
-			ltm.updatePseudoLane(pseudoLane, speed, time);
-			double tEnd = pseudoLane.tEnd - ltm.getSafetyBufferTime(speed);
-			moveToNextQ(nextLink, tEnd);
-			currentLink.getOutQ().remove();
 			currentLink.incrementOutFlowCounter();
-			nextLink.sendNotification(Math.max(tEnd,nextLink.getWakeUpTime()));
+			currentLink.getOutQ().remove();
+			this.ltm.reduceOccupiedSpace(linkId, originalSpeed);
+			this.ltm.increaseOccupiedSpace(nextLink.getId(), this.speed);
+			this.tStart = Double.max(pseudoLane.tReady, time);
+			currentLink.setWakeUpTime(this.tStart);
+			pseudoLane.updateTs(speed, time);
+			double tArrivalAtNextLink = pseudoLane.tEnd - Runner.lambda_c/speed;
+			moveToNextQ(nextLink, tArrivalAtNextLink);
+			nextLink.sendNotification(Math.max(tArrivalAtNextLink,nextLink.getWakeUpTime()));
 			
 			return true;
 		} else {

@@ -60,12 +60,7 @@ public abstract class LinkTransmissionModel {
 		return selectedPseudoLane;
 	}
 
-	public void updatePseudoLane(PseudoLane pseudoLane, double speed, double time) {
-		double tStartBasis = Double.max(time, pseudoLane.tReady);
-		pseudoLane.tReady = tStartBasis + getSafetyBufferTime(speed);
-		pseudoLane.tEnd = pseudoLane.tReady + pseudoLane.length / speed;
-	}
-
+	
 	
 	/**
 	 * @param speed given in m/s that the safety distance will be based on.

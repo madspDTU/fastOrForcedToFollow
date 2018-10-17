@@ -264,7 +264,7 @@ public class Link{
 	 * Increments the out-flow counter of the link by 1.
 	 */
 	public void incrementOutFlowCounter(){
-		inFlowCounter++;
+		outFlowCounter++;
 	}
 
 	public boolean isRelevant(){

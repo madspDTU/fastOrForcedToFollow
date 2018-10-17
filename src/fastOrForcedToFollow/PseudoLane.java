@@ -31,4 +31,10 @@ public class PseudoLane {
 	public void updateTEnd(double newTEnd){
 		this.tReady = newTEnd;
 	}
+	
+	public void updateTs(double speed, double time) {
+		double tStartBasis = Double.max(time, this.tReady);
+		this.tReady = tStartBasis + Runner.lambda_c / speed;
+		this.tEnd = this.tReady + this.length / speed;
+	}
 }

@@ -590,7 +590,7 @@ public final class FibonacciHeap<T> extends PriorityQueue {
     
 	@SuppressWarnings("unchecked")
 	public boolean add(Object e){
-    	enqueue((T) e, ((CyclistQObject) e).time);
+    	enqueue((T) e, ((CyclistQObject) e).getTime());
     	return true;
     }
     

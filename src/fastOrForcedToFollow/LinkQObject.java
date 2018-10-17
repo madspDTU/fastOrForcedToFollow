@@ -2,15 +2,29 @@ package fastOrForcedToFollow;
 
 public class LinkQObject implements Comparable<LinkQObject>{
 
-	public double time;
-	public int linkId;
-	public double tieBreaker;
+	private double time;
+	private int linkId;
+	private double tieBreaker; //TODO madsp:  Is this really used??????
 
 	LinkQObject(double time, int linkId){
 		this.time = time;
 		this.linkId = linkId;
 		this.tieBreaker = Runner.tieBreaker;
 		Runner.tieBreaker = Math.nextUp(Runner.tieBreaker);
+	}
+	
+	/**
+	 * @return The time associated with this LQO.
+	 */
+	public double getTime(){
+		return time;
+	}
+	
+	/**
+	 * @return The id of the link associated with this LQO.
+	 */
+	public int getId(){
+		return linkId;
 	}
 
 	public int compareTo(LinkQObject other){

@@ -2,8 +2,6 @@ package fastOrForcedToFollow;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.lang.reflect.Array;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.PriorityQueue;
 
@@ -14,18 +12,14 @@ import java.util.PriorityQueue;
 public class Link{
 
 	private int id;
-	private double width;
 	private double length;
 	private int Psi;
 	private PseudoLane[] psi;
 	private PriorityQueue<CyclistQObject> outQ;
-	private Link prevLink;
-	private Link nextLink;
 	private LinkedList<Double>[] speedReports;
 	private LinkedList<Double> densityReport = new LinkedList<Double>();
 	private int inFlowCounter = 0;
 	private int outFlowCounter = 0;
-	private int storageCapacity;
 	private double occupiedSpace = 0;
 	private final double totalLaneLength;
 	private LinkedList<Double[]> speedTimeReport = new LinkedList<Double[]>();
@@ -37,7 +31,6 @@ public class Link{
 	@SuppressWarnings("unchecked")
 	Link(int id, double width, double length) throws InstantiationException, IllegalAccessException{
 		this.id = id;
-		this.width = width;
 		this.length = length;
 		this.Psi = 1 + (int) Math.floor((width-Runner.deadSpace)/Runner.omega);
 		psi = Runner.ltm.createPseudoLanes(this, Psi, length);
@@ -195,32 +188,33 @@ public class Link{
 
 	public void handleQOnNotification(LinkQObject lqo) throws IOException{
 		CyclistQObject cqo = outQ.peek();
-		if(cqo.cyclist.route.isEmpty()){	// The cyclist has reached his/her destination.
+		Cyclist cyclist = cqo.getCyclist();
+		if(cyclist.route.isEmpty()){	// The cyclist has reached his/her destination.
 			this.outQ.remove();
 			this.outFlowCounter++;
-			cqo.cyclist.terminateCyclist(lqo);
+			cyclist.terminateCyclist(lqo);
 			if(!Runner.waitingTimeCountsOnNextLink){
-				cqo.cyclist.reportSpeed(this.length, lqo.time);
+				cyclist.reportSpeed(this.length, lqo.getTime());
 			}
-			reportOutputTime(lqo.time);
-			reportSpeedTime(lqo.time, cqo.cyclist.speedReport.getLast()[2]);
-			sendNotificationForNextInQ(cqo.cyclist);
+			reportOutputTime(lqo.getTime());
+			reportSpeedTime(lqo.getTime(), cyclist.getSpeedReport().getLast()[2]);
+			sendNotificationForNextInQ(cyclist);
 		}  else {	
-			Link nextLink = cqo.cyclist.route.peek();
-			if(cqo.cyclist.advanceCyclist(lqo)){
+			Link nextLink = cyclist.route.peek();
+			if(cyclist.advanceCyclist(lqo)){
 				this.outQ.remove();
 				this.outFlowCounter++;
 				if(!Runner.waitingTimeCountsOnNextLink){
 					if(this.id >= 0){
-						cqo.cyclist.reportSpeed(length, lqo.time);
-						reportOutputTime(lqo.time);
-						reportSpeedTime(lqo.time, cqo.cyclist.speedReport.getLast()[2]);
+						cyclist.reportSpeed(length, lqo.getTime());
+						reportOutputTime(lqo.getTime());
+						reportSpeedTime(lqo.getTime(), cyclist.getSpeedReport().getLast()[2]);
 					}
-					cqo.cyclist.initialiseNewSpeedReportElement(nextLink.id, lqo.time);
+					cyclist.initialiseNewSpeedReportElement(nextLink.id, lqo.getTime());
 				}
-				sendNotificationForNextInQ(cqo.cyclist);
+				sendNotificationForNextInQ(cyclist);
 			} else { //It was not possible to advance the cyclist due to congestion.
-				sendNotificationDueToDelay(cqo.cyclist, nextLink);
+				sendNotificationDueToDelay(cyclist, nextLink);
 			}
 		}
 	}
@@ -233,11 +227,11 @@ public class Link{
 	}
 
 	public boolean isRelevant(){
-		return !outQ.isEmpty() && Runner.t >= outQ.peek().time;
+		return !outQ.isEmpty() && Runner.t >= outQ.peek().getTime();
 	}
 
 	public void killCyclist(String baseDir) throws IOException{
-		Cyclist cyclist = outQ.poll().cyclist;
+		Cyclist cyclist = outQ.poll().getCyclist();
 		cyclist.exportSpeeds(baseDir);
 	}
 
@@ -289,7 +283,7 @@ public class Link{
 
 	private void sendNotificationDueToDelay(Cyclist cyclist, Link nextLink){
 		if(!outQ.isEmpty()){
-			double notificationTime = Math.max(nextLink.outQ.peek().time, nextLink.tWakeUp);
+			double notificationTime = Math.max(nextLink.outQ.peek().getTime(), nextLink.tWakeUp);
 			cyclist.sendNotification(this.id, notificationTime);
 			this.tWakeUp = notificationTime;
 		} 
@@ -297,21 +291,13 @@ public class Link{
 
 	private void sendNotificationForNextInQ(Cyclist cyclist){
 		if(!outQ.isEmpty()){
-			double notificationTime = Math.max(this.outQ.peek().time, this.tWakeUp);
+			double notificationTime = Math.max(this.outQ.peek().getTime(), this.tWakeUp);
 			cyclist.sendNotification(this.id, notificationTime);
 			this.tWakeUp = notificationTime;
 		} 
 	}
 
-	public void setNextLink(Link nextLink){
-		this.nextLink = nextLink;
-		nextLink.prevLink = this;
-	}
 
-	public void setPrevLink(Link prevLink){
-		this.prevLink = prevLink;
-		prevLink.nextLink = this;
-	}
 
 	/**
 	 * @param tWakeUp The earliest possible time that the link can potentially handle traffic (entering or leaving).

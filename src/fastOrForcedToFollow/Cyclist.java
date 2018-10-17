@@ -9,9 +9,9 @@ public class Cyclist {
 
 	private int id;
 	private double desiredSpeed;
-	public double speed = -1; //Current speed
-	public double tStart = 0;
-	public LinkedList<Double[]> speedReport = new LinkedList<Double[]>(); 
+	private double speed = -1; //Current speed
+	private double tStart = 0;
+	private LinkedList<Double[]> speedReport = new LinkedList<Double[]>(); 
 	// Id, tStart, v
 	// Has to be done such that the speed is reported
 	// when exiting the link. The speed is unknown at
@@ -19,8 +19,6 @@ public class Cyclist {
 	// (has its storage capactity exceeded).
 
 
-	//TODO
-	//What if waiting time in queue is transfered to NEXT link instead of previous link? (allows computing travel time at (real) entry).
 	public LinkedList<Link> route;
 	public LinkTransmissionModel ltm;
 
@@ -32,6 +30,13 @@ public class Cyclist {
 		speedReport.add(new Double[]{-1d, 0d,-1d});
 	}
 
+	/**
+	 * @return The speed report containing the speed (in m/s) at certain times (in seconds) during the simulation.
+	 */
+	public LinkedList<Double[]> getSpeedReport(){
+		return speedReport;
+	}
+	
 	/**
 	 * @return The desired speed (in m/s) of the cyclist.
 	 */
@@ -49,14 +54,6 @@ public class Cyclist {
 	public void reportSpeed(double time){
 		speedReport.addLast(new Double[]{time, this.speed});
 	}
-
-	/* public void reportSpeed(double time, double speed){
-		if(this.speed == -1){
-			speedReport.addLast(new Double[]{time, this.speed});
-		} else {
-			speedReport.addLast(new Double[]{time, speed});
-		}
-	} */
 
 	public void initialiseNewSpeedReportElement(double id, double t){
 		speedReport.addLast(new Double[]{id, t, -1d});
@@ -82,22 +79,19 @@ public class Cyclist {
 	public boolean advanceCyclist(LinkQObject lqo){
 		Link nextLink = route.pollFirst();
 		double oldSpeed = this.speed;
-		PseudoLane pseudoLane = ltm.selectPseudoLaneAndAdaptSpeed(nextLink, this, lqo.time); 
-		//if(this.speed > 0){
+		PseudoLane pseudoLane = ltm.selectPseudoLaneAndAdaptSpeed(nextLink, this, lqo.getTime()); 
 		if(ltm.getSafetyBufferDistance(this.speed) <= nextLink.getTotalLaneLength() - nextLink.getOccupiedSpace()){
-			//if(true){
-			ltm.reduceOccupiedSpace(lqo.linkId, oldSpeed);
+			ltm.reduceOccupiedSpace(lqo.getId(), oldSpeed);
 			ltm.increaseOccupiedSpace(nextLink.getId(), this.speed);
-			this.tStart = Double.max(pseudoLane.tReady, lqo.time);
-			Runner.linksMap.get(lqo.linkId).setWakeUpTime(this.tStart);
-			ltm.updatePseudoLane(pseudoLane, speed, lqo.time);
+			this.tStart = Double.max(pseudoLane.tReady, lqo.getTime());
+			Runner.linksMap.get(lqo.getId()).setWakeUpTime(this.tStart);
+			ltm.updatePseudoLane(pseudoLane, speed, lqo.getTime());
 			double tEnd = pseudoLane.tEnd - ltm.getSafetyBufferTime(speed);
 			if(Runner.waitingTimeCountsOnNextLink){
 				reportSpeed(nextLink.getLength(), tEnd);
 			}
 			moveToNextQ(nextLink, tEnd);
 			sendNotification(nextLink.getId(), Math.max(tEnd,nextLink.getWakeUpTime()));
-			//reportSpeed(time);
 			if(Runner.circuit){
 				route.addLast(nextLink);
 			}
@@ -140,7 +134,7 @@ public class Cyclist {
 	}
 
 	public void terminateCyclist(LinkQObject loq){
-		ltm.reduceOccupiedSpace(loq.linkId, this.speed);
+		ltm.reduceOccupiedSpace(loq.getId(), this.speed);
 	}
 
 

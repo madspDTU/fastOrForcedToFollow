@@ -1,7 +1,32 @@
 package fastOrForcedToFollow;
 
-public class AuxStats {
+import java.io.File;
 
+/**
+ * @author mpaulsen
+ */
+public class ToolBox {
+
+	/**
+	 * Auxiliary function to create subfolder if needed.
+	 * @param folder The folder being checked for existence.
+	 */
+	public static void createFolderIfNeeded(String folder){
+		File file = new File(folder);
+		if(!file.exists()){
+			file.mkdirs();
+		}
+	}
+	
+	/**
+	 * Method for computing the inverse cumulative distribution function of the standard normal distribution.
+	 * Taken directly from https://stackedboxes.org/2017/05/01/acklams-normal-quantile-function/
+	 * 
+	 * @param u The quantile whose corresponding value, z, is to be found.
+	 * 
+	 * @return The value that would yield u when inserted into the
+	 * cumulative distribution function of the standard normal distribution 
+	 */
 	public static double qNorm(double u){
 		double a1 = -3.969683028665376e+01;
 		double a2 =  2.209460984245205e+02;

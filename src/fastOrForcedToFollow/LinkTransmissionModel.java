@@ -22,9 +22,9 @@ public abstract class LinkTransmissionModel {
 	}
 
 	public double getVMax(PseudoLane pseudoLane, double time){
-		double constants = Runner.lambda_c + pseudoLane.length - Runner.l;
-		if(time >= pseudoLane.tEnd - Runner.t_safetySqrt*Runner.t_safetySqrt/4./constants){ 
-			return 4*Math.pow((constants/Runner.t_safetySqrt),2); //Case 4 from paper
+		double constants = Runner.lambda_c + pseudoLane.length - Runner.theta_0;
+		if(time >= pseudoLane.tEnd - Runner.theta_1*Runner.theta_1/4./constants){ 
+			return 4*Math.pow((constants/Runner.theta_1),2); //Case 4 from paper
 		}
 		double speed = pseudoLane.length / (pseudoLane.tEnd - pseudoLane.tReady);
 		if ( time <= pseudoLane.tReady + getSafetyBufferTime(speed) ){ 
@@ -32,10 +32,10 @@ public abstract class LinkTransmissionModel {
 		}
 		double timeDif = pseudoLane.tEnd - time;
 		if(timeDif == 0){ 
-			return Math.pow(constants/Runner.t_safetySqrt, 2); // Case 3 from paper
+			return Math.pow(constants/Runner.theta_1, 2); // Case 3 from paper
 		}	
-		return (Runner.t_safetySqrt * Runner.t_safetySqrt  + 2 * timeDif * constants - 
-				Runner.t_safetySqrt * Math.sqrt( Runner.t_safetySqrt * Runner.t_safetySqrt  + 4 * timeDif * constants))     /   
+		return (Runner.theta_1 * Runner.theta_1  + 2 * timeDif * constants - 
+				Runner.theta_1 * Math.sqrt( Runner.theta_1 * Runner.theta_1  + 4 * timeDif * constants))     /   
 				(2 * timeDif * timeDif); // Case 2 from paper;
 	}
 

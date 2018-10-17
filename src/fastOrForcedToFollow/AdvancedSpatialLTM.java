@@ -1,5 +1,9 @@
 package fastOrForcedToFollow;
 
+/**
+ * @author mpaulsen
+ *
+ */
 public class AdvancedSpatialLTM extends SpatialLTM {
 	
 	@Override
@@ -10,7 +14,7 @@ public class AdvancedSpatialLTM extends SpatialLTM {
 	
 	@Override
 	public double getSafetyBufferDistance(double speed) {
-		return Runner.l  + Runner.t_safetySqrt * Math.sqrt(speed);// +  speed*Runner.t_safety + Runner.t_safety2Poly*speed*speed
+		return Runner.theta_0  + Runner.theta_1 * Math.sqrt(speed);// +  speed*Runner.t_safety + Runner.t_safety2Poly*speed*speed
 	}
 	
 	@Override

@@ -11,21 +11,75 @@ import java.util.PriorityQueue;
  */
 public class Link{
 
-	private int id;
-	private double length;
-	private int Psi;
-	private PseudoLane[] psi;
-	private PriorityQueue<CyclistQObject> outQ;
-	private LinkedList<Double>[] speedReports;
+	/**
+	 * Density report containing the densities that have occured during the simulation.
+	 */
 	private LinkedList<Double> densityReport = new LinkedList<Double>();
+	
+	/**
+	 * The id of the link.
+	 */
+	private int id;
+	
+	/**
+	 * Counts the total number of cyclists that have entered the link.
+	 */
 	private int inFlowCounter = 0;
-	private int outFlowCounter = 0;
+	
+	/**
+	 * The length of the link.
+	 */
+	private double length;
+	
+	/**
+	 * The total pseudolane distance (buffer distance) occupied of the cyclists currently on the link.
+	 */
 	private double occupiedSpace = 0;
-	private final double totalLaneLength;
+	
+	/**
+	 * Counts the total number of cyclists that have left the link.
+	 */
+	private int outFlowCounter = 0;
+	
+	/**
+	 * The outflow time report containing the speed and time of every cyclist leaving the link.
+	 */
+	private LinkedList<Double[]> outflowTimeReport = new LinkedList<Double[]>();
+	
+	/**
+	 * The Q containing the CQO's for the cyclists that have entered the link but not yet left it.
+	 */
+	private PriorityQueue<CyclistQObject> outQ;
+	
+	/**
+	 * The array containing all <code>Psi</code> pseudolanes of the link.
+	 */
+	private PseudoLane[] psi;
+	
+	/**
+	 * The number of <code>pseudolanes</code> the link has.
+	 */
+	private int Psi;
+	
+	/**
+	 * Speed report containing the speeds of the cyclists that have traversed the link.
+	 */
+	private LinkedList<Double>[] speedReports;
+	
+	/**
+	 * The speed time report containing the speed and time of every cyclist leaving the link.
+	 */
 	private LinkedList<Double[]> speedTimeReport = new LinkedList<Double[]>();
-	private LinkedList<Double[]> outputTimeReport = new LinkedList<Double[]>(); 
-	private double tWakeUp = 0;  // The earliest possible time that the link can be used again (used when storage capacity is met).
-
+	
+	/**
+	 * The total pseudolane distance, i.e. the product between the length and number of pseudolanes.
+	 */
+	private final double totalLaneLength; 
+	
+	/**
+	 * The earliest possible time that the link can potentially handle traffic (entering or leaving).
+	 */
+	private double tWakeUp = 0;
 
 
 	@SuppressWarnings("unchecked")
@@ -43,7 +97,7 @@ public class Link{
 	}
 
 	public int calculateStorageCapacity(){
-		return (int) Math.floor(length * Psi / Runner.l);
+		return (int) Math.floor(length * Psi / Runner.theta_0);
 	}
 
 	public void exportDensities(String baseDir) throws IOException{
@@ -70,8 +124,8 @@ public class Link{
 		FileWriter writer = new FileWriter(baseDir + "/outputTimesLink_" + Runner.ltm.getClass().getName() + "_" +
 				id + "_" + Runner.N + "Persons.csv");
 		writer.append("Time;Output\n");
-		while(!this.outputTimeReport.isEmpty()){
-			Double[] element = outputTimeReport.pollFirst();
+		while(!this.outflowTimeReport.isEmpty()){
+			Double[] element = outflowTimeReport.pollFirst();
 			writer.append(element[0] + ";" + element[1] + "\n");
 		}
 		writer.flush();
@@ -79,7 +133,7 @@ public class Link{
 	}
 
 	public void exportSpeeds(String baseDir) throws IOException{
-		Runner.createFolderIfNeeded(baseDir);
+		ToolBox.createFolderIfNeeded(baseDir);
 		FileWriter writer = new FileWriter(baseDir + "/speedsOfLinks_" + Runner.ltm.getClass().getName() + "_" +
 				id + "_" + Runner.N + "Persons.csv");
 		for(int i = 0; i < Psi; i++){
@@ -164,21 +218,6 @@ public class Link{
 		return totalLaneLength;
 	}
 
-	/*
-	public void handleQ() throws IOException{
-		int counter = 1;
-		while(isRelevant()){
-			CyclistQObject cyclist = outQ.poll();
-			cyclist.enterCyclist();
-			if(counter == Runner.maxCyclistsPerTau){
-				break;
-			} else {
-				counter++;
-			}
-		}
-	}
-	 */
-
 	/**
 	 * @return The earliest possible time that the link can potentially handle traffic (entering or leaving).
 	 */
@@ -189,7 +228,7 @@ public class Link{
 	public void handleQOnNotification(LinkQObject lqo) throws IOException{
 		CyclistQObject cqo = outQ.peek();
 		Cyclist cyclist = cqo.getCyclist();
-		if(cyclist.route.isEmpty()){	// The cyclist has reached his/her destination.
+		if(cyclist.getRoute().isEmpty()){	// The cyclist has reached his/her destination.
 			this.outQ.remove();
 			this.outFlowCounter++;
 			cyclist.terminateCyclist(lqo);
@@ -198,7 +237,7 @@ public class Link{
 			reportSpeedTime(lqo.getTime(), cyclist.getSpeedReport().getLast()[2]);
 			sendNotificationForNextInQ(cyclist);
 		}  else {	
-			Link nextLink = cyclist.route.peek();
+			Link nextLink = cyclist.getRoute().peek();
 			if(cyclist.advanceCyclist(lqo)){
 				this.outQ.remove();
 				this.outFlowCounter++;
@@ -232,7 +271,7 @@ public class Link{
 	}
 
 	public void reportOutputTime(double t){
-		outputTimeReport.add(new Double[]{t, (double) this.outFlowCounter});
+		outflowTimeReport.add(new Double[]{t, (double) this.outFlowCounter});
 	}
 
 
@@ -240,42 +279,6 @@ public class Link{
 		speedTimeReport.add(new Double[]{t, speed});
 	}
 
-	/*public void setSpeedToZeroForStuckCyclists(){
-		//This is not easily done when using a priorityQueue - thus using setSpeedToZeroForStuckCyclists is
-		// discouraged using this implementation -- which is otherwise the better one.
-		PriorityQueue<CyclistQObject> tempQ = new PriorityQueue<CyclistQObject>();
-		while(!outQ.isEmpty()){
-			double qT = outQ.peek().time;
-			if( qT <= Runner.t && qT > 0){
-				CyclistQObject cqo = outQ.poll();
-				cqo.cyclist.speed = 0;
-				tempQ.add(cqo);
-			} else {
-				break;
-			}
-		}
-		while(!tempQ.isEmpty())	{
-			outQ.add(tempQ.poll());
-		}
-	}*/
-
-
-
-	/* Not necessary when having vMax as a function.
-
-	public void updatePseudoLaneSpeeds(){
-		for(int i = 0; i < Psi; i++){
-			PseudoLane pseudoLane = psi[i];
-			double D = pseudoLane.length/pseudoLane.vSet - Runner.tau;
-			if(D <= 0){
-				pseudoLane.vSet = vMax;
-			} else {
-				pseudoLane.vSet = pseudoLane.length / D;
-			}
-			speedReports[i].add(pseudoLane.vSet);
-		}
-	}
-	 */
 
 	private void sendNotificationDueToDelay(Cyclist cyclist, Link nextLink){
 		if(!outQ.isEmpty()){
@@ -292,8 +295,6 @@ public class Link{
 			this.tWakeUp = notificationTime;
 		} 
 	}
-
-
 
 	/**
 	 * @param tWakeUp The earliest possible time that the link can potentially handle traffic (entering or leaving).

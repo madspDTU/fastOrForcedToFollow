@@ -1,5 +1,9 @@
 package fastOrForcedToFollow;
 
+/**
+ * @author mpaulsen
+ *
+ */
 public class LinkQObject implements Comparable<LinkQObject>{
 
 	private double time;

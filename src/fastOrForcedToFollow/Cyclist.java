@@ -5,6 +5,10 @@ import java.io.IOException;
 import java.util.LinkedList;
 
 
+/**
+ * @author mpaulsen
+ *
+ */
 public class Cyclist {
 
 	private int id;
@@ -12,15 +16,8 @@ public class Cyclist {
 	private double speed = -1; //Current speed
 	private double tStart = 0; // Time at which the cyclist entered the link.
 	private LinkedList<Double[]> speedReport = new LinkedList<Double[]>(); 
-	// Id, tStart, v
-	// Has to be done such that the speed is reported
-	// when exiting the link. The speed is unknown at
-	// entry since the next link may be filled up
-	// (has its storage capactity exceeded).
-
-
-	public LinkedList<Link> route;
-	public LinkTransmissionModel ltm;
+	private LinkedList<Link> route;
+	private LinkTransmissionModel ltm;
 
 	Cyclist(int id, double cruiseSpeed, LinkedList<Link> route, LinkTransmissionModel ltm) throws InstantiationException, IllegalAccessException{
 		this.id = id;
@@ -30,6 +27,15 @@ public class Cyclist {
 		speedReport.add(new Double[]{-1d, 0d,-1d});
 	}
 
+	/**
+	 * Advances the cyclist to next link if there is sufficient space on the next link.
+	 * 
+	 * @param lqo The <code>LinkQObject</code> which is currently begin processed.
+	 * 
+	 * @return <true> if the cyclist could enter the next link, and
+	 *         <false> otherwise.
+	 */
+	
 	public boolean advanceCyclist(LinkQObject lqo){
 		Link nextLink = route.pollFirst();
 		double oldSpeed = this.speed;
@@ -75,6 +81,13 @@ public class Cyclist {
 	public int getId(){
 		return id;
 	}
+	
+	/**
+	 * @return The (remaining part of the) route of the cyclist.
+	 */
+	public LinkedList<Link> getRoute(){
+		return route;
+	}
 
 	/**
 	 * @return The speed report containing the speed (in m/s) at certain times (in seconds) during the simulation.
@@ -107,7 +120,7 @@ public class Cyclist {
 			if(tEnd <= Runner.t){
 				sendShortTermNotification(linkId, tEnd);
 			} else {
-				int k  = ((int) tEnd) / ((int) Runner.tau) + 1;
+				int k  = ((int) tEnd) / ((int) Runner.timeStep) + 1;
 				if( !Runner.notificationArray[k].containsKey(linkId) || tEnd < Runner.notificationArray[k].get(linkId) ){
 					Runner.notificationArray[k].put(linkId, tEnd);	
 				}

@@ -1,5 +1,9 @@
 package fastOrForcedToFollow;
 
+/**
+ * @author mpaulsen
+ *
+ */
 public class BasicLTM extends LinkTransmissionModel{
 
 	@Override	

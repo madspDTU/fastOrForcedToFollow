@@ -1,6 +1,10 @@
 package fastOrForcedToFollow;
 
 
+/**
+ * @author mpaulsen
+ *
+ */
 public class PseudoLane {
 	
 	public double length;

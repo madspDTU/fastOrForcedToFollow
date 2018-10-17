@@ -1,5 +1,9 @@
 package fastOrForcedToFollow;
 
+/**
+ * @author mpaulsen
+ *
+ */
 public class CyclistQObject implements Comparable<CyclistQObject>{
 
 	private double time; // First possible time at which the cyclist will be taken into consideration of moving onto next link.

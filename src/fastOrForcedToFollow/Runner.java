@@ -13,89 +13,78 @@ import java.util.Random;
 
 
 public class Runner {
+
+	//Network parameters
 	public static final double widthOfLastLink = 2;
 	public static final double widthOfFirstLinks = 3;
 	public static final double lengthOfLinks = 100;
+	public static final int L = 3;
+	public static final double capacityMultiplier = 1;  // The totalLaneLength is multiplied with this number;
 
-	public static final double omega = 1.25;
-	public static double T = 3600;
+	// Pseudolane partition parameters
+	public static final double omega = 1.25;    // Additional width needed to gain another efficient lane. Based on Buch & Greibe (2015).
+	public static final double deadSpace = 0.4; // Dead horizontal space on bicycle paths that is unused. Based on Buch & Greibe (2015)
 
-	public static double t = 1;
-	public static int L = 3;
-	public static Link[] links = new Link[L];
-	public static Link sourceLink;
-	public static int N;
+	//Simulation parameters
+	public static String baseDir = "Z:/git/fastOrForcedToFollow/output/ToyNetwork";
+	public static final double T = 3600;
+	public static final double tau = 1d;
 	public static final int maxN = 10000;
 	public static final int stepSize = 50;
-	public static int seed = 5355633;
-	public static LinkedHashMap<Integer,Link> linksMap = new LinkedHashMap<Integer,Link>();
+	public static final int seed = 5355633;
+	public static final boolean reportSpeeds = true;
+	@SuppressWarnings("rawtypes")
+	public static final Class<? extends PriorityQueue> priorityQueueClassForLinks = PriorityQueue.class; 
 
-	private static final boolean useLogisticDistribution = false; //Based on the data from Cowi, this could be reasonable.
-	private static final boolean useJohnsonDistribution = true; //Based on the data from Cowi, this seems reasonable.
+	//Desired speed distribution parameters -- General
+	private static final double minimumAllowedSpeed = 2;  // Lowest allowed desired speed (lower truncation of distribution);
+	private static final String desiredSpeedDistribution = "Johnson"; //Johnson, Logistic
+
+	//Desired speed distribution parameters -- Johnson
 	private static final double JohnsonGamma = -2.745957257392118;
 	private static final double JohnsonXsi = 3.674350833333333;
 	private static final double JohnsonDelta = 4.068155531972158;
 	private static final double JohnsonLambda = 3.494609779450189;
-	private static final double minimumAllowedSpeed = 2;  // Lowest allowed desired speed (lower truncation of distribution);
 
-
-	public static double k = 5d;
-	public static double lambda = 6.5d;
+	//Desired speed distribution parameters -- Logistic
 	public static final double mu = 6.085984;
 	public static final double s = 0.610593;  // Interestingly, results have more (reasonable) curvature, when using a higher scale...
-	public static double tau = 1d;
-	public static final double deadSpace = 0.4; // Dead horizontal space on bicycle paths that no one will use. Based on Buch & Greibe (2015)
+
+	//Safety distance parameters
+	public static final LinkTransmissionModel ltm = new AdvancedSpatialLTM(); 
+	//Options are: BasicLTM, SpatialLTM, AdvancedSpatialLTM.
 	public static final double l = -4.220641337789; //For square root model;
 	public static final double lambda_c = 1.73; //Average length of a bicycle according to
 	//Andresen et al. (2014), Basic Driving Dynamics of Cyclists, In: Simulation of Urban Mobility;
-
-
-	//public static final double t_safety = 0.72; //Safety time between cyclists according to Andresen.
-
 	public static final double t_safetySqrt =  4.602161217943; 
-
-	public static final double capacityMultiplier = 1;  // The totalLaneLength is multiplied with this number;
-
-	public static LinkedList<Cyclist> cyclists= new LinkedList<Cyclist>();
-
-	public static final boolean reportSpeeds = false;
-
-	@SuppressWarnings("rawtypes")
-	public static final Class<? extends PriorityQueue> priorityQueueClassForLinks = PriorityQueue.class; 
-	public static final LinkTransmissionModel ltm = new AdvancedSpatialLTM(); 
-	//Options are: BasicLTM, SpatialLTM, AdvancedSpatialLTM.
-
+	
+	//Required fields with no input values
+	public static double t;
+	public static Link[] links;
+	public static Link sourceLink;
+	public static int N;
+	public static LinkedHashMap<Integer,Link> linksMap; 
+	public static LinkedList<Cyclist> cyclists;
 	public static HashMap<Integer, Double>[] notificationArray;
 	public static PriorityQueue<LinkQObject> shortTermPriorityQueue;
-	public static String baseDir = "Z:/git/fastOrForcedToFollow/output/ToyNetwork";
-	public static double tieBreaker = 0;
+	public static double tieBreaker;
 
-
+	
 
 	public static void main(String[] args) throws IOException, InterruptedException, InstantiationException, IllegalAccessException{
-
 		for( N = maxN; N >= stepSize; N -= stepSize){
 			double startTime = System.currentTimeMillis();
-			
 			System.out.println("Start of a simulation with " + N + " cyclists and " + L + " links.");
-			
 			simulationPreparation();
-
 			System.out.println("1st part (Initialisation) finished after " + (System.currentTimeMillis()-startTime)/1000d + " seconds.");
-
 			simulation();
-
 			System.out.println("2nd part (Mobility Simul) finished after " + (System.currentTimeMillis()-startTime)/1000d + " seconds.");
-
 			if(reportSpeeds){	
 				exportSpeeds();
 			}
-
 			System.out.println("3rd part (Xporting stuff) finished after " + (System.currentTimeMillis()-startTime)/1000d + " seconds.");
-			
 			System.out.format(Locale.US, "%.3f microseconds per cyclist-link-interaction in total.%n%n", 
 					(System.currentTimeMillis()-startTime)/((double) N)/((double) L)*1000d);
-
 		}
 	}
 
@@ -106,6 +95,7 @@ public class Runner {
 		for(int i = 0; i < T+1; i++){
 			notificationArray[i] = new HashMap<Integer, Double>();
 		}
+		tieBreaker = 0d;
 	}
 
 	public static void simulationPreparation() throws InstantiationException, IllegalAccessException{
@@ -116,6 +106,8 @@ public class Runner {
 
 
 	public static void networkPreparation() throws InstantiationException, IllegalAccessException{
+		links = new Link[L];
+		linksMap = new LinkedHashMap<Integer,Link>();
 		for(int i = 0; i < L; i++){
 			if(i == (L-1)){
 				links[i] = new Link(i,widthOfLastLink,lengthOfLinks);
@@ -136,18 +128,20 @@ public class Runner {
 			random2.nextDouble();
 		}
 
-		cyclists.clear();
+		cyclists= new LinkedList<Cyclist>();
 		for(int n = 0; n < N; n++){
 			double w = -1;
 			while( w < minimumAllowedSpeed){
 				double u = random.nextDouble();
-				if(useJohnsonDistribution){
+				switch(desiredSpeedDistribution){
+				case "Johnson":
 					w = JohnsonLambda * Math.sinh( (AuxStats.qNorm(u) - JohnsonGamma) / JohnsonDelta) + JohnsonXsi;
-				} else if(useLogisticDistribution){
-					w = mu-Math.log(1/u-1)*s ;
-				} else {
-					//Weibull
-					w = lambda*Math.pow((-Math.log(1d-u)),(1d/k));
+					break;
+				case "Logistic":
+					w = mu-Math.log(1/u-1)*s;
+					break;
+				default: 
+					throw new IllegalArgumentException("Valid distributions are: Johnson, Logistic");
 				}
 			}
 

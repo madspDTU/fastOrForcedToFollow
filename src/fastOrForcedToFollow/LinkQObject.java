@@ -4,7 +4,7 @@ public class LinkQObject implements Comparable<LinkQObject>{
 
 	private double time;
 	private int linkId;
-	private double tieBreaker; //TODO madsp:  Is this really used??????
+	private double tieBreaker; //TODO madsp:  Is this really used?????? It seems so.
 
 	LinkQObject(double time, int linkId){
 		this.time = time;

@@ -36,23 +36,27 @@ public class Cyclist {
 	 *         <false> otherwise.
 	 */
 	
-	public boolean advanceCyclist(LinkQObject lqo){
-		Link nextLink = route.pollFirst();
-		double oldSpeed = this.speed;
-		PseudoLane pseudoLane = ltm.selectPseudoLaneAndAdaptSpeed(nextLink, this, lqo.getTime()); 
+	public boolean advanceCyclist(int linkId, double time){
+		Link nextLink = route.peekFirst();
+		double originalSpeed = this.speed;
+		PseudoLane pseudoLane = ltm.selectPseudoLaneAndAdaptSpeed(nextLink, this, time); 
 		if(ltm.getSafetyBufferDistance(this.speed) <= nextLink.getTotalLaneLength() - nextLink.getOccupiedSpace()){
-			ltm.reduceOccupiedSpace(lqo.getId(), oldSpeed);
+			route.removeFirst();
+			ltm.reduceOccupiedSpace(linkId, originalSpeed);
 			ltm.increaseOccupiedSpace(nextLink.getId(), this.speed);
-			this.tStart = Double.max(pseudoLane.tReady, lqo.getTime());
-			Runner.linksMap.get(lqo.getId()).setWakeUpTime(this.tStart);
-			ltm.updatePseudoLane(pseudoLane, speed, lqo.getTime());
+			this.tStart = Double.max(pseudoLane.tReady, time);
+			Link currentLink = Runner.linksMap.get(linkId);
+			currentLink.setWakeUpTime(this.tStart);
+			ltm.updatePseudoLane(pseudoLane, speed, time);
 			double tEnd = pseudoLane.tEnd - ltm.getSafetyBufferTime(speed);
 			moveToNextQ(nextLink, tEnd);
-			sendNotification(nextLink.getId(), Math.max(tEnd,nextLink.getWakeUpTime()));
+			currentLink.getOutQ().remove();
+			currentLink.incrementOutFlowCounter();
+			nextLink.sendNotification(Math.max(tEnd,nextLink.getWakeUpTime()));
+			
 			return true;
 		} else {
-			this.speed = oldSpeed; // reset speed;
-			route.addFirst(nextLink); //reset link;
+			this.speed = originalSpeed; // reset speed to original value;
 			return false; // parse information on to previous method
 		}
 	}
@@ -115,22 +119,8 @@ public class Cyclist {
 		speedReport.getLast()[2] = length/(t - speedReport.getLast()[1]);
 	}
 
-	public void sendNotification(int linkId, double tEnd){
-		if(tEnd < Runner.T){
-			if(tEnd <= Runner.t){
-				sendShortTermNotification(linkId, tEnd);
-			} else {
-				int k  = ((int) tEnd) / ((int) Runner.timeStep) + 1;
-				if( !Runner.notificationArray[k].containsKey(linkId) || tEnd < Runner.notificationArray[k].get(linkId) ){
-					Runner.notificationArray[k].put(linkId, tEnd);	
-				}
-			}
-		}
-	}
 
-	public void sendShortTermNotification(int linkId, double tEnd){
-		Runner.shortTermPriorityQueue.add(new LinkQObject(tEnd, linkId));
-	}
+
 
 	public void setSpeed(double newCurrentSpeed){
 		if(newCurrentSpeed < desiredSpeed){
@@ -140,8 +130,8 @@ public class Cyclist {
 		}
 	}
 
-	public void terminateCyclist(LinkQObject loq){
-		ltm.reduceOccupiedSpace(loq.getId(), this.speed);
+	public void terminateCyclist(int linkId){
+		ltm.reduceOccupiedSpace(linkId, this.speed);
 	}
 
 

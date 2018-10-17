@@ -24,29 +24,29 @@ public class Runner {
 	 * The width (in metres) of the last link in the link series.
 	 */
 	public static final double widthOfLastLink = 2;
-	
-	
+
+
 	/**
 	 * The width (in metres) of all links but the last link in the link series.
 	 */
 	public static final double widthOfFirstLinks = 3;
-	
+
 	/**
 	 * The length of each link in the link series.
 	 */
 	public static final double lengthOfLinks = 100;
-	
+
 	/**
 	 * The numbers of links in serial used in the simulation.
 	 */
 	public static final int L = 3;
-	
+
 	/**
 	 * A capacity multiplier that can be used to increase the total lane length, see {@link Link#getTotalLaneLength()}.
 	 */
 	public static final double capacityMultiplier = 1;  // The totalLaneLength is multiplied with this number;
 
-	
+
 	/*
 	 *  Pseudolane partition parameters
 	 */
@@ -54,12 +54,12 @@ public class Runner {
 	 * Additional width needed to gain another efficient lane. Based on Buch & Greibe (2015).
 	 */
 	public static final double omega = 1.25; 
-	
+
 	/**
 	 * Dead horizontal space on bicycle paths that is unused. Based on Buch & Greibe (2015).
 	 */
 	public static final double deadSpace = 0.4;
-	
+
 
 	/*
 	 * Simulation parameters
@@ -68,44 +68,44 @@ public class Runner {
 	 * The base directory for storing output.
 	 */
 	public static String baseDir = "Z:/git/fastOrForcedToFollow/output/ToyNetwork";
-	
+
 	/**
 	 * The span of the simulation period (in seconds).
 	 */
 	public static final double T = 3600;
-	
+
 	/**
 	 * The timestep used in the simulation.
 	 */
 	public static final double timeStep = 1d;
-	
+
 	/**
 	 * Maximum number of cyclist to enter the system during the simulation.
 	 */
 	public static final int maxN = 10000;
-	
+
 	/**
 	 * The number of cyclists subtracted from the previous simulation until reaching 0 cyclists.
 	 */
 	public static final int stepSize = 50;
-	
+
 	/**
 	 * The random seed used for the the population.
 	 */
 	public static final int seed = 5355633;
-	
+
 	/**
 	 * Whether or not to report speeds (takes the majority of the time, but results cannot be analysed without).
 	 */
 	public static final boolean reportSpeeds = true;
-	
+
 	/**
 	 * The type of Q used for the priorityQ for links. Can be PriorityQueue.class or FibonacciHeap.class.
 	 */
 	@SuppressWarnings("rawtypes")
 	public static final Class<? extends PriorityQueue> priorityQueueClassForLinks = PriorityQueue.class; 
 
-	
+
 	/*
 	 * Desired speed distribution parameters -- General
 	 */
@@ -113,13 +113,13 @@ public class Runner {
 	 * The minimum allowed desired speed (lower bound for truncation).
 	 */
 	private static final double minimumAllowedDesiredSpeed = 2;  // Lowest allowed desired speed (lower truncation of distribution);
-	
+
 	/**
 	 * The distribution used for desired speeds. Valid options are (so far) "JohnsonSU" and "Logistic".
 	 */
 	private static final String desiredSpeedDistribution = "JohnsonSU";
 
-	
+
 	/*
 	 * Desired speed distribution parameters -- Johnson SU   ,  see https://en.wikipedia.org/wiki/Johnson's_SU-distribution
 	 */
@@ -127,22 +127,22 @@ public class Runner {
 	 * One of the parameters for Johnson's SU-distribution, as estimated based on data from COWI.
 	 */
 	private static final double JohnsonGamma = -2.745957257392118;
-	
+
 	/**
 	 * One of the parameters for Johnson's SU-distribution, as estimated based on data from COWI.
 	 */
 	private static final double JohnsonXsi = 3.674350833333333;
-	
+
 	/**
 	 * One of the parameters for Johnson's SU-distribution, as estimated based on data from COWI.
 	 */
 	private static final double JohnsonDelta = 4.068155531972158;
-	
+
 	/**
 	 * One of the parameters for Johnson's SU-distribution, as estimated based on data from COWI.
 	 */
 	private static final double JohnsonLambda = 3.494609779450189;
-	
+
 
 	/*
 	 * Desired speed distribution parameters -- Logistic
@@ -151,13 +151,13 @@ public class Runner {
 	 * Mean value of the logistic distribution estimated based on data from COWI.
 	 */
 	public static final double mu = 6.085984;
-	
+
 	/**
 	 * Scale value of the logistic distribution estimated based on data from COWI.
 	 */
 	public static final double s = 0.610593; 
 
-	
+
 	/*
 	 * Safety distance parameters
 	 */
@@ -165,7 +165,7 @@ public class Runner {
 	 * Type of <code>LinkTransmissionModel</code> used. Valid values are BasicLTM, SpatialLTM, AdvancedSpatialLTM.
 	 */
 	public static final LinkTransmissionModel ltm = new AdvancedSpatialLTM(); 
-	
+
 	/**
 	 * Constant term in the square root model for safety distance.
 	 */
@@ -179,8 +179,8 @@ public class Runner {
 	 * Basic Driving Dynamics of Cyclists, In: Simulation of Urban Mobility;
 	 */
 	public static final double lambda_c = 1.73; 
-	
-	
+
+
 	/*
 	 * Required fields (used by other classes) with no input values.
 	 */
@@ -188,42 +188,42 @@ public class Runner {
 	 * The simulation clock.
 	 */
 	public static double t;
-	
+
 	/**
 	 * An array containing all the links.
 	 */
 	public static Link[] links;
-	
+
 	/** 
 	 * The sourceLink where cyclist stay until they enter the system.
 	 */
 	public static Link sourceLink;
-	
+
 	/**
 	 * The current number of cyclists being simulated.
 	 */
 	public static int N;
-	
+
 	/**
 	 * The map containing all links.
 	 */
 	public static LinkedHashMap<Integer,Link> linksMap; 
-	
+
 	/**
 	 * A linked list containing all cyclists.
 	 */
 	public static LinkedList<Cyclist> cyclists;
-	
+
 	/**
-	 * The notificationArray that for every ??????//TODO
+	 * The notificationArray that for every timeslot of the day hold the minimum event time for all links.
 	 */
 	public static HashMap<Integer, Double>[] notificationArray;
-	
+
 	/**
 	 * The short term priority queue that for every ??????//TODO
 	 */
 	public static PriorityQueue<LinkQObject> shortTermPriorityQueue;
-	
+
 	/**
 	 * A tie breaker maintained in <code>Runner</code> that is passed on to Q-object in order to ensure correct ordering.
 	 */
@@ -249,13 +249,15 @@ public class Runner {
 	}
 
 	@SuppressWarnings("unchecked")
-	public static void generalPreparation(){
+	public static void generalPreparation() throws InstantiationException, IllegalAccessException{
 		t =0;
 		notificationArray = (HashMap<Integer, Double>[]) Array.newInstance(HashMap.class, (int) T+1);
+		shortTermPriorityQueue = (PriorityQueue<LinkQObject>) priorityQueueClassForLinks.newInstance();
 		for(int i = 0; i < T+1; i++){
 			notificationArray[i] = new HashMap<Integer, Double>();
 		}
 		tieBreaker = 0d;
+
 	}
 
 	public static void simulationPreparation() throws InstantiationException, IllegalAccessException{
@@ -286,8 +288,8 @@ public class Runner {
 		linksMap.put(sourceLink.getId(),sourceLink);
 	}
 
-	
-	
+
+
 	/**
 	 * Method preparing the cyclist population by assigning a desired speed,
 	 * a link transmission model and an initial arrival time to the system
@@ -330,7 +332,7 @@ public class Runner {
 			cyclists.add(cyclist);
 
 			sourceLink.getOutQ().add(new CyclistQObject(time, cyclist));	
-			cyclist.sendNotification(sourceLink.getId(), time);
+			sourceLink.sendNotification(time);
 		}
 	}
 
@@ -342,41 +344,48 @@ public class Runner {
 	 * @throws IllegalAccessException
 	 * @throws IOException
 	 */
-	@SuppressWarnings("unchecked")
 	public static void simulation() throws InstantiationException, IllegalAccessException, IOException{
 		for( ;t < T; t += timeStep){
-			int i = (int) (t / timeStep);
-			if( Math.round(t) % 3600 == 0 && t > 0){
-				System.out.println("   " + ((int) t / 3600) + " hours simulated.");
-			}
-			shortTermPriorityQueue = (PriorityQueue<LinkQObject>) priorityQueueClassForLinks.newInstance();
-			for(Integer linkId : notificationArray[i].keySet()){
+			
+			int timeSlot = (int) (t / timeStep);
+			//Initial check to see if the times in the notification array are still valid - correcting them if not, and 
+			// adding them to the short term priority queue if they are valid.
+			
+			for(Integer linkId : notificationArray[timeSlot].keySet()){
 				Link link = linksMap.get(linkId);
 				// It is fully possible that tReady > tNotificationArray. This could happen if tWakeUp is increased after the notification,
 				// e.g. due to the nextLink being fully occupied forcing tWakeUp to be increased to the Q-time of the following link.
 				// Can the opposite be true? Yes! initially tWakeUp is not even defined yet, and will only be once congestion occurs.
 
-				// This is a little weird, but since -1 is the null value of Double, an empty set will contain the key -1 but with a null value.
-				if(notificationArray[i].get(linkId) != null){
-					double maxTime = Math.max(link.getWakeUpTime(), notificationArray[i].get(linkId));
+				// If the notification array has a non-null value.
+				if(notificationArray[timeSlot].get(linkId) != null){ 
+					//The time in the notification array might not be relevant anymore, if the next link "sleeps", i.e. is full.
+					double maxTime = Math.max(link.getWakeUpTime(), notificationArray[timeSlot].get(linkId));
 					link.setWakeUpTime(maxTime);
-					linksMap.replace(linkId, link);
-					if( maxTime > t && notificationArray.length > i+1){
-						notificationArray[i+1].put(linkId, notificationArray[i+1].get(linkId));
+					//If maxTime still belongs to this time slot, and the notification array has an additional time slot, then
+					// replace the current value in this slot by this max value. 
+					if( maxTime > t && notificationArray.length > timeSlot+1){
+						notificationArray[timeSlot+1].put(linkId, notificationArray[timeSlot+1].get(linkId));
 					} else {
-						// This ensures that the LQO constructed will actually use the correct time (maxTime)
+						//Otherwise, create an entry in the shortTermPriorityQueue, using the maxTime.
 						shortTermPriorityQueue.add(new LinkQObject(maxTime, link.getId()));
 					}
 				}
 			}
+			
+			// Keep processing the short term priority queue as long as it has elements.
 			while(!shortTermPriorityQueue.isEmpty()){
 				LinkQObject loq = shortTermPriorityQueue.poll();
-				linksMap.get(loq.getId()).handleQOnNotification(loq);
+				linksMap.get(loq.getId()).handleQOnNotification(loq.getTime());
 			}
-			for(int i_l = 0; i_l < L; i_l++){
-				Link link = links[i_l];
-				link.getDensityReport().
+			
+			//This step - which takes a lot of time if L is large, can be ommited if not reporting densities. 
+			if(Runner.reportSpeeds){
+				for(int i_l = 0; i_l < L; i_l++){
+					Link link = links[i_l];
+					link.getDensityReport().
 					addLast(link.getOutQ().size() / (link.getLength() * link.getNumberOfPseudoLanes() / 1000d) );
+				}
 			}
 		}
 	}

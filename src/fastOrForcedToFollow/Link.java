@@ -225,31 +225,30 @@ public class Link{
 		return tWakeUp;
 	}
 
-	public void handleQOnNotification(LinkQObject lqo) throws IOException{
-		CyclistQObject cqo = outQ.peek();
-		Cyclist cyclist = cqo.getCyclist();
-		if(cyclist.getRoute().isEmpty()){	// The cyclist has reached his/her destination.
+	public void handleQOnNotification(double time) throws IOException{
+		Cyclist cyclist = outQ.peek().getCyclist();
+		if(cyclist.getRoute().isEmpty()){	//The cyclist has reached his/her destination.
 			this.outQ.remove();
 			this.outFlowCounter++;
-			cyclist.terminateCyclist(lqo);
-			cyclist.reportSpeed(this.length, lqo.getTime());
-			reportOutputTime(lqo.getTime());
-			reportSpeedTime(lqo.getTime(), cyclist.getSpeedReport().getLast()[2]);
-			sendNotificationForNextInQ(cyclist);
+			cyclist.terminateCyclist(this.id);
+			cyclist.reportSpeed(this.length, time);
+			reportOutputTime(time);
+			reportSpeedTime(time, cyclist.getSpeedReport().getLast()[2]);
+			sendNotificationBasedOnNextInQ();
 		}  else {	
 			Link nextLink = cyclist.getRoute().peek();
-			if(cyclist.advanceCyclist(lqo)){
-				this.outQ.remove();
-				this.outFlowCounter++;
-				if(this.id >= 0){
-					cyclist.reportSpeed(length, lqo.getTime());
-					reportOutputTime(lqo.getTime());
-					reportSpeedTime(lqo.getTime(), cyclist.getSpeedReport().getLast()[2]);
+			if(cyclist.advanceCyclist(this.id, time)){ // Checking whether it is possible to advance the cyclist
+				                                         // ... and does so if possible.
+
+				if(this.id != Runner.sourceLink.getId()){
+					cyclist.reportSpeed(length, time);
+					reportOutputTime(time);
+					reportSpeedTime(time, cyclist.getSpeedReport().getLast()[2]);
 				}
-				cyclist.initialiseNewSpeedReportElement(nextLink.id, lqo.getTime());
-				sendNotificationForNextInQ(cyclist);
+				cyclist.initialiseNewSpeedReportElement(nextLink.id, time);
+				sendNotificationBasedOnNextInQ();
 			} else { //It was not possible to advance the cyclist due to congestion.
-				sendNotificationDueToDelay(cyclist, nextLink);
+				sendNotificationDueToDelay(nextLink);
 			}
 		}
 	}
@@ -258,6 +257,13 @@ public class Link{
 	 * Increments the in-flow counter of the link by 1.
 	 */
 	public void incrementInFlowCounter(){
+		inFlowCounter++;
+	}
+	
+	/**
+	 * Increments the out-flow counter of the link by 1.
+	 */
+	public void incrementOutFlowCounter(){
 		inFlowCounter++;
 	}
 
@@ -280,21 +286,40 @@ public class Link{
 	}
 
 
-	private void sendNotificationDueToDelay(Cyclist cyclist, Link nextLink){
+	private void sendNotificationDueToDelay(Link nextLink){
 		if(!outQ.isEmpty()){
 			double notificationTime = Math.max(nextLink.outQ.peek().getTime(), nextLink.tWakeUp);
-			cyclist.sendNotification(this.id, notificationTime);
+			sendNotification(notificationTime);
 			this.tWakeUp = notificationTime;
 		} 
 	}
 
-	private void sendNotificationForNextInQ(Cyclist cyclist){
+	private void sendNotificationBasedOnNextInQ(){
 		if(!outQ.isEmpty()){
 			double notificationTime = Math.max(this.outQ.peek().getTime(), this.tWakeUp);
-			cyclist.sendNotification(this.id, notificationTime);
+			sendNotification(notificationTime);
 			this.tWakeUp = notificationTime;
 		} 
 	}
+	
+	
+	public void sendShortTermNotification(int linkId, double tEnd){
+		Runner.shortTermPriorityQueue.add(new LinkQObject(tEnd, linkId));
+	}
+	
+	public void sendNotification(double tEnd){
+		if(tEnd < Runner.T){
+			if(tEnd <= Runner.t){
+				sendShortTermNotification(this.id, tEnd);
+			} else {
+				int timeSlot  = ((int) tEnd) / ((int) Runner.timeStep) + 1;
+				if( !Runner.notificationArray[timeSlot].containsKey(this.id) || tEnd < Runner.notificationArray[timeSlot].get(this.id) ){
+					Runner.notificationArray[timeSlot].put(this.id, tEnd);	
+				}
+			}
+		}
+	}
+
 
 	/**
 	 * @param tWakeUp The earliest possible time that the link can potentially handle traffic (entering or leaving).

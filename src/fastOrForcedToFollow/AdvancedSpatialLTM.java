@@ -15,6 +15,6 @@ public class AdvancedSpatialLTM extends SpatialLTM {
 	
 	@Override
 	public PseudoLane selectUnsatisfactoryPseudoLane(Link nextLink, int maxLaneIndex){
-		return nextLink.psi[maxLaneIndex];
+		return nextLink.getPseudoLane(maxLaneIndex);
 	}
 }

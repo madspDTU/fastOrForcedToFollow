@@ -42,12 +42,12 @@ public abstract class LinkTransmissionModel {
 	public PseudoLane selectPseudoLaneAndAdaptSpeed(Link nextLink, Cyclist cyclist, double time){
 		double maxSpeed = 0;
 		int maxLane = 0;
-		for(int i = 0; i < nextLink.Psi; i++){
-			double laneMaxSpeed = getVMax(nextLink.psi[i], time);
+		for(int i = 0; i < nextLink.getNumberOfPseudoLanes(); i++){
+			double laneMaxSpeed = getVMax(nextLink.getPseudoLane(i), time);
 			
-			if(laneMaxSpeed >= cyclist.desiredSpeed ){
-				cyclist.setSpeed(cyclist.desiredSpeed);
-				return nextLink.psi[i];
+			if(laneMaxSpeed >= cyclist.getDesiredSpeed() ){
+				cyclist.setSpeed(cyclist.getDesiredSpeed());
+				return nextLink.getPseudoLane(i);
 			}
 			if(laneMaxSpeed > maxSpeed){
 				maxLane = i;
@@ -66,17 +66,35 @@ public abstract class LinkTransmissionModel {
 		pseudoLane.tEnd = pseudoLane.tReady + pseudoLane.length / speed;
 	}
 
+	
+	/**
+	 * @param speed given in m/s that the safety distance will be based on.
+	 * 
+	 * @return safety distance (including the length of its own bicycle) given in metres.
+	 */
 	public double getSafetyBufferDistance(double speed){
 		return 0;
 	}
 
+	/**
+	 * Reduces the occupied space of link <code>linkId</code> by the safety distance corresponding to <code>speed</code>
+	 * 
+	 * @param linkId of the link that will have its space reduced.
+	 * 
+	 * @param speed on which the safety distance will be based.
+	 */
 	public void reduceOccupiedSpace(int linkId, double speed){
-		Link link = Runner.linksMap.get(linkId);
-		link.occupiedSpace -= getSafetyBufferDistance(speed);
-		Runner.linksMap.replace(linkId, link);
+		Runner.linksMap.get(linkId).supplementOccupiedSpace(-getSafetyBufferDistance(speed));
 	}
 
-	public void increaseOccupiedSpace(Link link, double speed){
-		link.occupiedSpace += getSafetyBufferDistance(speed);
+	/**
+	 * Increases the occupied space of link <code>linkId</code> by the safety distance corresponding to <code>speed</code>
+	 * 
+	 * @param linkId of the link that will have its space increased.
+	 * 
+	 * @param speed on which the safety distance will be based.
+	 */
+	public void increaseOccupiedSpace(int linkId, double speed){
+		Runner.linksMap.get(linkId).supplementOccupiedSpace(getSafetyBufferDistance(speed));
 	}
 }

@@ -15,6 +15,14 @@ import java.util.Random;
 import java.util.TreeMap;
 
 
+/**
+ * @author mpaulsen
+ *
+ */
+/**
+ * @author mpaulsen
+ *
+ */
 public class Runner {
 	public static final double widthOfLastLink = 2;
 	public static final double widthOfFirstLinks = 3;
@@ -128,7 +136,7 @@ public class Runner {
 					} else {
 						links[i] = new Link(i,widthOfFirstLinks,lengthOfLinks);
 					}
-					linksMap.put(links[i].id, links[i]);
+					linksMap.put(links[i].getId(), links[i]);
 				}
 				T = TOnToy;
 				if(!baseDir.contains("ToyNetwork")){
@@ -141,7 +149,7 @@ public class Runner {
 			}
 
 			sourceLink = new Link(-1,1,0);
-			linksMap.put(sourceLink.id,sourceLink);
+			linksMap.put(sourceLink.getId(),sourceLink);
 
 			if(notificationBased){
 				notificationArray = (HashMap<Integer, Double>[]) Array.newInstance(HashMap.class, (int) T+1);
@@ -197,9 +205,9 @@ public class Runner {
 				Cyclist cyclist = ltm.createCyclist(n, w, defaultRoute, ltm);
 				cyclists.add(cyclist);
 
-				sourceLink.outQ.add(new CyclistQObject(time, cyclist));	
+				sourceLink.getOutQ().add(new CyclistQObject(time, cyclist));	
 				if(notificationBased){
-					cyclist.sendNotification(sourceLink.id, time);
+					cyclist.sendNotification(sourceLink.getId(), time);
 				}
 			}
 
@@ -220,14 +228,14 @@ public class Runner {
 
 						// This is a little weird, but since -1 is the null value of Double, an empty set will contain the key -1 but with a null value.
 						if(notificationArray[i].get(linkId) != null){
-							double maxTime = Math.max(link.tWakeUp, notificationArray[i].get(linkId));
-							link.tWakeUp = maxTime;
+							double maxTime = Math.max(link.getWakeUpTime(), notificationArray[i].get(linkId));
+							link.setWakeUpTime(maxTime);
 							linksMap.replace(linkId, link);
 							if( maxTime > t && notificationArray.length > i+1){
 								notificationArray[i+1].put(linkId, notificationArray[i+1].get(linkId));
 							} else {
 								// This ensures that the LQO constructed will actually use the correct time (maxTime)
-								shortTermPriorityQueue.add(new LinkQObject(maxTime, link.id));
+								shortTermPriorityQueue.add(new LinkQObject(maxTime, link.getId()));
 							}
 						}
 					}
@@ -237,7 +245,8 @@ public class Runner {
 					}
 					for(int i_l = 0; i_l < L; i_l++){
 						Link link = links[i_l];
-						link.densityReport.addLast(link.outQ.size() / (link.length * link.Psi / 1000d) );
+						link.getDensityReport().
+							addLast(link.getOutQ().size() / (link.getLength() * link.getNumberOfPseudoLanes() / 1000d) );
 					}
 				}
 			} else {
@@ -291,7 +300,7 @@ public class Runner {
 				+ Runner.N + "Persons_" + Runner.circuitString + ".csv");
 		writer.append("CyclistId;CruisingSpeed\n");
 		for(Cyclist cyclist : cyclists){
-			writer.append(cyclist.id + ";"  + cyclist.desiredSpeed + "\n");
+			writer.append(cyclist.getId() + ";"  + cyclist.getDesiredSpeed() + "\n");
 		}
 		writer.flush();
 		writer.close();
@@ -308,7 +317,7 @@ public class Runner {
 		for(Cyclist cyclist : cyclists){
 			for(Double[] reportElement : cyclist.speedReport){
 				if(reportElement[0] == 0 || reportElement[2] > 0){  //On all real links, the speed has to be positive.
-					writer.append(cyclist.id + ";"  + reportElement[0] + ";" + reportElement[1] + ";" + reportElement[2] + "\n");
+					writer.append(cyclist.getId() + ";"  + reportElement[0] + ";" + reportElement[1] + ";" + reportElement[2] + "\n");
 				}
 			}
 		}

@@ -4,7 +4,7 @@ public class BasicLTM extends LinkTransmissionModel{
 
 	@Override	
 	public PseudoLane selectUnsatisfactoryPseudoLane(Link nextLink, int maxLaneIndex){
-		return nextLink.psi[nextLink.Psi - 1];
+		return nextLink.getPseudoLane(nextLink.getNumberOfPseudoLanes() - 1);
 	}
 
 	@Override

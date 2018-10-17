@@ -7,8 +7,8 @@ import java.util.LinkedList;
 
 public class Cyclist {
 
-	public int id;
-	public double desiredSpeed;
+	private int id;
+	private double desiredSpeed;
 	public double speed = -1; //Current speed
 	public double tStart = 0;
 	public LinkedList<Double[]> speedReport = new LinkedList<Double[]>(); 
@@ -32,6 +32,20 @@ public class Cyclist {
 		speedReport.add(new Double[]{-1d, 0d,-1d});
 	}
 
+	/**
+	 * @return The desired speed (in m/s) of the cyclist.
+	 */
+	public double getDesiredSpeed(){
+		return desiredSpeed;
+	}
+	
+	/**
+	 * @return The integer id of the cyclist.
+	 */
+	public int getId(){
+		return id;
+	}
+	
 	public void reportSpeed(double time){
 		speedReport.addLast(new Double[]{time, this.speed});
 	}
@@ -70,19 +84,19 @@ public class Cyclist {
 		double oldSpeed = this.speed;
 		PseudoLane pseudoLane = ltm.selectPseudoLaneAndAdaptSpeed(nextLink, this, lqo.time); 
 		//if(this.speed > 0){
-		if(ltm.getSafetyBufferDistance(this.speed) <= nextLink.totalLaneLength - nextLink.occupiedSpace){
+		if(ltm.getSafetyBufferDistance(this.speed) <= nextLink.getTotalLaneLength() - nextLink.getOccupiedSpace()){
 			//if(true){
 			ltm.reduceOccupiedSpace(lqo.linkId, oldSpeed);
-			ltm.increaseOccupiedSpace(nextLink, this.speed);
+			ltm.increaseOccupiedSpace(nextLink.getId(), this.speed);
 			this.tStart = Double.max(pseudoLane.tReady, lqo.time);
-			Runner.linksMap.get(lqo.linkId).tWakeUp = this.tStart;
+			Runner.linksMap.get(lqo.linkId).setWakeUpTime(this.tStart);
 			ltm.updatePseudoLane(pseudoLane, speed, lqo.time);
 			double tEnd = pseudoLane.tEnd - ltm.getSafetyBufferTime(speed);
 			if(Runner.waitingTimeCountsOnNextLink){
-				reportSpeed(nextLink.length, tEnd);
+				reportSpeed(nextLink.getLength(), tEnd);
 			}
 			moveToNextQ(nextLink, tEnd);
-			sendNotification(nextLink.id, Math.max(tEnd,nextLink.tWakeUp));
+			sendNotification(nextLink.getId(), Math.max(tEnd,nextLink.getWakeUpTime()));
 			//reportSpeed(time);
 			if(Runner.circuit){
 				route.addLast(nextLink);
@@ -113,8 +127,8 @@ public class Cyclist {
 	}
 
 	public void moveToNextQ(Link nextLink, double tEnd){
-		nextLink.inFlowCounter++;
-		nextLink.outQ.add(new CyclistQObject(tEnd,this));
+		nextLink.incrementInFlowCounter();
+		nextLink.getOutQ().add(new CyclistQObject(tEnd,this));
 	}
 
 	public void setSpeed(double newCurrentSpeed){

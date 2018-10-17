@@ -7,7 +7,7 @@ import java.util.PriorityQueue;
 
 /**
  * 
- * @author Mads Paulsen
+ * @author mpaulsen
  */
 public class Link{
 
@@ -45,10 +45,10 @@ public class Link{
 	public int calculateStorageCapacity(){
 		return (int) Math.floor(length * Psi / Runner.l);
 	}
-	
+
 	public void exportDensities(String baseDir) throws IOException{
 		FileWriter writer = new FileWriter(baseDir + "/densitiesLink_" + Runner.ltm.getClass().getName() + "_" +
-				id + "_" + Runner.N + "Persons_" + Runner.circuitString + ".csv");
+				id + "_" + Runner.N + "Persons.csv");
 		writer.append("Density\n");
 		while(!densityReport.isEmpty()){
 			writer.append(String.valueOf(densityReport.pollFirst()) + "\n");
@@ -56,19 +56,19 @@ public class Link{
 		writer.flush();
 		writer.close();
 	}
-	
+
 	public void exportFlows(String baseDir) throws IOException{
 		FileWriter writer = new FileWriter(baseDir + "/flowsLink_" + Runner.ltm.getClass().getName() + "_" +
-				id + "_" + Runner.N + "Persons_" + Runner.circuitString + ".csv");
+				id + "_" + Runner.N + "Persons.csv");
 		writer.append("InFlow;OutFlow\n");
 		writer.append(inFlowCounter + ";" + outFlowCounter + "\n");
 		writer.flush();
 		writer.close();
 	}
-	
+
 	public void exportOutputTimes(String baseDir) throws IOException{
 		FileWriter writer = new FileWriter(baseDir + "/outputTimesLink_" + Runner.ltm.getClass().getName() + "_" +
-				id + "_" + Runner.N + "Persons_" + Runner.circuitString + ".csv");
+				id + "_" + Runner.N + "Persons.csv");
 		writer.append("Time;Output\n");
 		while(!this.outputTimeReport.isEmpty()){
 			Double[] element = outputTimeReport.pollFirst();
@@ -77,11 +77,11 @@ public class Link{
 		writer.flush();
 		writer.close();
 	}
-	
+
 	public void exportSpeeds(String baseDir) throws IOException{
 		Runner.createFolderIfNeeded(baseDir);
 		FileWriter writer = new FileWriter(baseDir + "/speedsOfLinks_" + Runner.ltm.getClass().getName() + "_" +
-				id + "_" + Runner.N + "Persons_" + Runner.circuitString + ".csv");
+				id + "_" + Runner.N + "Persons.csv");
 		for(int i = 0; i < Psi; i++){
 			writer.append("Speed" + i + ";");
 		}
@@ -98,7 +98,7 @@ public class Link{
 
 	public void exportSpeedTimes(String baseDir) throws IOException{
 		FileWriter writer = new FileWriter(baseDir + "/speedTimesLink_" + Runner.ltm.getClass().getName() + "_" +
-				id + "_" + Runner.N + "Persons_" + Runner.circuitString + ".csv");
+				id + "_" + Runner.N + "Persons.csv");
 		writer.append("Time;Speed\n");
 		while(!this.speedTimeReport.isEmpty()){
 			Double[] element = speedTimeReport.pollFirst();
@@ -193,9 +193,7 @@ public class Link{
 			this.outQ.remove();
 			this.outFlowCounter++;
 			cyclist.terminateCyclist(lqo);
-			if(!Runner.waitingTimeCountsOnNextLink){
-				cyclist.reportSpeed(this.length, lqo.getTime());
-			}
+			cyclist.reportSpeed(this.length, lqo.getTime());
 			reportOutputTime(lqo.getTime());
 			reportSpeedTime(lqo.getTime(), cyclist.getSpeedReport().getLast()[2]);
 			sendNotificationForNextInQ(cyclist);
@@ -204,14 +202,12 @@ public class Link{
 			if(cyclist.advanceCyclist(lqo)){
 				this.outQ.remove();
 				this.outFlowCounter++;
-				if(!Runner.waitingTimeCountsOnNextLink){
-					if(this.id >= 0){
-						cyclist.reportSpeed(length, lqo.getTime());
-						reportOutputTime(lqo.getTime());
-						reportSpeedTime(lqo.getTime(), cyclist.getSpeedReport().getLast()[2]);
-					}
-					cyclist.initialiseNewSpeedReportElement(nextLink.id, lqo.getTime());
+				if(this.id >= 0){
+					cyclist.reportSpeed(length, lqo.getTime());
+					reportOutputTime(lqo.getTime());
+					reportSpeedTime(lqo.getTime(), cyclist.getSpeedReport().getLast()[2]);
 				}
+				cyclist.initialiseNewSpeedReportElement(nextLink.id, lqo.getTime());
 				sendNotificationForNextInQ(cyclist);
 			} else { //It was not possible to advance the cyclist due to congestion.
 				sendNotificationDueToDelay(cyclist, nextLink);

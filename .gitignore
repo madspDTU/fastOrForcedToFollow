@@ -1,1 +1,5 @@
 /bin/
+
+# ignore intellij files:
+/.idea
+*.iml

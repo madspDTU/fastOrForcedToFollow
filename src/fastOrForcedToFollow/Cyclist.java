@@ -17,13 +17,17 @@ public class Cyclist {
 	private double tStart = 0; // Time at which the cyclist entered the link.
 	private LinkedList<Double[]> speedReport = new LinkedList<Double[]>(); 
 	private LinkedList<Link> route;
-	private LinkTransmissionModel ltm;
+	private final LinkTransmissionModel ltm;
+	private double theta_0;
+	private double theta_1;
 
-	Cyclist(int id, double cruiseSpeed, LinkedList<Link> route, LinkTransmissionModel ltm) throws InstantiationException, IllegalAccessException{
+	Cyclist(int id, double cruiseSpeed, double z_c, LinkedList<Link> route) throws InstantiationException, IllegalAccessException{
 		this.id = id;
 		this.desiredSpeed = cruiseSpeed;
+		this.theta_0 = Runner.theta_0 + z_c * Runner.zeta_0;
+		this.theta_1 = Runner.theta_1 + z_c * Runner.zeta_1;
 		this.route = route;
-		this.ltm = ltm;
+		this.ltm = new LinkTransmissionModel(theta_0, theta_1);
 		speedReport.add(new Double[]{-1d, 0d,-1d});
 	}
 
@@ -39,7 +43,7 @@ public class Cyclist {
 	public boolean advanceCyclist(int linkId, double time){
 		Link nextLink = this.route.peekFirst();
 		double originalSpeed = this.speed;
-		PseudoLane pseudoLane = this.ltm.selectPseudoLaneAndAdaptSpeed(nextLink, this, time); 
+			PseudoLane pseudoLane = this.ltm.selectPseudoLaneAndAdaptSpeed(nextLink, this, time); 
 		if(this.ltm.getSafetyBufferDistance(this.speed) <= nextLink.getTotalLaneLength() - nextLink.getOccupiedSpace()){
 			this.route.removeFirst();
 			Link currentLink = Runner.linksMap.get(linkId);

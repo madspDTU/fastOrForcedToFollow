@@ -67,7 +67,8 @@ public class Runner {
 	/**
 	 * The base directory for storing output.
 	 */
-	public static String baseDir = "Z:/git/fastOrForcedToFollow/output/ToyNetwork";
+	//public static String baseDir = "Z:/git/fastOrForcedToFollow/output/ToyNetwork";
+	public static String baseDir = "C:/Users/madsp/git/fastOrForcedToFollow/output/ToyNetwork";
 
 	/**
 	 * The span of the simulation period (in seconds).
@@ -97,7 +98,7 @@ public class Runner {
 	/**
 	 * Whether or not to report speeds (takes the majority of the time, but results cannot be analysed without).
 	 */
-	public static final boolean reportSpeeds = false;
+	public static final boolean reportSpeeds = true;
 
 	/**
 	 * The type of Q used for the priorityQ for links. Can be PriorityQueue.class or FibonacciHeap.class.
@@ -162,23 +163,27 @@ public class Runner {
 	 * Safety distance parameters
 	 */
 	/**
-	 * Type of <code>LinkTransmissionModel</code> used. Valid values are BasicLTM, SpatialLTM, AdvancedSpatialLTM.
-	 */
-	public static final LinkTransmissionModel ltm = new AdvancedSpatialLTM(); 
-
-	/**
 	 * Constant term in the square root model for safety distance.
 	 */
 	public static final double theta_0 = -4.220641337789;
 	/**
 	 * Square root term in the square root model for safety distance.
 	 */
-	public static final double theta_1 =  4.602161217943; //Square root term in square root model;
+	public static final double theta_1 =  4.602161217943;
+	/**
+	 * Constant term in the square root model for standard deviation of safety distance.
+	 */
+	public static final double zeta_0 =  -4.3975231775567600;
+	/**
+	 * Square root term in the square root model for standard deviation of safety distance.
+	 */
+	public static final double zeta_1 =  3.1095184592753986;
 	/**
 	 * Average length of a bicycle according to Andresen et al. (2014),
 	 * Basic Driving Dynamics of Cyclists, In: Simulation of Urban Mobility;
 	 */
 	public static final double lambda_c = 1.73; 
+
 
 
 	/*
@@ -302,9 +307,10 @@ public class Runner {
 	public static void populationPreparation() throws InstantiationException, IllegalAccessException{
 		Random desiredSpeedRandom = new Random(seed);
 		Random arrivalTimeRandom = new Random(seed+9);
-		for(int i = 0; i<100; i++){
+		Random headwayRandom = new Random(seed + 341);
+		for(int i = 0; i<100; i++){ //Throwing away the first 100 draws;
 			desiredSpeedRandom.nextDouble();
-			arrivalTimeRandom.nextDouble();
+			arrivalTimeRandom.nextDouble();	
 		}
 
 		cyclists= new LinkedList<Cyclist>();
@@ -328,9 +334,11 @@ public class Runner {
 			for( int i = 0; i < L; i++){
 				defaultRoute.addLast(links[i]);
 			}
-			Cyclist cyclist = ltm.createCyclist(id, speed, defaultRoute, ltm);
-			cyclists.add(cyclist);
 
+			double z_c = headwayRandom.nextGaussian();
+
+			Cyclist cyclist = new Cyclist(id, speed, z_c, defaultRoute);
+			cyclists.add(cyclist);
 			sourceLink.getOutQ().add(new CyclistQObject(time, cyclist));	
 			sourceLink.sendNotification(time);
 		}
@@ -346,11 +354,11 @@ public class Runner {
 	 */
 	public static void simulation() throws InstantiationException, IllegalAccessException, IOException{
 		for( ;t < T; t += timeStep){
-			
+
 			int timeSlot = (int) (t / timeStep);
 			//Initial check to see if the times in the notification array are still valid - correcting them if not, and 
 			// adding them to the short term priority queue if they are valid.
-			
+
 			for(Integer linkId : notificationArray[timeSlot].keySet()){
 				Link link = linksMap.get(linkId);
 				// It is fully possible that tReady > tNotificationArray. This could happen if tWakeUp is increased after the notification,
@@ -372,13 +380,13 @@ public class Runner {
 					}
 				}
 			}
-			
+
 			// Keep processing the short term priority queue as long as it has elements.
 			while(!shortTermPriorityQueue.isEmpty()){
 				LinkQObject loq = shortTermPriorityQueue.poll();
 				linksMap.get(loq.getId()).handleQOnNotification(loq.getTime());
 			}
-			
+
 			//This step - which takes a lot of time if L is large, can be ommited if not reporting densities. 
 			if(Runner.reportSpeeds){
 				for(int i_l = 0; i_l < L; i_l++){
@@ -421,8 +429,7 @@ public class Runner {
 	 */
 	public static void exportCyclistDesiredSpeeds(String baseDir) throws IOException{
 		ToolBox.createFolderIfNeeded(baseDir);
-		FileWriter writer = new FileWriter(baseDir + "/CyclistCruisingSpeeds_" + Runner.ltm.getClass().getName() + "_" 
-				+ Runner.N + "Persons.csv");
+		FileWriter writer = new FileWriter(baseDir + "/CyclistCruisingSpeeds_" 	+ Runner.N + "Persons.csv");
 		writer.append("CyclistId;CruisingSpeed\n");
 		for(Cyclist cyclist : cyclists){
 			writer.append(cyclist.getId() + ";"  + cyclist.getDesiredSpeed() + "\n");
@@ -440,11 +447,9 @@ public class Runner {
 	 */
 	public static void exportCyclistSpeeds(String baseDir) throws IOException{
 		ToolBox.createFolderIfNeeded(baseDir);
-		FileWriter writer = new FileWriter(baseDir + "/CyclistSpeeds_" + Runner.ltm.getClass().getName() + "_" 
-				+ N + "Persons.csv");
+		FileWriter writer = new FileWriter(baseDir + "/CyclistSpeeds_" + N + "Persons.csv");
 
-		System.out.println(baseDir + "/CyclistSpeeds_" + Runner.ltm.getClass().getName() + "_" 
-				+ N + "Persons.csv");
+		System.out.println(baseDir + "/CyclistSpeeds_" + N + "Persons.csv");
 		writer.append("CyclistId;LinkId;Time;Speed\n");
 		for(Cyclist cyclist : cyclists){
 			for(Double[] reportElement : cyclist.getSpeedReport()){

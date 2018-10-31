@@ -1,18 +1,24 @@
 package fastOrForcedToFollow;
 
-import java.util.LinkedList;
 
-public abstract class LinkTransmissionModel {
+public class LinkTransmissionModel {
 
-
-	public abstract double getSafetyBufferTime(double speed);
-
-	public abstract PseudoLane selectUnsatisfactoryPseudoLane(Link nextLink, int maxLaneIndex);
-
-	public Cyclist createCyclist(int id, double cruiseSpeed, LinkedList<Link> route, LinkTransmissionModel ltm) throws InstantiationException, IllegalAccessException {
-		return new Cyclist(id, cruiseSpeed, route, ltm);
+	final double theta_0;
+	final double theta_1;
+	
+	LinkTransmissionModel(double theta_0, double theta_1){
+		this.theta_0 = theta_0;
+		this.theta_1 = theta_1;
 	}
-
+	
+	public double getSafetyBufferTime(double speed) {
+		return (getSafetyBufferDistance(speed) - Runner.lambda_c)   /   speed;
+	}
+	
+	public PseudoLane selectUnsatisfactoryPseudoLane(Link nextLink, int maxLaneIndex){
+		return nextLink.getPseudoLane(maxLaneIndex);
+	}
+	
 	public PseudoLane[] createPseudoLanes(Link link, int Psi, double length){
 		PseudoLane[] psi = new PseudoLane[Psi];
 		for(int i = 0; i < Psi; i++){
@@ -21,7 +27,7 @@ public abstract class LinkTransmissionModel {
 		return psi;
 	}
 
-	public double getVMax(PseudoLane pseudoLane, double time){
+	public double getVMax(PseudoLane pseudoLane, double time, Cyclist cyclist){
 		double constants = Runner.lambda_c + pseudoLane.length - Runner.theta_0;
 		if(time >= pseudoLane.tEnd - Runner.theta_1*Runner.theta_1/4./constants){ 
 			return 4*Math.pow((constants/Runner.theta_1),2); //Case 4 from paper
@@ -43,7 +49,7 @@ public abstract class LinkTransmissionModel {
 		double maxSpeed = 0;
 		int maxLane = 0;
 		for(int i = 0; i < nextLink.getNumberOfPseudoLanes(); i++){
-			double laneMaxSpeed = getVMax(nextLink.getPseudoLane(i), time);
+			double laneMaxSpeed = getVMax(nextLink.getPseudoLane(i), time, cyclist);
 			
 			if(laneMaxSpeed >= cyclist.getDesiredSpeed() ){
 				cyclist.setSpeed(cyclist.getDesiredSpeed());
@@ -56,7 +62,7 @@ public abstract class LinkTransmissionModel {
 		}
 		// If no sufficient link was found
 		PseudoLane selectedPseudoLane =  selectUnsatisfactoryPseudoLane(nextLink, maxLane);
-		cyclist.setSpeed(getVMax(selectedPseudoLane, time));
+		cyclist.setSpeed(getVMax(selectedPseudoLane, time, cyclist));
 		return selectedPseudoLane;
 	}
 
@@ -67,8 +73,8 @@ public abstract class LinkTransmissionModel {
 	 * 
 	 * @return safety distance (including the length of its own bicycle) given in metres.
 	 */
-	public double getSafetyBufferDistance(double speed){
-		return 0;
+	public double getSafetyBufferDistance(double speed) {
+		return this.theta_0  + this.theta_1 * Math.sqrt(speed);// +  speed*Runner.t_safety + Runner.t_safety2Poly*speed*speed
 	}
 
 	/**

@@ -87,7 +87,7 @@ public class Link{
 		this.id = id;
 		this.length = length;
 		this.Psi = 1 + (int) Math.floor((width-Runner.deadSpace)/Runner.omega);
-		psi = Runner.ltm.createPseudoLanes(this, Psi, length);
+		psi = createPseudoLanes();
 		speedReports = new LinkedList[Psi];
 		for(int i = 0; i < Psi; i++){
 			speedReports[i] = new LinkedList<Double>();
@@ -100,9 +100,19 @@ public class Link{
 		return (int) Math.floor(length * Psi / Runner.theta_0);
 	}
 
+	/**
+	 * @return The array of PseudoLanes to be created
+	 */
+	private PseudoLane[] createPseudoLanes(){
+		PseudoLane[] psi = new PseudoLane[Psi];
+		for(int i = 0; i < Psi; i++){
+			psi[i] = new PseudoLane(length, this);
+		}
+		return psi;
+	}
+	
 	public void exportDensities(String baseDir) throws IOException{
-		FileWriter writer = new FileWriter(baseDir + "/densitiesLink_" + Runner.ltm.getClass().getName() + "_" +
-				id + "_" + Runner.N + "Persons.csv");
+		FileWriter writer = new FileWriter(baseDir + "/densitiesLink_" + id + "_" + Runner.N + "Persons.csv");
 		writer.append("Density\n");
 		while(!densityReport.isEmpty()){
 			writer.append(String.valueOf(densityReport.pollFirst()) + "\n");
@@ -112,8 +122,7 @@ public class Link{
 	}
 
 	public void exportFlows(String baseDir) throws IOException{
-		FileWriter writer = new FileWriter(baseDir + "/flowsLink_" + Runner.ltm.getClass().getName() + "_" +
-				id + "_" + Runner.N + "Persons.csv");
+		FileWriter writer = new FileWriter(baseDir + "/flowsLink_" + id + "_" + Runner.N + "Persons.csv");
 		writer.append("InFlow;OutFlow\n");
 		writer.append(inFlowCounter + ";" + outFlowCounter + "\n");
 		writer.flush();
@@ -121,8 +130,7 @@ public class Link{
 	}
 
 	public void exportOutputTimes(String baseDir) throws IOException{
-		FileWriter writer = new FileWriter(baseDir + "/outputTimesLink_" + Runner.ltm.getClass().getName() + "_" +
-				id + "_" + Runner.N + "Persons.csv");
+		FileWriter writer = new FileWriter(baseDir + "/outputTimesLink_" +	id + "_" + Runner.N + "Persons.csv");
 		writer.append("Time;Output\n");
 		while(!this.outflowTimeReport.isEmpty()){
 			Double[] element = outflowTimeReport.pollFirst();
@@ -134,8 +142,7 @@ public class Link{
 
 	public void exportSpeeds(String baseDir) throws IOException{
 		ToolBox.createFolderIfNeeded(baseDir);
-		FileWriter writer = new FileWriter(baseDir + "/speedsOfLinks_" + Runner.ltm.getClass().getName() + "_" +
-				id + "_" + Runner.N + "Persons.csv");
+		FileWriter writer = new FileWriter(baseDir + "/speedsOfLinks_" + id + "_" + Runner.N + "Persons.csv");
 		for(int i = 0; i < Psi; i++){
 			writer.append("Speed" + i + ";");
 		}
@@ -151,8 +158,7 @@ public class Link{
 	}
 
 	public void exportSpeedTimes(String baseDir) throws IOException{
-		FileWriter writer = new FileWriter(baseDir + "/speedTimesLink_" + Runner.ltm.getClass().getName() + "_" +
-				id + "_" + Runner.N + "Persons.csv");
+		FileWriter writer = new FileWriter(baseDir + "/speedTimesLink_" + id + "_" + Runner.N + "Persons.csv");
 		writer.append("Time;Speed\n");
 		while(!this.speedTimeReport.isEmpty()){
 			Double[] element = speedTimeReport.pollFirst();

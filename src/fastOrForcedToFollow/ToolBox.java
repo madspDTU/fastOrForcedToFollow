@@ -18,6 +18,7 @@ public class ToolBox {
 		}
 	}
 	
+	
 	/**
 	 * Method for computing the inverse cumulative distribution function of the standard normal distribution.
 	 * Taken directly from https://stackedboxes.org/2017/05/01/acklams-normal-quantile-function/

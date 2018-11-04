@@ -82,8 +82,7 @@ public class Link{
 	private double tWakeUp = 0;
 
 
-	@SuppressWarnings("unchecked")
-	Link(int id, double width, double length) throws InstantiationException, IllegalAccessException{
+	@SuppressWarnings("unchecked") public Link( int id, double width, double length ) throws InstantiationException, IllegalAccessException{
 		this.id = id;
 		this.length = length;
 		this.Psi = 1 + (int) Math.floor((width-Runner.deadSpace)/Runner.omega);

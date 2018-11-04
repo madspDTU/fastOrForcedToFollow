@@ -249,7 +249,7 @@ public class Runner {
 	}
 
 	@SuppressWarnings("unchecked")
-	public static void generalPreparation() throws InstantiationException, IllegalAccessException{
+	private static void generalPreparation() throws InstantiationException, IllegalAccessException{
 		t =0;
 		notificationArray = (HashMap<Integer, Double>[]) Array.newInstance(HashMap.class, (int) T+1);
 		shortTermPriorityQueue = (PriorityQueue<LinkQObject>) priorityQueueClassForLinks.newInstance();
@@ -260,7 +260,7 @@ public class Runner {
 
 	}
 
-	public static void simulationPreparation() throws InstantiationException, IllegalAccessException{
+	private static void simulationPreparation() throws InstantiationException, IllegalAccessException{
 		generalPreparation();
 		networkPreparation();
 		populationPreparation();
@@ -268,12 +268,12 @@ public class Runner {
 
 
 	/**
-	 * Creates the network including a {@link Runner.sourceLink}.
+	 * Creates the network including a {@link Runner#sourceLink}.
 	 * 
 	 * @throws InstantiationException
 	 * @throws IllegalAccessException
 	 */
-	public static void networkPreparation() throws InstantiationException, IllegalAccessException{
+	private static void networkPreparation() throws InstantiationException, IllegalAccessException{
 		links = new Link[L];
 		linksMap = new LinkedHashMap<Integer,Link>();
 		for(int i = 0; i < L; i++){
@@ -299,7 +299,7 @@ public class Runner {
 	 * @throws InstantiationException
 	 * @throws IllegalAccessException
 	 */
-	public static void populationPreparation() throws InstantiationException, IllegalAccessException{
+	private static void populationPreparation() throws InstantiationException, IllegalAccessException{
 		Random desiredSpeedRandom = new Random(seed);
 		Random arrivalTimeRandom = new Random(seed+9);
 		for(int i = 0; i<100; i++){
@@ -344,7 +344,7 @@ public class Runner {
 	 * @throws IllegalAccessException
 	 * @throws IOException
 	 */
-	public static void simulation() throws InstantiationException, IllegalAccessException, IOException{
+	private static void simulation() throws InstantiationException, IllegalAccessException, IOException{
 		for( ;t < T; t += timeStep){
 			
 			int timeSlot = (int) (t / timeStep);
@@ -392,8 +392,6 @@ public class Runner {
 
 	/**
 	 * Export the speeds of links and cyclists from the simulation using <code>itN</code> cyclists.
-	 * 
-	 * @param itN The number of cyclists used in the simulation to be reported.
 	 * 
 	 * @throws IOException
 	 */

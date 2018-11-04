@@ -9,11 +9,11 @@ public abstract class LinkTransmissionModel {
 
 	public abstract PseudoLane selectUnsatisfactoryPseudoLane(Link nextLink, int maxLaneIndex);
 
-	public Cyclist createCyclist(int id, double cruiseSpeed, LinkedList<Link> route, LinkTransmissionModel ltm) throws InstantiationException, IllegalAccessException {
+	Cyclist createCyclist( int id, double cruiseSpeed, LinkedList<Link> route, LinkTransmissionModel ltm ) throws InstantiationException, IllegalAccessException {
 		return new Cyclist(id, cruiseSpeed, route, ltm);
 	}
 
-	public PseudoLane[] createPseudoLanes(Link link, int Psi, double length){
+	PseudoLane[] createPseudoLanes( Link link, int Psi, double length ){
 		PseudoLane[] psi = new PseudoLane[Psi];
 		for(int i = 0; i < Psi; i++){
 			psi[i] = new PseudoLane(length, link);
@@ -21,7 +21,7 @@ public abstract class LinkTransmissionModel {
 		return psi;
 	}
 
-	public double getVMax(PseudoLane pseudoLane, double time){
+	private double getVMax( PseudoLane pseudoLane, double time ){
 		double constants = Runner.lambda_c + pseudoLane.length - Runner.theta_0;
 		if(time >= pseudoLane.tEnd - Runner.theta_1*Runner.theta_1/4./constants){ 
 			return 4*Math.pow((constants/Runner.theta_1),2); //Case 4 from paper
@@ -39,7 +39,7 @@ public abstract class LinkTransmissionModel {
 				(2 * timeDif * timeDif); // Case 2 from paper;
 	}
 
-	public PseudoLane selectPseudoLaneAndAdaptSpeed(Link nextLink, Cyclist cyclist, double time){
+	PseudoLane selectPseudoLaneAndAdaptSpeed( Link nextLink, Cyclist cyclist, double time ){
 		double maxSpeed = 0;
 		int maxLane = 0;
 		for(int i = 0; i < nextLink.getNumberOfPseudoLanes(); i++){
@@ -78,7 +78,7 @@ public abstract class LinkTransmissionModel {
 	 * 
 	 * @param speed on which the safety distance will be based.
 	 */
-	public void reduceOccupiedSpace(int linkId, double speed){
+	void reduceOccupiedSpace( int linkId, double speed ){
 		Runner.linksMap.get(linkId).supplementOccupiedSpace(-getSafetyBufferDistance(speed));
 	}
 
@@ -89,7 +89,7 @@ public abstract class LinkTransmissionModel {
 	 * 
 	 * @param speed on which the safety distance will be based.
 	 */
-	public void increaseOccupiedSpace(int linkId, double speed){
+	void increaseOccupiedSpace( int linkId, double speed ){
 		Runner.linksMap.get(linkId).supplementOccupiedSpace(getSafetyBufferDistance(speed));
 	}
 }

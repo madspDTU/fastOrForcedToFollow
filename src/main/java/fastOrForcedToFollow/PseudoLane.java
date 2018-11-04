@@ -9,8 +9,8 @@ public class PseudoLane {
 	
 	public double length;
 	public Link link;
-	public double tEnd;		// The time at which the previous cyclist will have exited the link with his/her entire bicycle.
-	public double tReady; 	// The time at which the previous cyclist will have entered the link with his/her entire bicycle.
+	double tEnd;		// The time at which the previous cyclist will have exited the link with his/her entire bicycle.
+	double tReady; 	// The time at which the previous cyclist will have entered the link with his/her entire bicycle.
 	
 	PseudoLane(double length, Link link){
 		this.length = length;
@@ -32,7 +32,7 @@ public class PseudoLane {
 		this.tReady = newTEnd;
 	}
 	
-	public void updateTs(double speed, double time) {
+	void updateTs( double speed, double time ) {
 		double tStartBasis = Double.max(time, this.tReady);
 		this.tReady = tStartBasis + Runner.lambda_c / speed;
 		this.tEnd = this.tReady + this.length / speed;

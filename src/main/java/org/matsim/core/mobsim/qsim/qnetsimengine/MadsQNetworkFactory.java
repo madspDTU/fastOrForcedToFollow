@@ -158,7 +158,7 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 						}
 						
 						@Override public boolean doSimStep() {
-							delegate.
+							throw new RuntimeException( "not implemented" );
 						}
 						
 						@Override public void clearVehicles() {

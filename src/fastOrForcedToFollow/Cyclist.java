@@ -39,12 +39,13 @@ public class Cyclist {
 	 * @return <true> if the cyclist could enter the next link, and
 	 *         <false> otherwise.
 	 */
-	
+
 	public boolean advanceCyclist(int linkId, double time){
 		Link nextLink = this.route.peekFirst();
 		double originalSpeed = this.speed;
-			PseudoLane pseudoLane = this.ltm.selectPseudoLaneAndAdaptSpeed(nextLink, this, time); 
-		if(this.ltm.getSafetyBufferDistance(this.speed) <= nextLink.getTotalLaneLength() - nextLink.getOccupiedSpace()){
+		PseudoLane pseudoLane = this.ltm.selectPseudoLaneAndAdaptSpeed(nextLink, this, time); 
+		if(this.ltm.getSafetyBufferDistance(this.speed) <= nextLink.getTotalLaneLength() - nextLink.getOccupiedSpace() ||
+				nextLink.getOccupiedSpace() < 0.2){
 			this.route.removeFirst();
 			Link currentLink = Runner.linksMap.get(linkId);
 			currentLink.incrementOutFlowCounter();
@@ -57,14 +58,13 @@ public class Cyclist {
 			double tArrivalAtNextLink = pseudoLane.tEnd - Runner.lambda_c/speed;
 			moveToNextQ(nextLink, tArrivalAtNextLink);
 			nextLink.sendNotification(Math.max(tArrivalAtNextLink,nextLink.getWakeUpTime()));
-			
 			return true;
 		} else {
 			this.speed = originalSpeed; // reset speed to original value;
 			return false; // parse information on to previous method
 		}
 	}
-	
+
 	public void exportSpeeds(String baseDir) throws IOException{
 		FileWriter writer = new FileWriter(baseDir + "/Cyclists/speedsOfCyclist" + id +
 				"_" + Runner.N + "Persons.csv");
@@ -75,21 +75,21 @@ public class Cyclist {
 		writer.flush();
 		writer.close();
 	}
-	
+
 	/**
 	 * @return The desired speed (in m/s) of the cyclist.
 	 */
 	public double getDesiredSpeed(){
 		return desiredSpeed;
 	}
-	
+
 	/**
 	 * @return The integer id of the cyclist.
 	 */
 	public int getId(){
 		return id;
 	}
-	
+
 	/**
 	 * @return The (remaining part of the) route of the cyclist.
 	 */

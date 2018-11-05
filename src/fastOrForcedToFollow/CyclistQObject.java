@@ -14,7 +14,8 @@ public class CyclistQObject implements Comparable<CyclistQObject>{
 	CyclistQObject(double time, Cyclist cyclist){
 		this.time = time;
 		this.cyclist = cyclist;
-		this.tieBreaker = System.currentTimeMillis();
+		Runner.tieBreaker++;
+		this.tieBreaker = Runner.tieBreaker;
 	}
 
 	/**

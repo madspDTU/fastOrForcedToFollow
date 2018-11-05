@@ -28,9 +28,9 @@ public class LinkTransmissionModel {
 	}
 
 	public double getVMax(PseudoLane pseudoLane, double time, Cyclist cyclist){
-		double constants = Runner.lambda_c + pseudoLane.length - Runner.theta_0;
-		if(time >= pseudoLane.tEnd - Runner.theta_1*Runner.theta_1/4./constants){ 
-			return 4*Math.pow((constants/Runner.theta_1),2); //Case 4 from paper
+		double constants = Runner.lambda_c + pseudoLane.length - this.theta_0;
+		if(time >= pseudoLane.tEnd - this.theta_1*this.theta_1/4./constants){ 
+			return 4*Math.pow((constants/this.theta_1),2); //Case 4 from paper
 		}
 		double speed = pseudoLane.length / (pseudoLane.tEnd - pseudoLane.tReady);
 		if ( time <= pseudoLane.tReady + getSafetyBufferTime(speed) ){ 
@@ -38,10 +38,10 @@ public class LinkTransmissionModel {
 		}
 		double timeDif = pseudoLane.tEnd - time;
 		if(timeDif == 0){ 
-			return Math.pow(constants/Runner.theta_1, 2); // Case 3 from paper
+			return Math.pow(constants/this.theta_1, 2); // Case 3 from paper
 		}	
-		return (Runner.theta_1 * Runner.theta_1  + 2 * timeDif * constants - 
-				Runner.theta_1 * Math.sqrt( Runner.theta_1 * Runner.theta_1  + 4 * timeDif * constants))     /   
+		return (this.theta_1 * this.theta_1  + 2 * timeDif * constants - 
+				this.theta_1 * Math.sqrt( this.theta_1 * this.theta_1  + 4 * timeDif * constants))     /   
 				(2 * timeDif * timeDif); // Case 2 from paper;
 	}
 
@@ -74,7 +74,7 @@ public class LinkTransmissionModel {
 	 * @return safety distance (including the length of its own bicycle) given in metres.
 	 */
 	public double getSafetyBufferDistance(double speed) {
-		return this.theta_0  + this.theta_1 * Math.sqrt(speed);// +  speed*Runner.t_safety + Runner.t_safety2Poly*speed*speed
+		return this.theta_0  + this.theta_1 * Math.sqrt(speed);// 
 	}
 
 	/**

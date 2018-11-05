@@ -15,67 +15,67 @@ public class Link{
 	 * Density report containing the densities that have occured during the simulation.
 	 */
 	private LinkedList<Double> densityReport = new LinkedList<Double>();
-	
+
 	/**
 	 * The id of the link.
 	 */
 	private int id;
-	
+
 	/**
 	 * Counts the total number of cyclists that have entered the link.
 	 */
 	private int inFlowCounter = 0;
-	
+
 	/**
 	 * The length of the link.
 	 */
 	private double length;
-	
+
 	/**
 	 * The total pseudolane distance (buffer distance) occupied of the cyclists currently on the link.
 	 */
 	private double occupiedSpace = 0;
-	
+
 	/**
 	 * Counts the total number of cyclists that have left the link.
 	 */
 	private int outFlowCounter = 0;
-	
+
 	/**
 	 * The outflow time report containing the speed and time of every cyclist leaving the link.
 	 */
 	private LinkedList<Double[]> outflowTimeReport = new LinkedList<Double[]>();
-	
+
 	/**
 	 * The Q containing the CQO's for the cyclists that have entered the link but not yet left it.
 	 */
 	private PriorityQueue<CyclistQObject> outQ;
-	
+
 	/**
 	 * The array containing all <code>Psi</code> pseudolanes of the link.
 	 */
 	private PseudoLane[] psi;
-	
+
 	/**
 	 * The number of <code>pseudolanes</code> the link has.
 	 */
 	private int Psi;
-	
+
 	/**
 	 * Speed report containing the speeds of the cyclists that have traversed the link.
 	 */
 	private LinkedList<Double>[] speedReports;
-	
+
 	/**
 	 * The speed time report containing the speed and time of every cyclist leaving the link.
 	 */
 	private LinkedList<Double[]> speedTimeReport = new LinkedList<Double[]>();
-	
+
 	/**
 	 * The total pseudolane distance, i.e. the product between the length and number of pseudolanes.
 	 */
 	private final double totalLaneLength; 
-	
+
 	/**
 	 * The earliest possible time that the link can potentially handle traffic (entering or leaving).
 	 */
@@ -96,10 +96,6 @@ public class Link{
 		this.totalLaneLength = this.length * this.Psi * Runner.capacityMultiplier;
 	}
 
-	public int calculateStorageCapacity(){
-		return (int) Math.floor(length * Psi / Runner.theta_0);
-	}
-
 	/**
 	 * @return The array of PseudoLanes to be created
 	 */
@@ -110,7 +106,7 @@ public class Link{
 		}
 		return psi;
 	}
-	
+
 	public void exportDensities(String baseDir) throws IOException{
 		FileWriter writer = new FileWriter(baseDir + "/densitiesLink_" + id + "_" + Runner.N + "Persons.csv");
 		writer.append("Density\n");
@@ -232,29 +228,31 @@ public class Link{
 	}
 
 	public void handleQOnNotification(double time) throws IOException{
-		Cyclist cyclist = outQ.peek().getCyclist();
-		if(cyclist.getRoute().isEmpty()){	//The cyclist has reached his/her destination.
-			this.outQ.remove();
-			this.outFlowCounter++;
-			cyclist.terminateCyclist(this.id);
-			cyclist.reportSpeed(this.length, time);
-			reportOutputTime(time);
-			reportSpeedTime(time, cyclist.getSpeedReport().getLast()[2]);
-			sendNotificationBasedOnNextInQ();
-		}  else {	
-			Link nextLink = cyclist.getRoute().peek();
-			if(cyclist.advanceCyclist(this.id, time)){ // Checking whether it is possible to advance the cyclist
-				                                         // ... and does so if possible.
-
-				if(this.id != Runner.sourceLink.getId()){
-					cyclist.reportSpeed(length, time);
-					reportOutputTime(time);
-					reportSpeedTime(time, cyclist.getSpeedReport().getLast()[2]);
-				}
-				cyclist.initialiseNewSpeedReportElement(nextLink.id, time);
+		if(!this.outQ.isEmpty()){ //TODO This can happen if multiple shorttermnotifications happen for same link
+			Cyclist cyclist = this.outQ.peek().getCyclist();
+			if(cyclist.getRoute().isEmpty()){	//The cyclist has reached his/her destination.
+				this.outQ.remove();
+				this.outFlowCounter++;
+				cyclist.terminateCyclist(this.id);
+				cyclist.reportSpeed(this.length, time);
+				reportOutputTime(time);
+				reportSpeedTime(time, cyclist.getSpeedReport().getLast()[2]);
 				sendNotificationBasedOnNextInQ();
-			} else { //It was not possible to advance the cyclist due to congestion.
-				sendNotificationDueToDelay(nextLink);
+			}  else {	
+				Link nextLink = cyclist.getRoute().peek();
+				if(cyclist.advanceCyclist(this.id, time)){ // Checking whether it is possible to advance the cyclist
+					// ... and does so if possible.
+
+					if(this.id != Runner.sourceLink.getId()){
+						cyclist.reportSpeed(length, time);
+						reportOutputTime(time);
+						reportSpeedTime(time, cyclist.getSpeedReport().getLast()[2]);
+					}
+					cyclist.initialiseNewSpeedReportElement(nextLink.id, time);
+					sendNotificationBasedOnNextInQ();
+				} else { //It was not possible to advance the cyclist due to congestion.
+					sendNotificationDueToDelay(nextLink);
+				}
 			}
 		}
 	}
@@ -265,7 +263,7 @@ public class Link{
 	public void incrementInFlowCounter(){
 		inFlowCounter++;
 	}
-	
+
 	/**
 	 * Increments the out-flow counter of the link by 1.
 	 */
@@ -277,10 +275,6 @@ public class Link{
 		return !outQ.isEmpty() && Runner.t >= outQ.peek().getTime();
 	}
 
-	public void killCyclist(String baseDir) throws IOException{
-		Cyclist cyclist = outQ.poll().getCyclist();
-		cyclist.exportSpeeds(baseDir);
-	}
 
 	public void reportOutputTime(double t){
 		outflowTimeReport.add(new Double[]{t, (double) this.outFlowCounter});
@@ -306,21 +300,24 @@ public class Link{
 			sendNotification(notificationTime);
 			this.tWakeUp = notificationTime;
 		} 
+		
 	}
-	
-	
+
+
 	public void sendShortTermNotification(int linkId, double tEnd){
 		Runner.shortTermPriorityQueue.add(new LinkQObject(tEnd, linkId));
 	}
-	
+
 	public void sendNotification(double tEnd){
 		if(tEnd < Runner.T){
 			if(tEnd <= Runner.t){
 				sendShortTermNotification(this.id, tEnd);
 			} else {
 				int timeSlot  = ((int) tEnd) / ((int) Runner.timeStep) + 1;
-				if( !Runner.notificationArray[timeSlot].containsKey(this.id) || tEnd < Runner.notificationArray[timeSlot].get(this.id) ){
-					Runner.notificationArray[timeSlot].put(this.id, tEnd);	
+				if( !Runner.notificationArray[timeSlot].containsKey(this.id) || 
+						tEnd < Runner.notificationArray[timeSlot].get(this.id).time ){
+					Runner.tieBreaker++;
+					Runner.notificationArray[timeSlot].put(this.id, new  NotificationArrayObject(tEnd, Runner.tieBreaker));	
 				}
 			}
 		}

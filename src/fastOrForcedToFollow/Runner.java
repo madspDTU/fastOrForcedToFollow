@@ -94,11 +94,12 @@ public class Runner {
 	 * The random seed used for the the population.
 	 */
 	public static final int seed = 5355633;
+	//As a backup: 5355633;
 
 	/**
 	 * Whether or not to report speeds (takes the majority of the time, but results cannot be analysed without).
 	 */
-	public static final boolean reportSpeeds = true;
+	public static final boolean reportSpeeds = false;
 
 	/**
 	 * The type of Q used for the priorityQ for links. Can be PriorityQueue.class or FibonacciHeap.class.
@@ -222,7 +223,7 @@ public class Runner {
 	/**
 	 * The notificationArray that for every timeslot of the day hold the minimum event time for all links.
 	 */
-	public static HashMap<Integer, Double>[] notificationArray;
+	public static HashMap<Integer, NotificationArrayObject>[] notificationArray;
 
 	/**
 	 * The short term priority queue that for every ??????//TODO
@@ -232,7 +233,7 @@ public class Runner {
 	/**
 	 * A tie breaker maintained in <code>Runner</code> that is passed on to Q-object in order to ensure correct ordering.
 	 */
-	public static double tieBreaker;
+	public static long tieBreaker = Long.MIN_VALUE;
 
 
 
@@ -256,12 +257,12 @@ public class Runner {
 	@SuppressWarnings("unchecked")
 	public static void generalPreparation() throws InstantiationException, IllegalAccessException{
 		t =0;
-		notificationArray = (HashMap<Integer, Double>[]) Array.newInstance(HashMap.class, (int) T+1);
+		notificationArray = (HashMap<Integer, NotificationArrayObject>[]) Array.newInstance(HashMap.class, (int) T+1);
 		shortTermPriorityQueue = (PriorityQueue<LinkQObject>) priorityQueueClassForLinks.newInstance();
 		for(int i = 0; i < T+1; i++){
-			notificationArray[i] = new HashMap<Integer, Double>();
+			notificationArray[i] = new HashMap<Integer, NotificationArrayObject>();
 		}
-		tieBreaker = 0d;
+		tieBreaker = Long.MIN_VALUE;
 
 	}
 
@@ -354,12 +355,11 @@ public class Runner {
 	 */
 	public static void simulation() throws InstantiationException, IllegalAccessException, IOException{
 		for( ;t < T; t += timeStep){
-
 			int timeSlot = (int) (t / timeStep);
 			//Initial check to see if the times in the notification array are still valid - correcting them if not, and 
 			// adding them to the short term priority queue if they are valid.
 
-			for(Integer linkId : notificationArray[timeSlot].keySet()){
+			for(int linkId : notificationArray[timeSlot].keySet()){
 				Link link = linksMap.get(linkId);
 				// It is fully possible that tReady > tNotificationArray. This could happen if tWakeUp is increased after the notification,
 				// e.g. due to the nextLink being fully occupied forcing tWakeUp to be increased to the Q-time of the following link.
@@ -368,7 +368,7 @@ public class Runner {
 				// If the notification array has a non-null value.
 				if(notificationArray[timeSlot].get(linkId) != null){ 
 					//The time in the notification array might not be relevant anymore, if the next link "sleeps", i.e. is full.
-					double maxTime = Math.max(link.getWakeUpTime(), notificationArray[timeSlot].get(linkId));
+					double maxTime = Math.max(link.getWakeUpTime(), notificationArray[timeSlot].get(linkId).time);
 					link.setWakeUpTime(maxTime);
 					//If maxTime still belongs to this time slot, and the notification array has an additional time slot, then
 					// replace the current value in this slot by this max value. 
@@ -376,7 +376,8 @@ public class Runner {
 						notificationArray[timeSlot+1].put(linkId, notificationArray[timeSlot+1].get(linkId));
 					} else {
 						//Otherwise, create an entry in the shortTermPriorityQueue, using the maxTime.
-						shortTermPriorityQueue.add(new LinkQObject(maxTime, link.getId()));
+						shortTermPriorityQueue.add(new LinkQObject(maxTime, link.getId(),
+								notificationArray[timeSlot].get(linkId).tieBreaker));
 					}
 				}
 			}
@@ -392,7 +393,7 @@ public class Runner {
 				for(int i_l = 0; i_l < L; i_l++){
 					Link link = links[i_l];
 					link.getDensityReport().
-					addLast(link.getOutQ().size() / (link.getLength() * link.getNumberOfPseudoLanes() / 1000d) );
+						addLast(link.getOutQ().size() / (link.getLength() * link.getNumberOfPseudoLanes() / 1000d) );
 				}
 			}
 		}

@@ -47,7 +47,8 @@
 			<artifactId>matsim</artifactId>
  			<!--<version>0.10.0</version>-->
 			<!--<version>0.11.0-apr17</version>-->
-			<version>0.11.0-SNAPSHOT</version>
+			<!--<version>0.11.0-SNAPSHOT</version>-->
+			<version>0.11.0-2018w44</version>
 		</dependency>
 
 		<dependency>
@@ -61,47 +62,10 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!-- Include some MATSim extensions -->
-		<dependency>
-			<groupId>org.matsim.contrib</groupId>
-			<artifactId>minibus</artifactId>
- 			<!--<version>0.10.0</version>-->
-			<!--<version>0.11.0-apr17</version>-->
-			<version>0.11.0-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>org.matsim.contrib</groupId>
-			<artifactId>otfvis</artifactId>
- 			<!--<version>0.10.0</version>-->
-			<!--<version>0.11.0-apr17</version>-->
-			<version>0.11.0-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>org.matsim.contrib</groupId>
-			<artifactId>roadpricing</artifactId>
- 			<!--<version>0.10.0</version>-->
-			<!--<version>0.11.0-apr17</version>-->
-			<version>0.11.0-SNAPSHOT</version>
-		</dependency>
-
 		<!--MATSim test infrastructure.  Not transitive.-->
 		<dependency>
 			<groupId>org.matsim</groupId>
 			<artifactId>matsim-examples</artifactId>
- 			<!--<version>0.10.0</version>-->
-			<!--<version>0.11.0-apr17</version>-->
-			<version>0.11.0-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>org.matsim.contrib</groupId>
-			<artifactId>taxi</artifactId>
- 			<!--<version>0.10.0</version>-->
-			<!--<version>0.11.0-apr17</version>-->
-			<version>0.11.0-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>org.matsim.contrib</groupId>
-			<artifactId>av</artifactId>
  			<!--<version>0.10.0</version>-->
 			<!--<version>0.11.0-apr17</version>-->
 			<version>0.11.0-SNAPSHOT</version>
@@ -169,8 +133,8 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
+                    <source>1.8</source>
+                    <target>1.8</target>
                     <showWarnings>false</showWarnings>
                     <showDeprecation>false</showDeprecation>
                     <encoding>UTF-8</encoding>

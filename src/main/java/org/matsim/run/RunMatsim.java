@@ -63,41 +63,6 @@ public class RunMatsim {
 		// ---
 		
 		Scenario scenario = ScenarioUtils.loadScenario(config) ;
-		{
-			Network network = scenario.getNetwork();
-			final NetworkFactory factory = network.getFactory();
-			;
-			
-			final Id<Node> id = Id.createNodeId( "abc" );
-			final Coord coord = new Coord( 0., 0. );
-			final Node node = factory.createNode( id, coord );
-//		final Node node = NetworkUtils.createNode( id, coord );
-			network.addNode( node );
-
-//		final Link link ;
-//		network.addLink( link );
-		}
-		{
-			Population population = scenario.getPopulation();
-			final PopulationFactory pf = population.getFactory();
-			
-			final Id<Person> id = Id.createPersonId( "abc" ) ;
-			final Person person = pf.createPerson( id );
-			population.addPerson( person );
-			
-			final Plan plan  = pf.createPlan() ;
-			person.addPlan( plan );
-			
-			final String actType = DefaultActivityTypes.work ;
-			final Coord coord = CoordUtils.createCoord( 0. , 1. );
-			final Activity act = pf.createActivityFromCoord( actType, coord ) ;
-			plan.addActivity( act );
-			
-			final String mode = TransportMode.car ;
-			final Leg leg = pf.createLeg( mode ) ;
-			plan.addLeg( leg );
-			
-		}
 		
 		// possibly modify scenario here
 		
@@ -111,6 +76,7 @@ public class RunMatsim {
 			@Override public void install() {
 				this.bind( QNetworkFactory.class ).to( MadsQNetworkFactory.class ) ;
 				// (yyyy  unstable API!  kai, oct'18)
+				
 			}
 		} );
 		

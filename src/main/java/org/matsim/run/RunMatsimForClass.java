@@ -81,32 +81,10 @@ class RunMatsimForClass {
 		
 		Controler controler = new Controler( scenario ) ;
 		
-		controler.addOverridingModule( new AbstractModule() {
-			@Override public void install() {
-				this.bind( AgentFactory.class ).to( MyAgentFactory.class );
-				final TravelDisutilityFactory abc = new MyTDF() ;
-				this.addTravelDisutilityFactoryBinding(TransportMode.bike).toInstance( abc ) ;
-			}
-		} ) ;
-		
-		controler.addOverridingQSimModule( new AbstractQSimModule() {
-			@Override protected void configureQSim() {
-				this.bind( AgentFactory.class ).to( MyAgentFactory.class );
-			}
-		} );
-		
 		// ---
 		
 		controler.run();
 		
 	}
 	
-	private static class MyAgentFactory implements AgentFactory {
-		
-		@Inject private Scenario scenario;
-		
-		@Override public MobsimAgent createMobsimAgentFromPerson( final Person p ) {
-			Scenario sc = scenario ;
-		}
-	}
 }

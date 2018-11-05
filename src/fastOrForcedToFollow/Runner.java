@@ -99,7 +99,7 @@ public class Runner {
 	/**
 	 * Whether or not to report speeds (takes the majority of the time, but results cannot be analysed without).
 	 */
-	public static final boolean reportSpeeds = false;
+	public static final boolean reportSpeeds = true;
 
 	/**
 	 * The type of Q used for the priorityQ for links. Can be PriorityQueue.class or FibonacciHeap.class.

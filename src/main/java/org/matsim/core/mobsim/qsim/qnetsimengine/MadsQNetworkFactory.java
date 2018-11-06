@@ -26,18 +26,26 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.config.groups.QSimConfigGroup;
+import org.matsim.core.controler.ControlerDefaultsModule;
 import org.matsim.core.gbl.Gbl;
 import org.matsim.core.mobsim.framework.MobsimTimer;
 import org.matsim.core.mobsim.qsim.interfaces.AgentCounter;
 import org.matsim.core.mobsim.qsim.interfaces.MobsimVehicle;
 import org.matsim.core.mobsim.qsim.pt.TransitStopAgentTracker;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QNetsimEngine.NetsimInternalInterface;
+import org.matsim.core.mobsim.qsim.qnetsimengine.linkspeedcalculator.LinkSpeedCalculator;
 import org.matsim.core.mobsim.qsim.qnetsimengine.vehicleq.VehicleQ;
 import org.matsim.lanes.Lane;
 import org.matsim.vehicles.Vehicle;
 import org.matsim.vis.snapshotwriters.SnapshotLinkWidthCalculator;
 
+import fastOrForcedToFollow.Cyclist;
+import fastOrForcedToFollow.CyclistQObject;
+import fastOrForcedToFollow.PseudoLane;
+
 import javax.inject.Inject;
+
+import java.util.ArrayList;
 import java.util.Collection;
 
 
@@ -94,9 +102,10 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 	QLinkI createNetsimLink(final Link link, final QNodeI toQueueNode) {
 		if ( link.getAllowedModes().contains( "madsBicycle" ) ) {
 			Gbl.assertIf( link.getAllowedModes().size()==1 ); // not possible with multi-modal links! kai, oct'18
-			final int id=0 ; // yy we have issues with link IDs which are int ... because it forces us to re-map which we like to avoid (rather use String). kai, oct'18
-			final double width=3.75 ;
+			final String id="0" ;
+			final double width=2. ;
 			final double length=link.getLength() ;
+			final double bicyclePCE = 1./4.;
 			fastOrForcedToFollow.Link link1 = null;
 			try {
 				link1 = new fastOrForcedToFollow.Link(id, width, length) ;
@@ -115,88 +124,101 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 							// yyyyyy don't know how to do this. kai, oct'18
 							throw new RuntimeException( "not implemented" );
 						}
-						
+
 						@Override public boolean isAcceptingFromWait( final QVehicle veh ) {
-							throw new RuntimeException( "not implemented" );
+							Cyclist cyclist = null;  // Suppose we can convert from veh -> cyclist
+							return cyclist.isNotInFuture(context.getSimTimer().getTimeOfDay()) && cyclist.fitsOnLink(delegate)  ;
 						}
-						
+
 						@Override public boolean isActive() {
 							return true ;
 							// yy always active, to get started
 						}
-						
+
 						@Override public double getSimulatedFlowCapacityPerTimeStep() {
 							throw new RuntimeException( "not implemented" );
 						}
-						
+
 						@Override public void recalcTimeVariantAttributes() {
 							throw new RuntimeException( "not implemented" );
 						}
-						
+
 						@Override public QVehicle getVehicle( final Id<Vehicle> vehicleId ) {
-							throw new RuntimeException( "not implemented" );
+							Cyclist cyclist = null;
+							for(CyclistQObject cqo : delegate.getOutQ()){
+								if(cqo.getCyclist().getId() == vehicleId.toString()){
+									cyclist = cqo.getCyclist();
+								}
+							}
+							//TODO Convert from cyclist - > QVehicle
+							throw new RuntimeException( "not fully implemented" );							
 						}
-						
+
 						@Override public double getStorageCapacity() {
-							throw new RuntimeException( "not implemented" );
+							return delegate.getTotalLaneLength()*bicyclePCE;
 						}
-						
+
 						@Override public VisData getVisData() {
 							throw new RuntimeException( "not implemented" );
 						}
-						
+
 						@Override public void addTransitSlightlyUpstreamOfStop( final QVehicle veh ) {
 							throw new RuntimeException( "not implemented" );
 						}
-						
+
 						@Override public void changeUnscaledFlowCapacityPerSecond( final double val ) {
 							throw new RuntimeException( "not implemented" );
 						}
-						
+
 						@Override public void changeEffectiveNumberOfLanes( final double val ) {
 							throw new RuntimeException( "not implemented" );
 						}
-						
+
 						@Override public boolean doSimStep() {
 							throw new RuntimeException( "not implemented" );
 						}
-						
+
 						@Override public void clearVehicles() {
-							throw new RuntimeException( "not implemented" );
+							delegate.getOutQ().clear();
 						}
-						
+
 						@Override public Collection<MobsimVehicle> getAllVehicles() {
-							throw new RuntimeException( "not implemented" );
+							ArrayList<Cyclist> cyclists = new ArrayList<Cyclist>();
+							for(CyclistQObject cqo : delegate.getOutQ()){
+								cyclists.add(cqo.getCyclist());
+							}
+							//TODO Convert from cyclist - > QVehicle
+							throw new RuntimeException( "not fully implemented" );
 						}
-						
+
 						@Override public void addFromUpstream( final QVehicle veh ) {
 							throw new RuntimeException( "not implemented" );
 						}
-						
+
 						@Override public boolean isNotOfferingVehicle() {
 							throw new RuntimeException( "not implemented" );
 						}
-						
+
 						@Override public QVehicle popFirstVehicle() {
 							throw new RuntimeException( "not implemented" );
 						}
-						
+
 						@Override public QVehicle getFirstVehicle() {
 							throw new RuntimeException( "not implemented" );
 						}
-						
+
 						@Override public double getLastMovementTimeOfFirstVehicle() {
 							throw new RuntimeException( "not implemented" );
 						}
-						
+
 						@Override public boolean isAcceptingFromUpstream() {
-							throw new RuntimeException( "not implemented" );
+							return !delegate.isFull();
 						}
-						
+
 						@Override public double getLoadIndicator() {
 							throw new RuntimeException( "not implemented" );
 						}
-						
+
 						@Override public void initBeforeSimStep() {
 							throw new RuntimeException( "not implemented" );
 						}

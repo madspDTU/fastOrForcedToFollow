@@ -6,6 +6,11 @@ import java.io.File;
  * @author mpaulsen
  */
 public class ToolBox {
+	
+	// Suppress default constructor for noninstantiability
+	private ToolBox(){
+		throw new AssertionError();
+	}
 
 	/**
 	 * Auxiliary function to create subfolder if needed.
@@ -17,6 +22,7 @@ public class ToolBox {
 			file.mkdirs();
 		}
 	}
+	
 	
 	/**
 	 * Method for computing the inverse cumulative distribution function of the standard normal distribution.

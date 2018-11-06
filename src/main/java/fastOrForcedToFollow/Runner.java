@@ -2,12 +2,9 @@ package fastOrForcedToFollow;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.lang.reflect.Array;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Locale;
-import java.util.PriorityQueue;
 import java.util.Random;
 
 
@@ -67,7 +64,8 @@ public class Runner {
 	/**
 	 * The base directory for storing output.
 	 */
-	public static String baseDir = "Z:/git/fastOrForcedToFollow/output/ToyNetwork";
+	//public static String baseDir = "Z:/git/fastOrForcedToFollow/output/ToyNetwork";
+	public static String baseDir = "C:/Users/madsp/git/fastOrForcedToFollow/output/ToyNetworkMaven";
 
 	/**
 	 * The span of the simulation period (in seconds).
@@ -93,17 +91,12 @@ public class Runner {
 	 * The random seed used for the the population.
 	 */
 	public static final int seed = 5355633;
+	//As a backup: 5355633;
 
 	/**
 	 * Whether or not to report speeds (takes the majority of the time, but results cannot be analysed without).
 	 */
-	public static final boolean reportSpeeds = false;
-
-	/**
-	 * The type of Q used for the priorityQ for links. Can be PriorityQueue.class or FibonacciHeap.class.
-	 */
-	@SuppressWarnings("rawtypes")
-	public static final Class<? extends PriorityQueue> priorityQueueClassForLinks = PriorityQueue.class; 
+	public static final boolean reportSpeeds = true;
 
 
 	/*
@@ -162,23 +155,27 @@ public class Runner {
 	 * Safety distance parameters
 	 */
 	/**
-	 * Type of <code>LinkTransmissionModel</code> used. Valid values are BasicLTM, SpatialLTM, AdvancedSpatialLTM.
-	 */
-	public static final LinkTransmissionModel ltm = new AdvancedSpatialLTM(); 
-
-	/**
 	 * Constant term in the square root model for safety distance.
 	 */
 	public static final double theta_0 = -4.220641337789;
 	/**
 	 * Square root term in the square root model for safety distance.
 	 */
-	public static final double theta_1 =  4.602161217943; //Square root term in square root model;
+	public static final double theta_1 =  4.602161217943;
+	/**
+	 * Constant term in the square root model for standard deviation of safety distance.
+	 */
+	public static final double zeta_0 =  -4.3975231775567600;
+	/**
+	 * Square root term in the square root model for standard deviation of safety distance.
+	 */
+	public static final double zeta_1 =  3.1095184592753986;
 	/**
 	 * Average length of a bicycle according to Andresen et al. (2014),
 	 * Basic Driving Dynamics of Cyclists, In: Simulation of Urban Mobility;
 	 */
 	public static final double lambda_c = 1.73; 
+
 
 
 	/*
@@ -207,31 +204,17 @@ public class Runner {
 	/**
 	 * The map containing all links.
 	 */
-	public static LinkedHashMap<Integer,Link> linksMap; 
+	public static LinkedHashMap<String,Link> linksMap; 
 
 	/**
 	 * A linked list containing all cyclists.
 	 */
 	public static LinkedList<Cyclist> cyclists;
 
-	/**
-	 * The notificationArray that for every timeslot of the day hold the minimum event time for all links.
-	 */
-	public static HashMap<Integer, Double>[] notificationArray;
-
-	/**
-	 * The short term priority queue that for every ??????//TODO
-	 */
-	public static PriorityQueue<LinkQObject> shortTermPriorityQueue;
-
-	/**
-	 * A tie breaker maintained in <code>Runner</code> that is passed on to Q-object in order to ensure correct ordering.
-	 */
-	public static double tieBreaker;
-
 
 
 	public static void main(String[] args) throws IOException, InterruptedException, InstantiationException, IllegalAccessException{
+		double globalStart = System.currentTimeMillis();
 		for( N = maxN; N >= stepSize; N -= stepSize){
 			double startTime = System.currentTimeMillis();
 			System.out.println("Start of a simulation with " + N + " cyclists and " + L + " links.");
@@ -246,45 +229,37 @@ public class Runner {
 			System.out.format(Locale.US, "%.3f microseconds per cyclist-link-interaction in total.%n%n", 
 					(System.currentTimeMillis()-startTime)/((double) N)/((double) L)*1000d);
 		}
+		double globalEnd = System.currentTimeMillis();
+
+		System.out.println("\n\n\nFinished!!! Total time was " + (globalEnd-globalStart)/1000 + " seconds." ); //3.1;
 	}
 
-	@SuppressWarnings("unchecked")
-	private static void generalPreparation() throws InstantiationException, IllegalAccessException{
-		t =0;
-		notificationArray = (HashMap<Integer, Double>[]) Array.newInstance(HashMap.class, (int) T+1);
-		shortTermPriorityQueue = (PriorityQueue<LinkQObject>) priorityQueueClassForLinks.newInstance();
-		for(int i = 0; i < T+1; i++){
-			notificationArray[i] = new HashMap<Integer, Double>();
-		}
-		tieBreaker = 0d;
-
-	}
-
-	private static void simulationPreparation() throws InstantiationException, IllegalAccessException{
-		generalPreparation();
+	
+	public static void simulationPreparation() throws InstantiationException, IllegalAccessException{
+		t = 0;
 		networkPreparation();
 		populationPreparation();
 	}
 
 
 	/**
-	 * Creates the network including a {@link Runner#sourceLink}.
+	 * Creates the network including a {@link Runner.sourceLink}.
 	 * 
 	 * @throws InstantiationException
 	 * @throws IllegalAccessException
 	 */
-	private static void networkPreparation() throws InstantiationException, IllegalAccessException{
+	public static void networkPreparation() throws InstantiationException, IllegalAccessException{
 		links = new Link[L];
-		linksMap = new LinkedHashMap<Integer,Link>();
+		linksMap = new LinkedHashMap<String,Link>();
 		for(int i = 0; i < L; i++){
 			if(i == (L-1)){
-				links[i] = new Link(i,widthOfLastLink,lengthOfLinks);
+				links[i] = new Link(String.valueOf(i),widthOfLastLink,lengthOfLinks);
 			} else {
-				links[i] = new Link(i,widthOfFirstLinks,lengthOfLinks);
+				links[i] = new Link(String.valueOf(i),widthOfFirstLinks,lengthOfLinks);
 			}
 			linksMap.put(links[i].getId(), links[i]);
 		}
-		sourceLink = new Link(-1,1,0);
+		sourceLink = new Link("-1",1,0);
 		linksMap.put(sourceLink.getId(),sourceLink);
 	}
 
@@ -299,12 +274,13 @@ public class Runner {
 	 * @throws InstantiationException
 	 * @throws IllegalAccessException
 	 */
-	private static void populationPreparation() throws InstantiationException, IllegalAccessException{
+	public static void populationPreparation() throws InstantiationException, IllegalAccessException{
 		Random desiredSpeedRandom = new Random(seed);
 		Random arrivalTimeRandom = new Random(seed+9);
-		for(int i = 0; i<100; i++){
+		Random headwayRandom = new Random(seed + 341);
+		for(int i = 0; i<100; i++){ //Throwing away the first 100 draws;
 			desiredSpeedRandom.nextDouble();
-			arrivalTimeRandom.nextDouble();
+			arrivalTimeRandom.nextDouble();	
 		}
 
 		cyclists= new LinkedList<Cyclist>();
@@ -328,11 +304,15 @@ public class Runner {
 			for( int i = 0; i < L; i++){
 				defaultRoute.addLast(links[i]);
 			}
-			Cyclist cyclist = ltm.createCyclist(id, speed, defaultRoute, ltm);
-			cyclists.add(cyclist);
 
-			sourceLink.getOutQ().add(new CyclistQObject(time, cyclist));	
-			sourceLink.sendNotification(time);
+			double z_c = headwayRandom.nextGaussian();
+
+			Cyclist cyclist = new Cyclist(String.valueOf(id), speed, z_c, defaultRoute);
+			cyclist.setTEarliestExit(time);
+			cyclist.setTStart(time);
+			cyclists.add(cyclist);
+			sourceLink.getOutQ().add(new CyclistQObject(cyclist));	
+			//		sourceLink.sendNotification(time);
 		}
 	}
 
@@ -344,45 +324,35 @@ public class Runner {
 	 * @throws IllegalAccessException
 	 * @throws IOException
 	 */
-	private static void simulation() throws InstantiationException, IllegalAccessException, IOException{
+	public static void simulation() throws InstantiationException, IllegalAccessException, IOException{
 		for( ;t < T; t += timeStep){
-			
-			int timeSlot = (int) (t / timeStep);
-			//Initial check to see if the times in the notification array are still valid - correcting them if not, and 
-			// adding them to the short term priority queue if they are valid.
-			
-			for(Integer linkId : notificationArray[timeSlot].keySet()){
-				Link link = linksMap.get(linkId);
-				// It is fully possible that tReady > tNotificationArray. This could happen if tWakeUp is increased after the notification,
-				// e.g. due to the nextLink being fully occupied forcing tWakeUp to be increased to the Q-time of the following link.
-				// Can the opposite be true? Yes! initially tWakeUp is not even defined yet, and will only be once congestion occurs.
-
-				// If the notification array has a non-null value.
-				if(notificationArray[timeSlot].get(linkId) != null){ 
-					//The time in the notification array might not be relevant anymore, if the next link "sleeps", i.e. is full.
-					double maxTime = Math.max(link.getWakeUpTime(), notificationArray[timeSlot].get(linkId));
-					link.setWakeUpTime(maxTime);
-					//If maxTime still belongs to this time slot, and the notification array has an additional time slot, then
-					// replace the current value in this slot by this max value. 
-					if( maxTime > t && notificationArray.length > timeSlot+1){
-						notificationArray[timeSlot+1].put(linkId, notificationArray[timeSlot+1].get(linkId));
+			for(Link link : linksMap.values()){
+				boolean linkFullyProcessed = false;
+				while(!linkFullyProcessed){
+					if(link.getOutQ().isEmpty()){
+						linkFullyProcessed = true;
 					} else {
-						//Otherwise, create an entry in the shortTermPriorityQueue, using the maxTime.
-						shortTermPriorityQueue.add(new LinkQObject(maxTime, link.getId()));
-					}
+						Cyclist cyclist = link.getOutQ().peek().getCyclist();
+						if(cyclist.getTEarliestExit() > t){
+							linkFullyProcessed = true;
+						} else {
+							if(cyclist.getRoute().isEmpty()){
+								link.handleQOnNotification();
+							} else {
+								Link nextLink = cyclist.getRoute().peek();
+								if(cyclist.fitsOnLink(nextLink)){
+									link.handleQOnNotification();	
+								} else {
+									cyclist.setTEarliestExit(cyclist.getRoute().peek().getOutQ().peek().getCyclist().getTEarliestExit());
+									linkFullyProcessed = true;
+								}
+							}
+						} 
+					} 
 				}
 			}
-			
-			// Keep processing the short term priority queue as long as it has elements.
-			while(!shortTermPriorityQueue.isEmpty()){
-				LinkQObject loq = shortTermPriorityQueue.poll();
-				linksMap.get(loq.getId()).handleQOnNotification(loq.getTime());
-			}
-			
-			//This step - which takes a lot of time if L is large, can be ommited if not reporting densities. 
 			if(Runner.reportSpeeds){
-				for(int i_l = 0; i_l < L; i_l++){
-					Link link = links[i_l];
+				for(Link link : linksMap.values()){
 					link.getDensityReport().
 					addLast(link.getOutQ().size() / (link.getLength() * link.getNumberOfPseudoLanes() / 1000d) );
 				}
@@ -390,8 +360,11 @@ public class Runner {
 		}
 	}
 
+
 	/**
 	 * Export the speeds of links and cyclists from the simulation using <code>itN</code> cyclists.
+	 * 
+	 * @param itN The number of cyclists used in the simulation to be reported.
 	 * 
 	 * @throws IOException
 	 */
@@ -419,8 +392,7 @@ public class Runner {
 	 */
 	public static void exportCyclistDesiredSpeeds(String baseDir) throws IOException{
 		ToolBox.createFolderIfNeeded(baseDir);
-		FileWriter writer = new FileWriter(baseDir + "/CyclistCruisingSpeeds_" + Runner.ltm.getClass().getName() + "_" 
-				+ Runner.N + "Persons.csv");
+		FileWriter writer = new FileWriter(baseDir + "/CyclistCruisingSpeeds_" 	+ Runner.N + "Persons.csv");
 		writer.append("CyclistId;CruisingSpeed\n");
 		for(Cyclist cyclist : cyclists){
 			writer.append(cyclist.getId() + ";"  + cyclist.getDesiredSpeed() + "\n");
@@ -438,11 +410,9 @@ public class Runner {
 	 */
 	public static void exportCyclistSpeeds(String baseDir) throws IOException{
 		ToolBox.createFolderIfNeeded(baseDir);
-		FileWriter writer = new FileWriter(baseDir + "/CyclistSpeeds_" + Runner.ltm.getClass().getName() + "_" 
-				+ N + "Persons.csv");
+		FileWriter writer = new FileWriter(baseDir + "/CyclistSpeeds_" + N + "Persons.csv");
 
-		System.out.println(baseDir + "/CyclistSpeeds_" + Runner.ltm.getClass().getName() + "_" 
-				+ N + "Persons.csv");
+		System.out.println(baseDir + "/CyclistSpeeds_" + N + "Persons.csv");
 		writer.append("CyclistId;LinkId;Time;Speed\n");
 		for(Cyclist cyclist : cyclists){
 			for(Double[] reportElement : cyclist.getSpeedReport()){

@@ -15,93 +15,100 @@ public class Link{
 	 * Density report containing the densities that have occured during the simulation.
 	 */
 	private LinkedList<Double> densityReport = new LinkedList<Double>();
-	
+
 	/**
 	 * The id of the link.
 	 */
-	private int id;
-	
+	private String id;
+
 	/**
 	 * Counts the total number of cyclists that have entered the link.
 	 */
 	private int inFlowCounter = 0;
-	
+
 	/**
 	 * The length of the link.
 	 */
 	private double length;
-	
+
 	/**
 	 * The total pseudolane distance (buffer distance) occupied of the cyclists currently on the link.
 	 */
 	private double occupiedSpace = 0;
-	
+
 	/**
 	 * Counts the total number of cyclists that have left the link.
 	 */
 	private int outFlowCounter = 0;
-	
+
 	/**
 	 * The outflow time report containing the speed and time of every cyclist leaving the link.
 	 */
 	private LinkedList<Double[]> outflowTimeReport = new LinkedList<Double[]>();
-	
+
 	/**
 	 * The Q containing the CQO's for the cyclists that have entered the link but not yet left it.
 	 */
 	private PriorityQueue<CyclistQObject> outQ;
-	
+
 	/**
 	 * The array containing all <code>Psi</code> pseudolanes of the link.
 	 */
 	private PseudoLane[] psi;
-	
+
 	/**
 	 * The number of <code>pseudolanes</code> the link has.
 	 */
 	private int Psi;
-	
+
 	/**
 	 * Speed report containing the speeds of the cyclists that have traversed the link.
 	 */
 	private LinkedList<Double>[] speedReports;
-	
+
 	/**
 	 * The speed time report containing the speed and time of every cyclist leaving the link.
 	 */
 	private LinkedList<Double[]> speedTimeReport = new LinkedList<Double[]>();
-	
+
 	/**
 	 * The total pseudolane distance, i.e. the product between the length and number of pseudolanes.
 	 */
 	private final double totalLaneLength; 
-	
+
 	/**
 	 * The earliest possible time that the link can potentially handle traffic (entering or leaving).
 	 */
 	private double tWakeUp = 0;
 
 
-	@SuppressWarnings("unchecked") public Link( int id, double width, double length ) throws InstantiationException, IllegalAccessException{
+	@SuppressWarnings("unchecked")
+	public Link(String id, double width, double length) throws InstantiationException, IllegalAccessException{
 		this.id = id;
 		this.length = length;
 		this.Psi = 1 + (int) Math.floor((width-Runner.deadSpace)/Runner.omega);
-		psi = Runner.ltm.createPseudoLanes(this, Psi, length);
+		psi = createPseudoLanes();
 		speedReports = new LinkedList[Psi];
 		for(int i = 0; i < Psi; i++){
 			speedReports[i] = new LinkedList<Double>();
 		}
-		outQ = (PriorityQueue<CyclistQObject>) Runner.priorityQueueClassForLinks.newInstance();
+		outQ = new PriorityQueue<CyclistQObject>();
 		this.totalLaneLength = this.length * this.Psi * Runner.capacityMultiplier;
 	}
 
-	public int calculateStorageCapacity(){
-		return (int) Math.floor(length * Psi / Runner.theta_0);
+	/**
+	 * @return The array of PseudoLanes to be created
+	 */
+	private PseudoLane[] createPseudoLanes(){
+		PseudoLane[] psi = new PseudoLane[Psi];
+		for(int i = 0; i < Psi; i++){
+			psi[i] = new PseudoLane(length, this);
+		}
+		return psi;
 	}
 
 	public void exportDensities(String baseDir) throws IOException{
-		FileWriter writer = new FileWriter(baseDir + "/densitiesLink_" + Runner.ltm.getClass().getName() + "_" +
-				id + "_" + Runner.N + "Persons.csv");
+		FileWriter writer = new FileWriter(baseDir + "/densitiesLink_" + id + "_" + Runner.N + "Persons.csv");
 		writer.append("Density\n");
 		while(!densityReport.isEmpty()){
 			writer.append(String.valueOf(densityReport.pollFirst()) + "\n");
@@ -111,8 +118,7 @@ public class Link{
 	}
 
 	public void exportFlows(String baseDir) throws IOException{
-		FileWriter writer = new FileWriter(baseDir + "/flowsLink_" + Runner.ltm.getClass().getName() + "_" +
-				id + "_" + Runner.N + "Persons.csv");
+		FileWriter writer = new FileWriter(baseDir + "/flowsLink_" + id + "_" + Runner.N + "Persons.csv");
 		writer.append("InFlow;OutFlow\n");
 		writer.append(inFlowCounter + ";" + outFlowCounter + "\n");
 		writer.flush();
@@ -120,8 +126,7 @@ public class Link{
 	}
 
 	public void exportOutputTimes(String baseDir) throws IOException{
-		FileWriter writer = new FileWriter(baseDir + "/outputTimesLink_" + Runner.ltm.getClass().getName() + "_" +
-				id + "_" + Runner.N + "Persons.csv");
+		FileWriter writer = new FileWriter(baseDir + "/outputTimesLink_" +	id + "_" + Runner.N + "Persons.csv");
 		writer.append("Time;Output\n");
 		while(!this.outflowTimeReport.isEmpty()){
 			Double[] element = outflowTimeReport.pollFirst();
@@ -133,8 +138,7 @@ public class Link{
 
 	public void exportSpeeds(String baseDir) throws IOException{
 		ToolBox.createFolderIfNeeded(baseDir);
-		FileWriter writer = new FileWriter(baseDir + "/speedsOfLinks_" + Runner.ltm.getClass().getName() + "_" +
-				id + "_" + Runner.N + "Persons.csv");
+		FileWriter writer = new FileWriter(baseDir + "/speedsOfLinks_" + id + "_" + Runner.N + "Persons.csv");
 		for(int i = 0; i < Psi; i++){
 			writer.append("Speed" + i + ";");
 		}
@@ -150,8 +154,7 @@ public class Link{
 	}
 
 	public void exportSpeedTimes(String baseDir) throws IOException{
-		FileWriter writer = new FileWriter(baseDir + "/speedTimesLink_" + Runner.ltm.getClass().getName() + "_" +
-				id + "_" + Runner.N + "Persons.csv");
+		FileWriter writer = new FileWriter(baseDir + "/speedTimesLink_" + id + "_" + Runner.N + "Persons.csv");
 		writer.append("Time;Speed\n");
 		while(!this.speedTimeReport.isEmpty()){
 			Double[] element = speedTimeReport.pollFirst();
@@ -171,7 +174,7 @@ public class Link{
 	/**
 	 * @return The integer id of the link.
 	 */
-	public int getId(){
+	public String getId(){
 		return id;
 	}
 
@@ -224,31 +227,17 @@ public class Link{
 		return tWakeUp;
 	}
 
-	public void handleQOnNotification(double time) throws IOException{
-		Cyclist cyclist = outQ.peek().getCyclist();
+	public void handleQOnNotification() throws IOException{
+		Cyclist cyclist = this.outQ.peek().getCyclist();
 		if(cyclist.getRoute().isEmpty()){	//The cyclist has reached his/her destination.
 			this.outQ.remove();
 			this.outFlowCounter++;
 			cyclist.terminateCyclist(this.id);
-			cyclist.reportSpeed(this.length, time);
-			reportOutputTime(time);
-			reportSpeedTime(time, cyclist.getSpeedReport().getLast()[2]);
-			sendNotificationBasedOnNextInQ();
+			cyclist.reportSpeed(this.length);
+			reportOutputTime(cyclist.getTEarliestExit());
+			reportSpeedTime(cyclist.getTEarliestExit(), cyclist.getSpeedReport().getLast()[2]);
 		}  else {	
-			Link nextLink = cyclist.getRoute().peek();
-			if(cyclist.advanceCyclist(this.id, time)){ // Checking whether it is possible to advance the cyclist
-				                                         // ... and does so if possible.
-
-				if(this.id != Runner.sourceLink.getId()){
-					cyclist.reportSpeed(length, time);
-					reportOutputTime(time);
-					reportSpeedTime(time, cyclist.getSpeedReport().getLast()[2]);
-				}
-				cyclist.initialiseNewSpeedReportElement(nextLink.id, time);
-				sendNotificationBasedOnNextInQ();
-			} else { //It was not possible to advance the cyclist due to congestion.
-				sendNotificationDueToDelay(nextLink);
-			}
+			cyclist.advanceCyclist(this.id);
 		}
 	}
 
@@ -258,7 +247,7 @@ public class Link{
 	public void incrementInFlowCounter(){
 		inFlowCounter++;
 	}
-	
+
 	/**
 	 * Increments the out-flow counter of the link by 1.
 	 */
@@ -267,16 +256,12 @@ public class Link{
 	}
 
 	public boolean isRelevant(){
-		return !outQ.isEmpty() && Runner.t >= outQ.peek().getTime();
+		return !outQ.isEmpty() && Runner.t >= outQ.peek().getCyclist().getTEarliestExit();
 	}
 
-	public void killCyclist(String baseDir) throws IOException{
-		Cyclist cyclist = outQ.poll().getCyclist();
-		cyclist.exportSpeeds(baseDir);
-	}
 
-	public void reportOutputTime(double t){
-		outflowTimeReport.add(new Double[]{t, (double) this.outFlowCounter});
+	public void reportOutputTime(double tLeave){
+		outflowTimeReport.add(new Double[]{tLeave, (double) this.outFlowCounter});
 	}
 
 
@@ -284,40 +269,6 @@ public class Link{
 		speedTimeReport.add(new Double[]{t, speed});
 	}
 
-
-	private void sendNotificationDueToDelay(Link nextLink){
-		if(!outQ.isEmpty()){
-			double notificationTime = Math.max(nextLink.outQ.peek().getTime(), nextLink.tWakeUp);
-			sendNotification(notificationTime);
-			this.tWakeUp = notificationTime;
-		} 
-	}
-
-	private void sendNotificationBasedOnNextInQ(){
-		if(!outQ.isEmpty()){
-			double notificationTime = Math.max(this.outQ.peek().getTime(), this.tWakeUp);
-			sendNotification(notificationTime);
-			this.tWakeUp = notificationTime;
-		} 
-	}
-	
-	
-	public void sendShortTermNotification(int linkId, double tEnd){
-		Runner.shortTermPriorityQueue.add(new LinkQObject(tEnd, linkId));
-	}
-	
-	public void sendNotification(double tEnd){
-		if(tEnd < Runner.T){
-			if(tEnd <= Runner.t){
-				sendShortTermNotification(this.id, tEnd);
-			} else {
-				int timeSlot  = ((int) tEnd) / ((int) Runner.timeStep) + 1;
-				if( !Runner.notificationArray[timeSlot].containsKey(this.id) || tEnd < Runner.notificationArray[timeSlot].get(this.id) ){
-					Runner.notificationArray[timeSlot].put(this.id, tEnd);	
-				}
-			}
-		}
-	}
 
 
 	/**

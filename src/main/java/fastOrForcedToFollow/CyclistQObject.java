@@ -6,15 +6,10 @@ package fastOrForcedToFollow;
  */
 public class CyclistQObject implements Comparable<CyclistQObject>{
 
-	private double time; // First possible time at which the cyclist will be taken into consideration of moving onto next link.
-						// If rejected, this time does not change. It is kept in order to keep track of the order of the outQ of the link.
-	private Cyclist cyclist; // The cyclist. //TODO madsp: consider changing this to cyclistId.
-	private long tieBreaker; // A tie breaker that we hopefully can do without (in the long run (at least)). //TODO Is it used???
+	private Cyclist cyclist; // The cyclist.
 
-	CyclistQObject(double time, Cyclist cyclist){
-		this.time = time;
+	CyclistQObject(Cyclist cyclist){
 		this.cyclist = cyclist;
-		this.tieBreaker = System.currentTimeMillis();
 	}
 
 	/**
@@ -27,24 +22,17 @@ public class CyclistQObject implements Comparable<CyclistQObject>{
 	/**
 	 * @return The time at which the cyclist entered the Q.
 	 */
+	
 	public double getTime(){
-		return time;
+		return this.cyclist.getTEarliestExit();
 	}
 	
 	public int compareTo(CyclistQObject other){
-		if(this.time != other.time){
-			return Double.compare(this.time, other.time);
-		} else {
-			return Long.compare(this.tieBreaker, other.tieBreaker);
-		}
+			return Double.compare(this.cyclist.getTEarliestExit(), other.cyclist.getTEarliestExit());
 	}
 
 	public int compare(CyclistQObject cqo1, CyclistQObject cqo2){
-		if(cqo1.time != cqo2.time){
-			return Double.compare(cqo1.time, cqo2.time);
-		} else {
-			return Long.compare(cqo1.tieBreaker, cqo2.tieBreaker);
-		}
+			return Double.compare(cqo1.cyclist.getTEarliestExit(), cqo2.cyclist.getTEarliestExit());
 	}
 
 }

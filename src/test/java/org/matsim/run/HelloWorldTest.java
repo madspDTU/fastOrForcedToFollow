@@ -43,7 +43,7 @@ public class HelloWorldTest {
 		try {
 			Config config = ConfigUtils.loadConfig( "scenarios/equil/config.xml" ) ;
 			config.controler().setWriteEventsInterval(1);
-			config.controler().setLastIteration(1);
+			config.controler().setLastIteration(0);
 			config.controler().setOutputDirectory( utils.getOutputDirectory() );
 			config.controler().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists);
 			RunMatsim.run( config );

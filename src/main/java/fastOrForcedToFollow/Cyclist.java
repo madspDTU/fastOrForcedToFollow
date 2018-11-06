@@ -11,19 +11,24 @@ import java.util.LinkedList;
  */
 public class Cyclist {
 
-	private int id;
+	private String id;
 	private double desiredSpeed;
 	private double speed = -1; //Current speed
-	private double tStart = 0; // Time at which the cyclist entered the link.
+	private double tStart = 0; // Time at which the cyclist entered the link.      'madsp: Stricly not needed.
+	private double tEarliestExit = 0;
 	private LinkedList<Double[]> speedReport = new LinkedList<Double[]>(); 
 	private LinkedList<Link> route;
-	private LinkTransmissionModel ltm;
+	private final LinkTransmissionModel ltm;
+	private double theta_0;
+	private double theta_1;
 
-	Cyclist(int id, double cruiseSpeed, LinkedList<Link> route, LinkTransmissionModel ltm) throws InstantiationException, IllegalAccessException{
+	Cyclist(String id, double cruiseSpeed, double z_c, LinkedList<Link> route) throws InstantiationException, IllegalAccessException{
 		this.id = id;
 		this.desiredSpeed = cruiseSpeed;
+		this.theta_0 = Runner.theta_0 + z_c * Runner.zeta_0;
+		this.theta_1 = Runner.theta_1 + z_c * Runner.zeta_1;
 		this.route = route;
-		this.ltm = ltm;
+		this.ltm = new LinkTransmissionModel(theta_0, theta_1);
 		speedReport.add(new Double[]{-1d, 0d,-1d});
 	}
 
@@ -35,32 +40,44 @@ public class Cyclist {
 	 * @return <true> if the cyclist could enter the next link, and
 	 *         <false> otherwise.
 	 */
-	
-	public boolean advanceCyclist(int linkId, double time){
+
+	public void advanceCyclist(String previousLinkId){
 		Link nextLink = this.route.peekFirst();
-		double originalSpeed = this.speed;
-		PseudoLane pseudoLane = this.ltm.selectPseudoLaneAndAdaptSpeed(nextLink, this, time); 
-		if(this.ltm.getSafetyBufferDistance(this.speed) <= nextLink.getTotalLaneLength() - nextLink.getOccupiedSpace()){
+		PseudoLane pseudoLane = this.selectPseudoLane(nextLink); 
+		double vTilde = this.getVMax(pseudoLane);
+		if(speedFitsOnLink(vTilde, nextLink)){
 			this.route.removeFirst();
-			Link currentLink = Runner.linksMap.get(linkId);
-			currentLink.incrementOutFlowCounter();
-			currentLink.getOutQ().remove();
-			this.ltm.reduceOccupiedSpace(linkId, originalSpeed);
-			this.ltm.increaseOccupiedSpace(nextLink.getId(), this.speed);
-			this.tStart = Double.max(pseudoLane.tReady, time);
-			currentLink.setWakeUpTime(this.tStart);
-			pseudoLane.updateTs(speed, time);
-			double tArrivalAtNextLink = pseudoLane.tEnd - Runner.lambda_c/speed;
-			moveToNextQ(nextLink, tArrivalAtNextLink);
-			nextLink.sendNotification(Math.max(tArrivalAtNextLink,nextLink.getWakeUpTime()));
+			Link previousLink = Runner.linksMap.get(previousLinkId);
+			previousLink.incrementOutFlowCounter();
+			previousLink.getOutQ().remove();
+			reduceOccupiedSpace(previousLinkId, this.speed);
+			double tLeave = Double.max(pseudoLane.tReady, this.tEarliestExit);
 			
-			return true;
+			previousLink.setWakeUpTime(tLeave);
+			
+			
+				
+			if(previousLink.getId() != Runner.sourceLink.getId()){
+				this.reportSpeed(previousLink.getLength(), tLeave);
+				previousLink.reportOutputTime(tLeave);
+				previousLink.reportSpeedTime(tLeave, getSpeedReport().getLast()[2]);
+			}
+			initialiseNewSpeedReportElement(nextLink.getId(), tLeave);	
+			
+			
+			
+			this.setSpeed(vTilde);
+			this.setTStart(tLeave);
+			this.setTEarliestExit(tLeave + nextLink.getLength()/vTilde);
+			increaseOccupiedSpace(nextLink.getId(), vTilde);
+			pseudoLane.updateTs(vTilde, tLeave);
+			nextLink.incrementInFlowCounter();
+			nextLink.getOutQ().add(new CyclistQObject(this));
 		} else {
-			this.speed = originalSpeed; // reset speed to original value;
-			return false; // parse information on to previous method
+			System.err.println("Something is terribly wrong");
 		}
 	}
-	
+
 	public void exportSpeeds(String baseDir) throws IOException{
 		FileWriter writer = new FileWriter(baseDir + "/Cyclists/speedsOfCyclist" + id +
 				"_" + Runner.N + "Persons.csv");
@@ -71,19 +88,23 @@ public class Cyclist {
 		writer.flush();
 		writer.close();
 	}
-	
+
 	/**
 	 * @return The desired speed (in m/s) of the cyclist.
 	 */
 	public double getDesiredSpeed(){
 		return desiredSpeed;
 	}
-	
+
 	/**
 	 * @return The integer id of the cyclist.
 	 */
-	public int getId(){
+	public String getId(){
 		return id;
+	}
+
+	public LinkTransmissionModel getLTM(){
+		return this.ltm;
 	}
 	
 	/**
@@ -101,22 +122,24 @@ public class Cyclist {
 	}
 
 
-	public void initialiseNewSpeedReportElement(double id, double t){
-		speedReport.addLast(new Double[]{id, t, -1d});
+	public void initialiseNewSpeedReportElement(String id, double t){
+		speedReport.addLast(new Double[]{Double.valueOf(id), t, -1d});
 	}
 
 
 	public void moveToNextQ(Link nextLink, double tEnd){
-		nextLink.incrementInFlowCounter();
-		nextLink.getOutQ().add(new CyclistQObject(tEnd,this));
 	}
 
-	public void reportSpeed(double time){
+	public void reportSpeedWeird(double time){
 		speedReport.addLast(new Double[]{time, this.speed});
 	}
 
-	public void reportSpeed(double length, double t){
-		speedReport.getLast()[2] = length/(t - speedReport.getLast()[1]);
+	public void reportSpeed(double length){
+		speedReport.getLast()[2] = length/(this.tEarliestExit - speedReport.getLast()[1]);
+	}
+	
+	public void reportSpeed(double length, double tLeave){
+		speedReport.getLast()[2] = length/(tLeave - this.tStart);
 	}
 
 
@@ -130,10 +153,60 @@ public class Cyclist {
 		}
 	}
 
-	public void terminateCyclist(int linkId){
+	public void terminateCyclist(String linkId){
 		ltm.reduceOccupiedSpace(linkId, this.speed);
 	}
 
+	public boolean speedFitsOnLink(final double speed, final Link link){
+		return this.ltm.getSafetyBufferDistance(speed) + link.getOccupiedSpace() < link.getTotalLaneLength() || link.getOccupiedSpace() < 0.1;
+	}
+	
+	public PseudoLane selectPseudoLane(Link receivingLink){
+		return this.ltm.selectPseudoLane(receivingLink, this.desiredSpeed, this.tEarliestExit);
+	}
+	
+	public double getVMax(final PseudoLane pseudoLane){
+		return Math.min(desiredSpeed,this.ltm.getVMax(pseudoLane, this.tEarliestExit));
+	}
 
+	
+	public double getTEarliestExit(){
+		return this.tEarliestExit;
+	}
+	
+	public double getTStart(){
+		return this.tStart;
+	}
+	
+	public void setTEarliestExit(double time){
+		this.tEarliestExit = time;
+	}
+	
+	public void setTStart(double time){
+		this.tStart = time;
+	}
 
+	public boolean isNotInFuture(double now){
+		return this.getTEarliestExit() <= now;
+	}
+	
+	public boolean fitsOnLink(final Link link){
+		PseudoLane pseudoLane = selectPseudoLane(link);
+		double vTilde = getVMax(pseudoLane);
+		return speedFitsOnLink(vTilde, link);
+	}
+	
+	
+	public void increaseOccupiedSpace(String linkId, double speed){
+		this.ltm.increaseOccupiedSpace(linkId, speed);
+	}
+	
+	public void reduceOccupiedSpace(String linkId, double speed){
+		this.ltm.reduceOccupiedSpace(linkId, speed);
+	}
+	
+	
+	public double getSpeed(){
+		return this.speed;
+	}
 }

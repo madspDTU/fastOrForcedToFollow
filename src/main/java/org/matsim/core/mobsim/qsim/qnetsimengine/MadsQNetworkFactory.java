@@ -152,7 +152,8 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 									cyclist = cqo.getCyclist();
 								}
 							}
-							return cyclist ;
+//							return cyclist ;  // somehow need to remember which qvehicle belongs to which cyclist. kai, nov'18
+							return null ;
 						}
 
 						@Override public double getStorageCapacity() {

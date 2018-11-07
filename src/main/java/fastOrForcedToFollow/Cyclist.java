@@ -21,7 +21,7 @@ public class Cyclist  {
 	private final LinkTransmissionModel ltm;
 
 	
-	private Cyclist(String id, double desiredSpeed, double theta_0, double theta_1, LinkedList<Link> route){
+	public Cyclist( String id, double desiredSpeed, double theta_0, double theta_1, LinkedList<Link> route ){
 		this.id = id;
 		this.desiredSpeed = desiredSpeed;
 		this.ltm = new LinkTransmissionModel(theta_0, theta_1);

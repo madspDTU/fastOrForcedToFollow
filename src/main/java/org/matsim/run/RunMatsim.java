@@ -18,11 +18,6 @@
  * *********************************************************************** */
 package org.matsim.run;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import org.matsim.api.core.v01.Coord;
-import org.matsim.api.core.v01.DefaultActivityTypes;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
@@ -30,12 +25,10 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.NetworkFactory;
 import org.matsim.api.core.v01.network.Node;
-import org.matsim.api.core.v01.population.Activity;
 import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.Person;
-import org.matsim.api.core.v01.population.Plan;
+import org.matsim.api.core.v01.population.PlanElement;
 import org.matsim.api.core.v01.population.Population;
-import org.matsim.api.core.v01.population.PopulationFactory;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.AbstractModule;
@@ -43,37 +36,32 @@ import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.mobsim.framework.AgentSource;
 import org.matsim.core.mobsim.qsim.AbstractQSimModule;
-import org.matsim.core.mobsim.qsim.agents.AgentFactory;
-import org.matsim.core.mobsim.qsim.agents.PopulationAgentSource;
-import org.matsim.core.mobsim.qsim.qnetsimengine.MadsAgentFactory;
 import org.matsim.core.mobsim.qsim.qnetsimengine.MadsPopulationAgentSource;
 import org.matsim.core.mobsim.qsim.qnetsimengine.MadsQNetworkFactory;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QNetworkFactory;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.scenario.ScenarioUtils;
-import org.matsim.core.utils.geometry.CoordUtils;
+import org.matsim.core.utils.io.IOUtils;
+import org.matsim.examples.ExamplesUtils;
+
+import java.net.URL;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author nagel
  *
  */
-public class RunMatsim
+public class RunMatsim {
 	public static final String DESIRED_SPEED="desiredSpeed" ;
 
 	public static void main(String[] args) {
-		//		Gbl.assertIf(args.length >=1 && args[0]!="" );
-		//		run(ConfigUtils.loadConfig(args[0]));
-		// makes some sense to not modify the config here but in the run method to help  with regression testing.
-
-		run( ConfigUtils.createConfig() ) ;
-
-	}
-
-	static void run(Config config) {
-
-
-
+		
+		final URL configUrl = IOUtils.newUrl( ExamplesUtils.getTestScenarioURL( "equil" ), "config.xml" );
+		
+		Config config = ConfigUtils.loadConfig( configUrl ) ;
+		
 		config.controler().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists );
 
 		config.controler().setLastIteration( 2 );
@@ -84,8 +72,14 @@ public class RunMatsim
 		
 		Population population= scenario.getPopulation() ;
 		for ( Person person : population.getPersons().values() ) {
-			if ( /* person is a bicycle person */ ) {
+			if ( person.getId()==Id.createPersonId( 1 ) ) {
 				person.getAttributes().putAttribute( DESIRED_SPEED, 13.0  ) ;
+				for ( PlanElement pe : person.getSelectedPlan().getPlanElements() ) {
+					if ( pe instanceof Leg ) {
+						( (Leg) pe ).setMode( TransportMode.bike );
+						( (Leg) pe ).setRoute( null  );  // invalidate route since it will be on a different network
+					}
+				}
 			}
 		}
 		
@@ -94,7 +88,8 @@ public class RunMatsim
 		Network network = scenario.getNetwork() ;
 		final NetworkFactory nf = network.getFactory();
 		for ( Link link : network.getLinks().values() ) {
-			if ( link.getAllowedModes().contains( TransportMode.bike ) && link.getAllowedModes().contains(  TransportMode.car ) ) {
+//			if ( link.getAllowedModes().contains( TransportMode.bike ) && link.getAllowedModes().contains(  TransportMode.car ) ) {
+			if ( true ) { // add bicycle links everywhere
 
 				// make a car only link:  // yy what about the other modes?
 				{

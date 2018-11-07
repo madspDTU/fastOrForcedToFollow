@@ -6,20 +6,25 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.core.mobsim.framework.DriverAgent;
 import org.matsim.core.mobsim.framework.MobsimDriverAgent;
 import org.matsim.core.mobsim.framework.PassengerAgent;
-import org.matsim.core.mobsim.qsim.qnetsimengine.QVehicle;
-import org.matsim.core.mobsim.qsim.qnetsimengine.QVehicleImpl;
 import org.matsim.vehicles.Vehicle;
 
 import java.util.Collection;
+import java.util.LinkedList;
+
+import static fastOrForcedToFollow.Runner.theta_0;
+import static fastOrForcedToFollow.Runner.theta_1;
 
 public class QCycleAsVehicle implements QVehicle
 {
 	QVehicle qVehicle  ;
 	
-	public QCycleAsVehicle() {
-		final Vehicle basicVehicle;
+	public QCycleAsVehicle( Vehicle basicVehicle) {
 		this.qVehicle = new QVehicleImpl(basicVehicle) ;
-		this.cyclist = ... ;
+		
+		final String id = basicVehicle.getId().toString() ;
+		final double desiredSpeed = 13.0 ; // yyyy need to get from person
+		final LinkedList<fastOrForcedToFollow.Link> route = null ; // don't need there here; will come from framework
+		this.cyclist = new Cyclist(id, desiredSpeed, theta_0, theta_1, route) ;
 	}
 	
 	public Cyclist getCyclist() {
@@ -34,6 +39,14 @@ public class QCycleAsVehicle implements QVehicle
 	
 	@Override public void setLinkEnterTime( final double linkEnterTime ) {
 		qVehicle.setLinkEnterTime( linkEnterTime );
+	}
+	
+	@Override public double getMaximumVelocity() {
+		return qVehicle.getMaximumVelocity() ;
+	}
+	
+	@Override public double getFlowCapacityConsumptionInEquivalents() {
+		return qVehicle.getFlowCapacityConsumptionInEquivalents() ;
 	}
 	
 	@Override public double getEarliestLinkExitTime() {

@@ -18,11 +18,15 @@
  * *********************************************************************** */
 package org.matsim.run;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.DefaultActivityTypes;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
+import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.NetworkFactory;
 import org.matsim.api.core.v01.network.Node;
@@ -36,6 +40,7 @@ import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
+import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.mobsim.qsim.qnetsimengine.MadsQNetworkFactory;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QNetworkFactory;
 import org.matsim.core.scenario.ScenarioUtils;
@@ -48,47 +53,73 @@ import org.matsim.core.utils.geometry.CoordUtils;
 public class RunMatsim {
 
 	public static void main(String[] args) {
-//		Gbl.assertIf(args.length >=1 && args[0]!="" );
-//		run(ConfigUtils.loadConfig(args[0]));
+		//		Gbl.assertIf(args.length >=1 && args[0]!="" );
+		//		run(ConfigUtils.loadConfig(args[0]));
 		// makes some sense to not modify the config here but in the run method to help  with regression testing.
-		
+
 		run( ConfigUtils.createConfig() ) ;
-		
+
 	}
-	
+
 	static void run(Config config) {
-		
-		// possibly modify config here
-		
+
+
+
+		config.controler().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists );
+
+		config.controler().setLastIteration( 2 );
+
 		// ---
-		
-		Scenario scenario = ScenarioUtils.loadScenario(config) ;
-		
-		// possibly modify scenario here
-		
-		// ---
-		
-		Controler controler = new Controler( scenario ) ;
-		
-		// possibly modify controler here
-		
-		controler.addOverridingModule( new AbstractModule() {
-			@Override public void install() {
-				this.bind( QNetworkFactory.class ).to( MadsQNetworkFactory.class ) ;
-				// (yyyy  unstable API!  kai, oct'18)
-				
+
+		Scenario scenario = ScenarioUtils.loadScenario( config ) ;
+
+		Network network = scenario.getNetwork() ;
+		final NetworkFactory nf = network.getFactory();
+		for ( Link link : network.getLinks().values() ) {
+			if ( link.getAllowedModes().contains( TransportMode.bike ) && link.getAllowedModes().contains(  TransportMode.car ) ) {
+
+				// make a car only link:  // yy what about the other modes?
+				{
+					Set<String> set = new HashSet<>();
+					for(String allowedMode : link.getAllowedModes()){
+						if(!allowedMode.equals(TransportMode.bike)){
+							set.add(allowedMode);
+						}
+					}
+					link.setAllowedModes( set );
+				}
+
+				final Id<Link> id = Id.createLinkId(  link.getId().toString() + "_bike" ) ;
+				final Node fromNode = link.getFromNode() ;
+				final Node toNode = link.getToNode() ;
+				final Link bikeLink = nf.createLink( id, fromNode, toNode );
+
+				bikeLink.setLength( link.getLength() );
+				bikeLink.setFreespeed( 10. );
+				bikeLink.setCapacity( 200000. ); // this is in PCE; should be 3000 _bicycles_ per efficient lane; efficient lane is about 1.5 m.
+				bikeLink.setNumberOfLanes( 2 );
+				{
+					Set<String> set = new HashSet<>();
+					set.add( TransportMode.bike );
+					bikeLink.setAllowedModes( set );
+				}
+
+				network.addLink( bikeLink );
 			}
-		} );
-		
-//		controler.addOverridingQSimModule( new AbstractQSimModule() {
-//			@Override protected void configureQSim() {
-//				throw new RuntimeException( "not implemented" );
-//			}
-//		} );
-		
+		}
+
 		// ---
-		
+
+		Controler controler = new Controler( scenario ) ;
+
+		// ---
+
 		controler.run();
+
 	}
-	
 }
+
+
+
+
+

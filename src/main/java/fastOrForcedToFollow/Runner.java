@@ -2,6 +2,7 @@ package fastOrForcedToFollow;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Locale;
@@ -13,7 +14,11 @@ import java.util.Random;
  *
  */
 public class Runner {
-
+	
+	// Suppress default constructor for noninstantiability
+	private Runner(){
+		throw new AssertionError();
+	}
 	/*
 	 * Network parameters
 	 */
@@ -96,7 +101,7 @@ public class Runner {
 	/**
 	 * Whether or not to report speeds (takes the majority of the time, but results cannot be analysed without).
 	 */
-	public static final boolean reportSpeeds = true;
+	public static final boolean reportSpeeds = false;
 
 
 	/*
@@ -234,7 +239,7 @@ public class Runner {
 		System.out.println("\n\n\nFinished!!! Total time was " + (globalEnd-globalStart)/1000 + " seconds." ); //3.1;
 	}
 
-	
+
 	public static void simulationPreparation() throws InstantiationException, IllegalAccessException{
 		t = 0;
 		networkPreparation();
@@ -278,9 +283,12 @@ public class Runner {
 		Random desiredSpeedRandom = new Random(seed);
 		Random arrivalTimeRandom = new Random(seed+9);
 		Random headwayRandom = new Random(seed + 341);
+		Random startLinkRandom = new Random(seed + 139);
 		for(int i = 0; i<100; i++){ //Throwing away the first 100 draws;
 			desiredSpeedRandom.nextDouble();
 			arrivalTimeRandom.nextDouble();	
+			//headwayRandom.nextDouble() // You forgot to do this for the paper!!!
+			startLinkRandom.nextDouble();
 		}
 
 		cyclists= new LinkedList<Cyclist>();
@@ -301,13 +309,15 @@ public class Runner {
 			}
 			double time = arrivalTimeRandom.nextDouble()*T;
 			LinkedList<Link> defaultRoute = new LinkedList<Link>(); // At the moment all routes are equal.
-			for( int i = 0; i < L; i++){
+			int startLink = startLinkRandom.nextInt(L-1);
+			//startLink = 0;
+			for( int i = startLink; i < L; i++){
 				defaultRoute.addLast(links[i]);
 			}
 
 			double z_c = headwayRandom.nextGaussian();
 
-			Cyclist cyclist = new Cyclist(String.valueOf(id), speed, z_c, defaultRoute);
+			Cyclist cyclist = Cyclist.createIndividualisedCyclist(String.valueOf(id), speed, z_c, defaultRoute);
 			cyclist.setTEarliestExit(time);
 			cyclist.setTStart(time);
 			cyclists.add(cyclist);
@@ -326,30 +336,9 @@ public class Runner {
 	 */
 	public static void simulation() throws InstantiationException, IllegalAccessException, IOException{
 		for( ;t < T; t += timeStep){
-			for(Link link : linksMap.values()){
-				boolean linkFullyProcessed = false;
-				while(!linkFullyProcessed){
-					if(link.getOutQ().isEmpty()){
-						linkFullyProcessed = true;
-					} else {
-						Cyclist cyclist = link.getOutQ().peek().getCyclist();
-						if(cyclist.getTEarliestExit() > t){
-							linkFullyProcessed = true;
-						} else {
-							if(cyclist.getRoute().isEmpty()){
-								link.handleQOnNotification();
-							} else {
-								Link nextLink = cyclist.getRoute().peek();
-								if(cyclist.fitsOnLink(nextLink)){
-									link.handleQOnNotification();	
-								} else {
-									cyclist.setTEarliestExit(cyclist.getRoute().peek().getOutQ().peek().getCyclist().getTEarliestExit());
-									linkFullyProcessed = true;
-								}
-							}
-						} 
-					} 
-				}
+			for(Link link : linksMap.values()){ // Wait before go
+		//	for(Link link : Arrays.asList(linksMap.get("0"), linksMap.get("1"), linksMap.get("2"), linksMap.get("-1"))){ //Go before wait
+				link.processLink(t);
 			}
 			if(Runner.reportSpeeds){
 				for(Link link : linksMap.values()){

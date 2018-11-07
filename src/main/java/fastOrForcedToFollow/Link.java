@@ -227,8 +227,7 @@ public class Link{
 		return tWakeUp;
 	}
 
-	public void handleQOnNotification() throws IOException{
-		Cyclist cyclist = this.outQ.peek().getCyclist();
+	public void moveCyclistOntoLink(Cyclist cyclist) throws IOException{
 		if(cyclist.getRoute().isEmpty()){	//The cyclist has reached his/her destination.
 			this.outQ.remove();
 			this.outFlowCounter++;
@@ -240,6 +239,7 @@ public class Link{
 			cyclist.advanceCyclist(this.id);
 		}
 	}
+	
 
 	/**
 	 * Increments the in-flow counter of the link by 1.
@@ -283,6 +283,41 @@ public class Link{
 	 */
 	public void supplementOccupiedSpace(double length){
 		occupiedSpace += length;
+	}
+	
+	
+	public void processLink(double now){
+		boolean linkFullyProcessed = false;
+		while(!linkFullyProcessed){
+			if(this.getOutQ().isEmpty()){
+				linkFullyProcessed = true;
+			} else {
+				Cyclist cyclist = this.getOutQ().peek().getCyclist();
+				if(cyclist.getTEarliestExit() > now){
+					linkFullyProcessed = true;
+				} else {
+					if(cyclist.getRoute().isEmpty()){
+						try {
+							this.moveCyclistOntoLink(cyclist);
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					} else {
+						Link nextLink = cyclist.getRoute().peek();
+						if(cyclist.fitsOnLink(nextLink)){
+							try {
+								this.moveCyclistOntoLink(cyclist);
+							} catch (IOException e) {
+								e.printStackTrace();
+							}	
+						} else {
+							cyclist.setTEarliestExit(cyclist.getRoute().peek().getOutQ().peek().getCyclist().getTEarliestExit());
+							linkFullyProcessed = true;
+						}
+					}
+				} 
+			} 
+		}
 	}
 
 

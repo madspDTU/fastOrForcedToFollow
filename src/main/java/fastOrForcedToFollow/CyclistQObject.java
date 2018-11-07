@@ -2,10 +2,14 @@ package fastOrForcedToFollow;
 
 /**
  * @author mpaulsen
+ * 
+ * A CyclistQObject is essentially a cyclist, but has a modififed compareTo method, allowing it to be sorted
+ * by earliest possible exit time in the priority queue when inserted.
  *
  */
 public class CyclistQObject implements Comparable<CyclistQObject>{
 
+	
 	private Cyclist cyclist; // The cyclist.
 
 	CyclistQObject(Cyclist cyclist){

@@ -11,26 +11,35 @@ import java.util.LinkedList;
  */
 public class Cyclist {
 
-	private String id;
-	private double desiredSpeed;
+	private final String id;
+	private final double desiredSpeed;
 	private double speed = -1; //Current speed
 	private double tStart = 0; // Time at which the cyclist entered the link.      'madsp: Stricly not needed.
 	private double tEarliestExit = 0;
 	private LinkedList<Double[]> speedReport = new LinkedList<Double[]>(); 
 	private LinkedList<Link> route;
 	private final LinkTransmissionModel ltm;
-	private double theta_0;
-	private double theta_1;
 
-	Cyclist(String id, double cruiseSpeed, double z_c, LinkedList<Link> route) throws InstantiationException, IllegalAccessException{
+	
+	private Cyclist(String id, double desiredSpeed, double theta_0, double theta_1, LinkedList<Link> route){
 		this.id = id;
-		this.desiredSpeed = cruiseSpeed;
-		this.theta_0 = Runner.theta_0 + z_c * Runner.zeta_0;
-		this.theta_1 = Runner.theta_1 + z_c * Runner.zeta_1;
-		this.route = route;
+		this.desiredSpeed = desiredSpeed;
 		this.ltm = new LinkTransmissionModel(theta_0, theta_1);
+		this.route = route;
 		speedReport.add(new Double[]{-1d, 0d,-1d});
 	}
+	
+	public static Cyclist createGlobalCyclist(String id, double desiredSpeed, LinkedList<Link> route){
+		return new Cyclist(id, desiredSpeed, Runner.theta_0, Runner.theta_1, route);
+	}
+	
+	public static Cyclist createIndividualisedCyclist(String id, double desiredSpeed, double z_c, LinkedList<Link> route){
+		return new Cyclist(id, desiredSpeed, Runner.theta_0 + z_c*Runner.zeta_0, Runner.theta_1 + z_c*Runner.zeta_1, route);
+	}
+	
+	
+	
+
 
 	/**
 	 * Advances the cyclist to next link if there is sufficient space on the next link.

@@ -3,12 +3,12 @@
 <config>
 	<module name="controler" >
 		<!-- Default=1000;  -->
-		<param name="lastIteration" value="0" />
+		<param name="lastIteration" value="2" />
 		<param name="outputDirectory" value="test/output/org/matsim/run/HelloWorldTest/test/" />
 		<!-- Possible values: failIfDirectoryExists, overwriteExistingFiles, deleteDirectoryIfExists -->
 		<param name="overwriteFiles" value="deleteDirectoryIfExists" />
 		<!-- iterationNumber % writeEventsInterval == 0 defines in which iterations events are written to a file. `0' disables events writing completely. -->
-		<param name="writeEventsInterval" value="0" />
+		<param name="writeEventsInterval" value="1" />
 	</module>
 	<module name="network" >
 		<param name="inputNetworkFile" value="network.xml" />

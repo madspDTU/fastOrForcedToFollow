@@ -9,7 +9,7 @@ import java.util.LinkedList;
  * @author mpaulsen
  *
  */
-public class Cyclist {
+public class Cyclist  {
 
 	private final String id;
 	private final double desiredSpeed;
@@ -44,8 +44,7 @@ public class Cyclist {
 	/**
 	 * Advances the cyclist to next link if there is sufficient space on the next link.
 	 * 
-	 * @param lqo The <code>LinkQObject</code> which is currently begin processed.
-	 * 
+	 *
 	 * @return <true> if the cyclist could enter the next link, and
 	 *         <false> otherwise.
 	 */

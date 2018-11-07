@@ -41,8 +41,16 @@ import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
+import org.matsim.core.mobsim.framework.AgentSource;
+import org.matsim.core.mobsim.qsim.AbstractQSimModule;
+import org.matsim.core.mobsim.qsim.agents.AgentFactory;
+import org.matsim.core.mobsim.qsim.agents.PopulationAgentSource;
+import org.matsim.core.mobsim.qsim.qnetsimengine.MadsAgentFactory;
+import org.matsim.core.mobsim.qsim.qnetsimengine.MadsPopulationAgentSource;
 import org.matsim.core.mobsim.qsim.qnetsimengine.MadsQNetworkFactory;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QNetworkFactory;
+import org.matsim.core.network.NetworkUtils;
+import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.utils.geometry.CoordUtils;
 
@@ -50,7 +58,8 @@ import org.matsim.core.utils.geometry.CoordUtils;
  * @author nagel
  *
  */
-public class RunMatsim {
+public class RunMatsim
+	public static final String DESIRED_SPEED="desiredSpeed" ;
 
 	public static void main(String[] args) {
 		//		Gbl.assertIf(args.length >=1 && args[0]!="" );
@@ -72,7 +81,16 @@ public class RunMatsim {
 		// ---
 
 		Scenario scenario = ScenarioUtils.loadScenario( config ) ;
+		
+		Population population= scenario.getPopulation() ;
+		for ( Person person : population.getPersons().values() ) {
+			if ( /* person is a bicycle person */ ) {
+				person.getAttributes().putAttribute( DESIRED_SPEED, 13.0  ) ;
+			}
+		}
+		
 
+		// adjust network to bicycle stuff:
 		Network network = scenario.getNetwork() ;
 		final NetworkFactory nf = network.getFactory();
 		for ( Link link : network.getLinks().values() ) {
@@ -107,11 +125,29 @@ public class RunMatsim {
 				network.addLink( bikeLink );
 			}
 		}
-
+		
+		NetworkUtils.writeNetwork( scenario.getNetwork(), "net.xml" );
+		PopulationUtils.writePopulation( scenario.getPopulation(), "pop.xml" );
+		
+//		System.exit(-1) ;
+		
 		// ---
 
 		Controler controler = new Controler( scenario ) ;
-
+		
+		controler.addOverridingModule( new AbstractModule(  ) {
+			@Override public void install() {
+				this.bind( QNetworkFactory.class ).to( MadsQNetworkFactory.class ) ;
+			}
+		} );
+		controler.addOverridingQSimModule(new AbstractQSimModule() {
+			@Override
+			protected void configureQSim() {
+				bind( AgentSource.class).to( MadsPopulationAgentSource.class).asEagerSingleton();
+			}
+		});
+		
+		
 		// ---
 
 		controler.run();

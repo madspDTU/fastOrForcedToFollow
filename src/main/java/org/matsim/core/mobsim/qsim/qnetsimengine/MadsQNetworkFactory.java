@@ -20,6 +20,8 @@
 package org.matsim.core.mobsim.qsim.qnetsimengine;
 
 
+import fastOrForcedToFollow.Cyclist;
+import fastOrForcedToFollow.CyclistQObject;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
@@ -27,26 +29,18 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.config.groups.QSimConfigGroup;
-import org.matsim.core.controler.ControlerDefaultsModule;
 import org.matsim.core.gbl.Gbl;
 import org.matsim.core.mobsim.framework.MobsimTimer;
 import org.matsim.core.mobsim.qsim.interfaces.AgentCounter;
 import org.matsim.core.mobsim.qsim.interfaces.MobsimVehicle;
 import org.matsim.core.mobsim.qsim.pt.TransitStopAgentTracker;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QNetsimEngine.NetsimInternalInterface;
-import org.matsim.core.mobsim.qsim.qnetsimengine.linkspeedcalculator.LinkSpeedCalculator;
 import org.matsim.core.mobsim.qsim.qnetsimengine.vehicleq.VehicleQ;
 import org.matsim.lanes.Lane;
 import org.matsim.vehicles.Vehicle;
 import org.matsim.vis.snapshotwriters.SnapshotLinkWidthCalculator;
 
-import fastOrForcedToFollow.Cyclist;
-import fastOrForcedToFollow.CyclistQObject;
-import fastOrForcedToFollow.CyclistQVehicle;
-import fastOrForcedToFollow.PseudoLane;
-
 import javax.inject.Inject;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -125,7 +119,7 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 						}
 						@Override public void addFromWait( final QVehicle veh ) {
 							// Here we know that it fits, because the isAcceptingFromWait is individual-specific
-							Cyclist cyclist = null; // Assuming conversion from QVehicle -> Cyclist.
+							Cyclist cyclist = ((QCycleAsVehicle) veh).getCyclist() ;
 							try {
 								delegate.moveCyclistOntoLink(cyclist);
 							} catch (IOException e) {
@@ -134,7 +128,7 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 						}
 
 						@Override public boolean isAcceptingFromWait( final QVehicle veh ) {
-							Cyclist cyclist = null;  // Suppose we can convert from veh -> cyclist
+							Cyclist cyclist = (Cyclist) veh;  // Suppose we can convert from veh -> cyclist
 							return cyclist.isNotInFuture(context.getSimTimer().getTimeOfDay()) && cyclist.fitsOnLink(delegate) ;
 						}
 
@@ -158,8 +152,7 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 									cyclist = cqo.getCyclist();
 								}
 							}
-							//TODO Convert from cyclist - > QVehicle
-							throw new RuntimeException( "not fully implemented" );							
+							return cyclist ;
 						}
 
 						@Override public double getStorageCapacity() {
@@ -229,8 +222,7 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 
 						@Override public QVehicle getFirstVehicle() {
 							Cyclist cyclist = delegate.getOutQ().isEmpty() ? null : delegate.getOutQ().peek().getCyclist();
-							CyclistQVehicle veh = null; //Assuming conversion from cyclist - > QVehicle;
-							return veh;
+							return cyclist ;
 						}
 
 						@Override public double getLastMovementTimeOfFirstVehicle() {

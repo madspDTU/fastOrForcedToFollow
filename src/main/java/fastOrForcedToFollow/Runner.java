@@ -2,7 +2,6 @@ package fastOrForcedToFollow;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Locale;
@@ -124,22 +123,22 @@ public class Runner {
 	/**
 	 * One of the parameters for Johnson's SU-distribution, as estimated based on data from COWI.
 	 */
-	private static final double JohnsonGamma = -2.745957257392118;
+	public static final double JohnsonGamma = -2.745957257392118;
 
 	/**
 	 * One of the parameters for Johnson's SU-distribution, as estimated based on data from COWI.
 	 */
-	private static final double JohnsonXsi = 3.674350833333333;
+	public static final double JohnsonXsi = 3.674350833333333;
 
 	/**
 	 * One of the parameters for Johnson's SU-distribution, as estimated based on data from COWI.
 	 */
-	private static final double JohnsonDelta = 4.068155531972158;
+	public static final double JohnsonDelta = 4.068155531972158;
 
 	/**
 	 * One of the parameters for Johnson's SU-distribution, as estimated based on data from COWI.
 	 */
-	private static final double JohnsonLambda = 3.494609779450189;
+	public static final double JohnsonLambda = 3.494609779450189;
 
 
 	/*

@@ -82,4 +82,10 @@ public class ToolBox {
 
 	}
 	
+	
+	public static double uniformToJohnson(double u){
+		return Runner.JohnsonLambda * Math.sinh( (qNorm(u) - Runner.JohnsonGamma) / Runner.JohnsonDelta) + Runner.JohnsonXsi;
+	}
+	
+	
 }

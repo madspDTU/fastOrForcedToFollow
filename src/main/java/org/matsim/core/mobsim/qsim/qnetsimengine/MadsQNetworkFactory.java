@@ -20,6 +20,7 @@
 package org.matsim.core.mobsim.qsim.qnetsimengine;
 
 
+import fastOrForcedToFollow.BicycleVehicleType;
 import fastOrForcedToFollow.Cyclist;
 import fastOrForcedToFollow.CyclistQObject;
 import org.matsim.api.core.v01.Id;
@@ -102,7 +103,7 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 			final String id = link.getId().toString();
 			final double width=2. ;
 			final double length=link.getLength() ;
-			final double bicyclePCE = 1./4.;
+			final double bicyclePCE = new BicycleVehicleType().getPcuEquivalents();
 			fastOrForcedToFollow.Link link1 = null;
 			try {
 				link1 = new fastOrForcedToFollow.Link(id, width, length) ;
@@ -119,17 +120,14 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 						}
 						@Override public void addFromWait( final QVehicle veh ) {
 							// Here we know that it fits, because the isAcceptingFromWait is individual-specific
-							Cyclist cyclist = ((QCycleAsVehicle) veh).getCyclist() ;
-							try {
-								delegate.moveCyclistOntoLink(cyclist);
-							} catch (IOException e) {
-								e.printStackTrace();
-							}
+							QCycleAsVehicle qCyc = (QCycleAsVehicle) veh;
+							delegate.advanceCyclist(qCyc);
+
 						}
 
 						@Override public boolean isAcceptingFromWait( final QVehicle veh ) {
-							Cyclist cyclist = (Cyclist) veh;  // Suppose we can convert from veh -> cyclist
-							return cyclist.isNotInFuture(context.getSimTimer().getTimeOfDay()) && cyclist.fitsOnLink(delegate) ;
+							Cyclist cyclist = ((QCycleAsVehicle) veh).getCyclist(); 
+							return cyclist.isNotInFuture(context.getSimTimer().getTimeOfDay()) && delegate.cyclistFitsOnLink(cyclist) ;
 						}
 
 						@Override public boolean isActive() {
@@ -146,14 +144,13 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 						}
 
 						@Override public QVehicle getVehicle( final Id<Vehicle> vehicleId ) {
-							Cyclist cyclist = null;
+							QCycleAsVehicle qCyc = null;
 							for(CyclistQObject cqo : delegate.getOutQ()){
 								if(cqo.getCyclist().getId() == vehicleId.toString()){
-									cyclist = cqo.getCyclist();
+									qCyc = cqo.getQCycle();
 								}
 							}
-//							return cyclist ;  // somehow need to remember which qvehicle belongs to which cyclist. kai, nov'18
-							return null ;
+							return qCyc;
 						}
 
 						@Override public double getStorageCapacity() {
@@ -178,8 +175,6 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 
 						@Override public boolean doSimStep() {
 							return true;
-							//As far as I understand, I don't have to do anything here, as this is already taken care of by
-							// addFromUpstream/addFromWait...
 						}
 
 						@Override public void clearVehicles() {
@@ -187,25 +182,21 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 						}
 
 						@Override public Collection<MobsimVehicle> getAllVehicles() {
-							ArrayList<Cyclist> cyclists = new ArrayList<Cyclist>();
+							ArrayList<QCycleAsVehicle> qCycs = new ArrayList<QCycleAsVehicle>();
 							for(CyclistQObject cqo : delegate.getOutQ()){
-								cyclists.add(cqo.getCyclist());
+								qCycs.add(cqo.getQCycle());
 							}
-							//return cyclists; TODO Convert from cyclist - > QVehicle
-							throw new RuntimeException( "not fully implemented" );
+							return qCycs;
 						}
 
 						@Override public void addFromUpstream( final QVehicle veh ) {
-							Cyclist cyclist = null; // Assuming conversion from QVehicle - Cyclist
+							QCycleAsVehicle qCyc = (QCycleAsVehicle) veh;
+							Cyclist cyclist = qCyc.getCyclist();
 							if( !cyclist.isNotInFuture(context.getSimTimer().getTimeOfDay()) ){
 								return;
-							}
-							if(cyclist.fitsOnLink(delegate)){
-								try {
-									delegate.moveCyclistOntoLink(cyclist);
-								} catch (IOException e) {
-									e.printStackTrace();
-								}
+							} 
+							if(delegate.cyclistFitsOnLink(cyclist)){
+								delegate.advanceCyclist(qCyc);
 							} else {
 								cyclist.setTEarliestExit(delegate.getWakeUpTime());
 							}
@@ -216,14 +207,11 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 						}
 
 						@Override public QVehicle popFirstVehicle() {
-							Cyclist cyclist = delegate.getOutQ().isEmpty() ? null : delegate.getOutQ().poll().getCyclist();
-							QVehicle veh = null; //Assuming conversion from cyclist - > QVehicle;
-							return veh;
+							return delegate.getOutQ().isEmpty() ? null : delegate.getOutQ().poll().getQCycle();
 						}
 
 						@Override public QVehicle getFirstVehicle() {
-							Cyclist cyclist = delegate.getOutQ().isEmpty() ? null : delegate.getOutQ().peek().getCyclist();
-							return cyclist ;
+							return delegate.getOutQ().isEmpty() ? null : delegate.getOutQ().peek().getQCycle();
 						}
 
 						@Override public double getLastMovementTimeOfFirstVehicle() {
@@ -232,16 +220,19 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 
 						@Override public boolean isAcceptingFromUpstream() {
 							return delegate.getOccupiedSpace() < delegate.getTotalLaneLength();
-							//In all other cases, it could potentialy be allowed on the link (e.g. if safety distances parameters are very small)
-							//Because the allowance is vehicle-specific, this has to be checked internally in addromUpstream
+							//madsp:
+							//In all other cases, it could potentialy be allowed on the link 
+							// (e.g. if safety distances parameters are very small). Because the
+							// it really is vehicle-specific, this has to be checked internally 
+							// in addFromUpstream
 						}
 
 						@Override public double getLoadIndicator() {
-							throw new RuntimeException( "not implemented" );
+							return delegate.getOccupiedSpace();
 						}
 
 						@Override public void initBeforeSimStep() {
-							return;
+							//Intentionally empty
 						}
 					} ;
 				}

@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.PriorityQueue;
 
+import org.matsim.core.mobsim.qsim.qnetsimengine.QCycleAsVehicle;
+
 /**
  * 
  * @author mpaulsen
@@ -227,19 +229,73 @@ public class Link{
 		return tWakeUp;
 	}
 
-	public void moveCyclistOntoLink(Cyclist cyclist) throws IOException{
-		if(cyclist.getRoute().isEmpty()){	//The cyclist has reached his/her destination.
-			this.outQ.remove();
-			this.outFlowCounter++;
-			cyclist.terminateCyclist(this.id);
-			cyclist.reportSpeed(this.length);
-			reportOutputTime(cyclist.getTEarliestExit());
-			reportSpeedTime(cyclist.getTEarliestExit(), cyclist.getSpeedReport().getLast()[2]);
-		}  else {	
-			cyclist.advanceCyclist(this.id);
+
+
+	public void finishCyclist(QCycleAsVehicle qCyc){
+		Cyclist cyclist = qCyc.getCyclist();
+		Link previousLink = cyclist.getCurrentLink();
+		previousLink.outQ.remove();
+		previousLink.outFlowCounter++;
+		previousLink.reduceOccupiedSpace(cyclist, cyclist.getSpeed());
+		cyclist.reportSpeed(previousLink.length);
+		reportOutputTime(cyclist.getTEarliestExit());
+		reportSpeedTime(cyclist.getTEarliestExit(), cyclist.getSpeedReport().getLast()[2]);
+		cyclist.setCurrentLink(null);
+	}
+
+	public void advanceCyclist(QCycleAsVehicle qCyc){
+		Cyclist cyclist = qCyc.getCyclist();
+		PseudoLane pseudoLane = cyclist.selectPseudoLane(this); 
+		double vTilde = cyclist.getVMax(pseudoLane);
+		if(cyclist.speedFitsOnLink(vTilde, this)){
+			Link previousLink = cyclist.getCurrentLink();
+			previousLink.incrementOutFlowCounter();
+			previousLink.getOutQ().remove();
+			previousLink.reduceOccupiedSpace( cyclist, cyclist.getSpeed());
+			double tLeave = Double.max(pseudoLane.tReady, cyclist.getTEarliestExit());
+
+			previousLink.setWakeUpTime(tLeave);
+
+
+			if(previousLink.getId() != Runner.sourceLink.getId()){
+				cyclist.reportSpeed(previousLink.getLength(), tLeave);
+				previousLink.reportOutputTime(tLeave);
+				previousLink.reportSpeedTime(tLeave, cyclist.getSpeedReport().getLast()[2]);
+			}
+			cyclist.initialiseNewSpeedReportElement(this.getId(), tLeave);	
+
+
+
+			cyclist.setSpeed(vTilde);
+			cyclist.setTStart(tLeave);
+			cyclist.setTEarliestExit(tLeave + this.length/vTilde);
+			this.increaseOccupiedSpace(cyclist, vTilde);
+			pseudoLane.updateTs(vTilde, tLeave);
+			this.incrementInFlowCounter();
+			outQ.add(new CyclistQObject(qCyc));
+			cyclist.setCurrentLink(this);
+		} else {
+			System.err.println("Something is terribly wrong");
 		}
 	}
-	
+
+
+
+	/**
+	 * Reduces the occupied space of link <code>linkId</code> by the safety distance corresponding to <code>speed</code>
+	 * 
+	 * @param linkId of the link that will have its space reduced.
+	 * 
+	 * @param speed on which the safety distance will be based.
+	 */
+	void reduceOccupiedSpace(Cyclist cyclist, double speed){
+		this.supplementOccupiedSpace(-cyclist.getSafetyBufferDistance(speed));
+	}
+
+	void increaseOccupiedSpace(Cyclist cyclist, double speed){
+		this.supplementOccupiedSpace(cyclist.getSafetyBufferDistance(speed));
+	}
+
 
 	/**
 	 * Increments the in-flow counter of the link by 1.
@@ -284,32 +340,25 @@ public class Link{
 	public void supplementOccupiedSpace(double length){
 		occupiedSpace += length;
 	}
-	
-	
+
+
 	public void processLink(double now){
 		boolean linkFullyProcessed = false;
 		while(!linkFullyProcessed){
 			if(this.getOutQ().isEmpty()){
 				linkFullyProcessed = true;
 			} else {
-				Cyclist cyclist = this.getOutQ().peek().getCyclist();
+				QCycleAsVehicle cqo = this.getOutQ().peek().getQCycle();
+				Cyclist cyclist = cqo.getCyclist();
 				if(cyclist.getTEarliestExit() > now){
 					linkFullyProcessed = true;
 				} else {
 					if(cyclist.getRoute().isEmpty()){
-						try {
-							this.moveCyclistOntoLink(cyclist);
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
+						this.finishCyclist(cqo);
 					} else {
 						Link nextLink = cyclist.getRoute().peek();
-						if(cyclist.fitsOnLink(nextLink)){
-							try {
-								this.moveCyclistOntoLink(cyclist);
-							} catch (IOException e) {
-								e.printStackTrace();
-							}	
+						if(nextLink.cyclistFitsOnLink(cyclist)){
+							this.advanceCyclist(cqo);	
 						} else {
 							cyclist.setTEarliestExit(cyclist.getRoute().peek().getOutQ().peek().getCyclist().getTEarliestExit());
 							linkFullyProcessed = true;
@@ -320,5 +369,11 @@ public class Link{
 		}
 	}
 
+
+	public boolean cyclistFitsOnLink(Cyclist cyclist){
+		PseudoLane pseudoLane = cyclist.selectPseudoLane(this);
+		double vTilde = cyclist.getVMax(pseudoLane);
+		return cyclist.speedFitsOnLink(vTilde, this);
+	}
 
 }

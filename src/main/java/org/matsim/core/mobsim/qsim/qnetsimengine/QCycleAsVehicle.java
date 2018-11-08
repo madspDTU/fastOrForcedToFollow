@@ -1,11 +1,14 @@
 package org.matsim.core.mobsim.qsim.qnetsimengine;
 
 import fastOrForcedToFollow.Cyclist;
+import fastOrForcedToFollow.Link;
+
 import org.matsim.api.core.v01.Id;
-import org.matsim.api.core.v01.network.Link;
+import org.matsim.api.core.v01.population.Person;
 import org.matsim.core.mobsim.framework.DriverAgent;
 import org.matsim.core.mobsim.framework.MobsimDriverAgent;
 import org.matsim.core.mobsim.framework.PassengerAgent;
+import org.matsim.run.RunMatsim;
 import org.matsim.vehicles.Vehicle;
 
 import java.util.Collection;
@@ -17,21 +20,31 @@ import static fastOrForcedToFollow.Runner.theta_1;
 public class QCycleAsVehicle implements QVehicle
 {
 	QVehicle qVehicle  ;
+	Cyclist cyclist ;
 	
-	public QCycleAsVehicle( Vehicle basicVehicle) {
-		this.qVehicle = new QVehicleImpl(basicVehicle) ;
+	//mads: Should be alright now.
+	
+	public QCycleAsVehicle( Vehicle basicVehicle,  Person person) {
+		final String id = basicVehicle.getId().toString();
+		this.qVehicle = new QVehicleImpl(new BicycleVehicle(id));
 		
-		final String id = basicVehicle.getId().toString() ;
-		final double desiredSpeed = 13.0 ; // yyyy need to get from person
+		final double desiredSpeed = (double) person.getAttributes().getAttribute(RunMatsim.DESIRED_SPEED);
+		final double z_c = (double) person.getAttributes().getAttribute(RunMatsim.HEADWAY_DISTANCE_PREFERENCE);
 		final LinkedList<fastOrForcedToFollow.Link> route = null ; // don't need there here; will come from framework
-		this.cyclist = new Cyclist(id, desiredSpeed, theta_0, theta_1, route) ;
+		this.cyclist = Cyclist.createIndividualisedCyclist(id, desiredSpeed, z_c, route);
+	}
+	
+	public QCycleAsVehicle(Cyclist cyclist){
+		this.qVehicle = new QVehicleImpl(new BicycleVehicle(cyclist.getId())) ;
+		this.cyclist = cyclist;
 	}
 	
 	public Cyclist getCyclist() {
-		return cyclist;
+		return this.cyclist;
 	}
 	
-	Cyclist cyclist ;
+
+	
 	
 	@Override public double getLinkEnterTime() {
 		return qVehicle.getLinkEnterTime();

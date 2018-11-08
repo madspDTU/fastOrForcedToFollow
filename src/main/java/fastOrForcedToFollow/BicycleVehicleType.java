@@ -24,6 +24,9 @@ public class BicycleVehicleType implements VehicleType{
 
 	private DoorOperationMode doorOperationMode = DoorOperationMode.serial;
 
+	public BicycleVehicleType(){
+		id = Id.create("BicycleVehicleType", VehicleType.class);
+	}
 	
 	private VehicleCapacity capacity = new VehicleCapacity() {
 		
@@ -94,8 +97,7 @@ public class BicycleVehicleType implements VehicleType{
 
 	@Override
 	public double getWidth() {
-		// TODO Auto-generated method stub
-		return 0;
+		return this.width;
 	}
 
 	@Override

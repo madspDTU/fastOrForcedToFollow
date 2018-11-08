@@ -46,7 +46,7 @@ public class HelloWorldTest {
 			config.controler().setLastIteration(0);
 			config.controler().setOutputDirectory( utils.getOutputDirectory() );
 			config.controler().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists);
-			RunMatsim.run( config );
+			RunMatsim.main( new String[]{} );
 		} catch ( Exception ee ) {
 			Logger.getLogger(this.getClass()).fatal("there was an exception: \n" + ee ) ;
 

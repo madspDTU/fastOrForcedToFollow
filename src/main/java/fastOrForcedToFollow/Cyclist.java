@@ -17,8 +17,9 @@ public class Cyclist  {
 	private double tStart = 0; // Time at which the cyclist entered the link.      'madsp: Stricly not needed.
 	private double tEarliestExit = 0;
 	private LinkedList<Double[]> speedReport = new LinkedList<Double[]>(); 
-	private LinkedList<Link> route;
+	private LinkedList<Link> route; // madsp: Only used in non-MATSim contexts now.
 	private final LinkTransmissionModel ltm;
+	private Link currentLink = Runner.sourceLink;
 
 	
 	public Cyclist( String id, double desiredSpeed, double theta_0, double theta_1, LinkedList<Link> route ){
@@ -49,42 +50,6 @@ public class Cyclist  {
 	 *         <false> otherwise.
 	 */
 
-	public void advanceCyclist(String previousLinkId){
-		Link nextLink = this.route.peekFirst();
-		PseudoLane pseudoLane = this.selectPseudoLane(nextLink); 
-		double vTilde = this.getVMax(pseudoLane);
-		if(speedFitsOnLink(vTilde, nextLink)){
-			this.route.removeFirst();
-			Link previousLink = Runner.linksMap.get(previousLinkId);
-			previousLink.incrementOutFlowCounter();
-			previousLink.getOutQ().remove();
-			reduceOccupiedSpace(previousLinkId, this.speed);
-			double tLeave = Double.max(pseudoLane.tReady, this.tEarliestExit);
-			
-			previousLink.setWakeUpTime(tLeave);
-			
-			
-				
-			if(previousLink.getId() != Runner.sourceLink.getId()){
-				this.reportSpeed(previousLink.getLength(), tLeave);
-				previousLink.reportOutputTime(tLeave);
-				previousLink.reportSpeedTime(tLeave, getSpeedReport().getLast()[2]);
-			}
-			initialiseNewSpeedReportElement(nextLink.getId(), tLeave);	
-			
-			
-			
-			this.setSpeed(vTilde);
-			this.setTStart(tLeave);
-			this.setTEarliestExit(tLeave + nextLink.getLength()/vTilde);
-			increaseOccupiedSpace(nextLink.getId(), vTilde);
-			pseudoLane.updateTs(vTilde, tLeave);
-			nextLink.incrementInFlowCounter();
-			nextLink.getOutQ().add(new CyclistQObject(this));
-		} else {
-			System.err.println("Something is terribly wrong");
-		}
-	}
 
 	public void exportSpeeds(String baseDir) throws IOException{
 		FileWriter writer = new FileWriter(baseDir + "/Cyclists/speedsOfCyclist" + id +
@@ -161,9 +126,6 @@ public class Cyclist  {
 		}
 	}
 
-	public void terminateCyclist(String linkId){
-		ltm.reduceOccupiedSpace(linkId, this.speed);
-	}
 
 	public boolean speedFitsOnLink(final double speed, final Link link){
 		return this.ltm.getSafetyBufferDistance(speed) + link.getOccupiedSpace() < link.getTotalLaneLength() || link.getOccupiedSpace() < 0.1;
@@ -198,23 +160,24 @@ public class Cyclist  {
 		return this.getTEarliestExit() <= now;
 	}
 	
-	public boolean fitsOnLink(final Link link){
-		PseudoLane pseudoLane = selectPseudoLane(link);
-		double vTilde = getVMax(pseudoLane);
-		return speedFitsOnLink(vTilde, link);
+
+	
+		
+	public double getSafetyBufferDistance(double speed){
+		return this.ltm.getSafetyBufferDistance(speed);
 	}
 	
-	
-	public void increaseOccupiedSpace(String linkId, double speed){
-		this.ltm.increaseOccupiedSpace(linkId, speed);
-	}
-	
-	public void reduceOccupiedSpace(String linkId, double speed){
-		this.ltm.reduceOccupiedSpace(linkId, speed);
-	}
 	
 	
 	public double getSpeed(){
 		return this.speed;
+	}
+	
+	public Link getCurrentLink(){
+		return this.currentLink;
+	}
+	
+	public void setCurrentLink(Link newLink){
+		this.currentLink = newLink;
 	}
 }

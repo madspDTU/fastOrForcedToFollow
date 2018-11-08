@@ -71,20 +71,11 @@ public class LinkTransmissionModel {
 	 * 
 	 * @return safety distance (including the length of its own bicycle) given in metres.
 	 */
-	public double getSafetyBufferDistance(double speed) {
+	double getSafetyBufferDistance(double speed) {
 		return this.theta_0  + this.theta_1 * Math.sqrt(speed);// 
 	}
 
-	/**
-	 * Reduces the occupied space of link <code>linkId</code> by the safety distance corresponding to <code>speed</code>
-	 * 
-	 * @param linkId of the link that will have its space reduced.
-	 * 
-	 * @param speed on which the safety distance will be based.
-	 */
-	void reduceOccupiedSpace(String linkId, double speed){
-		Runner.linksMap.get(linkId).supplementOccupiedSpace(-getSafetyBufferDistance(speed));
-	}
+
 
 	/**
 	 * Increases the occupied space of link <code>linkId</code> by the safety distance corresponding to <code>speed</code>

@@ -18,6 +18,7 @@
  * *********************************************************************** */
 package org.matsim.run;
 
+import org.hsqldb.lib.Iterator;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
@@ -45,8 +46,14 @@ import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.utils.io.IOUtils;
 import org.matsim.examples.ExamplesUtils;
 
+import fastOrForcedToFollow.ToolBox;
+
 import java.net.URL;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Random;
 import java.util.Set;
 
 /**
@@ -54,14 +61,15 @@ import java.util.Set;
  *
  */
 public class RunMatsim {
-	public static final String DESIRED_SPEED="desiredSpeed" ;
+	public static final String DESIRED_SPEED = "v_0";
+	public static final String HEADWAY_DISTANCE_PREFERENCE = "z_c";
 
 	public static void main(String[] args) {
-		
+
 		final URL configUrl = IOUtils.newUrl( ExamplesUtils.getTestScenarioURL( "equil" ), "config.xml" );
-		
+
 		Config config = ConfigUtils.loadConfig( configUrl ) ;
-		
+
 		config.controler().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists );
 
 		config.controler().setLastIteration( 2 );
@@ -69,11 +77,22 @@ public class RunMatsim {
 		// ---
 
 		Scenario scenario = ScenarioUtils.loadScenario( config ) ;
-		
+
+		Random speedRandom = new Random();
+		Random headwayRandom = new Random();
+		for(int i = 0; i <200; i++){
+			speedRandom.nextDouble();
+			headwayRandom.nextDouble();
+		}
+
 		Population population= scenario.getPopulation() ;
 		for ( Person person : population.getPersons().values() ) {
-			if ( person.getId()==Id.createPersonId( 1 ) ) {
-				person.getAttributes().putAttribute( DESIRED_SPEED, 13.0  ) ;
+			if ( true ) {  // Forcing all legs in scenario to be made by bicycle...
+				double v_0 = ToolBox.uniformToJohnson(speedRandom.nextDouble());
+				double z_c = headwayRandom.nextDouble(); 
+				person.getAttributes().putAttribute(DESIRED_SPEED, v_0);
+				person.getAttributes().putAttribute(HEADWAY_DISTANCE_PREFERENCE, z_c);
+
 				for ( PlanElement pe : person.getSelectedPlan().getPlanElements() ) {
 					if ( pe instanceof Leg ) {
 						( (Leg) pe ).setMode( TransportMode.bike );
@@ -82,54 +101,54 @@ public class RunMatsim {
 				}
 			}
 		}
-		
+
 
 		// adjust network to bicycle stuff:
 		Network network = scenario.getNetwork() ;
 		final NetworkFactory nf = network.getFactory();
-		for ( Link link : network.getLinks().values() ) {
-//			if ( link.getAllowedModes().contains( TransportMode.bike ) && link.getAllowedModes().contains(  TransportMode.car ) ) {
-			if ( true ) { // add bicycle links everywhere
-
-				// make a car only link:  // yy what about the other modes?
-				{
-					Set<String> set = new HashSet<>();
-					for(String allowedMode : link.getAllowedModes()){
-						if(!allowedMode.equals(TransportMode.bike)){
-							set.add(allowedMode);
-						}
+		LinkedList<Link> bikeLinks = new LinkedList();
+		for(Link link : network.getLinks().values()){
+			{
+				Set<String> set = new HashSet<>();
+				for(String allowedMode : link.getAllowedModes()){
+					if(!allowedMode.equals(TransportMode.bike)){
+						set.add(allowedMode);
 					}
-					link.setAllowedModes( set );
 				}
-
-				final Id<Link> id = Id.createLinkId(  link.getId().toString() + "_bike" ) ;
-				final Node fromNode = link.getFromNode() ;
-				final Node toNode = link.getToNode() ;
-				final Link bikeLink = nf.createLink( id, fromNode, toNode );
-
-				bikeLink.setLength( link.getLength() );
-				bikeLink.setFreespeed( 10. );
-				bikeLink.setCapacity( 200000. ); // this is in PCE; should be 3000 _bicycles_ per efficient lane; efficient lane is about 1.5 m.
-				bikeLink.setNumberOfLanes( 2 );
-				{
-					Set<String> set = new HashSet<>();
-					set.add( TransportMode.bike );
-					bikeLink.setAllowedModes( set );
-				}
-
-				network.addLink( bikeLink );
+				link.setAllowedModes( set );
 			}
+		
+			final Id<Link> id = Id.createLinkId(  link.getId().toString() + "_bike" ) ;
+			final Node fromNode = link.getFromNode() ;
+			final Node toNode = link.getToNode() ;
+			final Link bikeLink = nf.createLink( id, fromNode, toNode );
+
+			bikeLink.setLength( link.getLength() );
+			bikeLink.setFreespeed( 10. );
+			bikeLink.setCapacity( 200000. ); // this is in PCE; should be 3000 _bicycles_ per efficient lane; efficient lane is about 1.5 m.
+			bikeLink.setNumberOfLanes( 2 );
+			{
+				Set<String> set = new HashSet<>();
+				set.add( TransportMode.bike );
+				bikeLink.setAllowedModes( set );
+			}
+
+			bikeLinks.add(bikeLink);
 		}
-		
-		NetworkUtils.writeNetwork( scenario.getNetwork(), "net.xml" );
-		PopulationUtils.writePopulation( scenario.getPopulation(), "pop.xml" );
-		
-//		System.exit(-1) ;
-		
+		for(Link link : bikeLinks){
+			network.addLink(link);
+		}
+
+
+		NetworkUtils.writeNetwork( scenario.getNetwork(), "./output/net.xml" );
+		PopulationUtils.writePopulation( scenario.getPopulation(), "./output/pop.xml" );
+
+		System.exit(-1) ;
+
 		// ---
 
 		Controler controler = new Controler( scenario ) ;
-		
+
 		controler.addOverridingModule( new AbstractModule(  ) {
 			@Override public void install() {
 				this.bind( QNetworkFactory.class ).to( MadsQNetworkFactory.class ) ;
@@ -141,8 +160,8 @@ public class RunMatsim {
 				bind( AgentSource.class).to( MadsPopulationAgentSource.class).asEagerSingleton();
 			}
 		});
-		
-		
+
+
 		// ---
 
 		controler.run();

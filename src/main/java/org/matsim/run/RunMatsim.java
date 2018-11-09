@@ -18,7 +18,7 @@
  * *********************************************************************** */
 package org.matsim.run;
 
-import fastOrForcedToFollow.ToolBox;
+//import fastOrForcedToFollow.ToolBox;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
@@ -41,6 +41,9 @@ import org.matsim.core.mobsim.qsim.AbstractQSimModule;
 import org.matsim.core.mobsim.qsim.qnetsimengine.MadsPopulationAgentSource;
 import org.matsim.core.mobsim.qsim.qnetsimengine.MadsQNetworkFactory;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QNetworkFactory;
+//import org.matsim.core.mobsim.qsim.qnetsimengine.MadsPopulationAgentSource;
+//import org.matsim.core.mobsim.qsim.qnetsimengine.MadsQNetworkFactory;
+//import org.matsim.core.mobsim.qsim.qnetsimengine.QNetworkFactory;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.scenario.ScenarioUtils;
@@ -57,13 +60,14 @@ import java.util.*;
 public class RunMatsim {
 	public static final String DESIRED_SPEED = "v_0";
 	public static final String HEADWAY_DISTANCE_PREFERENCE = "z_c";
+	public static final long RANDOM_SEED = 5355633;
 
 	public static void main(String[] args) {
 
 		final URL configUrl = IOUtils.newUrl( ExamplesUtils.getTestScenarioURL( "equil" ), "config.xml" );
 
 		Config config = ConfigUtils.loadConfig( configUrl ) ;
-
+	
 		config.controler().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists );
 
 		config.controler().setLastIteration( 0 );
@@ -75,14 +79,17 @@ public class RunMatsim {
 		config.qsim().setMainModes( networkModes );
 		config.plansCalcRoute().removeModeRoutingParams( TransportMode.bike );
 		config.plansCalcRoute().setNetworkModes( networkModes );
-
+		config.travelTimeCalculator().setAnalyzedModes( TransportMode.car + "," + TransportMode.bike);
+		// Mads -> Kai: The "setAnalyzedModes" were missing before.. //sideNote: Takes a String as input, but should be List<String>?;
+		
+		
 
 		// ---
 
 		Scenario scenario = ScenarioUtils.loadScenario( config ) ;
 
-		Random speedRandom = new Random();
-		Random headwayRandom = new Random();
+		Random speedRandom = new Random(RANDOM_SEED);
+		Random headwayRandom = new Random(RANDOM_SEED + 341);
 		for(int i = 0; i <200; i++){
 			speedRandom.nextDouble();
 			headwayRandom.nextDouble();
@@ -91,7 +98,8 @@ public class RunMatsim {
 		Population population= scenario.getPopulation() ;
 		for ( Person person : population.getPersons().values() ) {
 			if ( true ) {  // Forcing all legs in scenario to be made by bicycle...
-				double v_0 = ToolBox.uniformToJohnson(speedRandom.nextDouble());
+			//double v_0 = ToolBox.uniformToJohnson(speedRandom.nextDouble());
+				double v_0 = 5;
 				double z_c = headwayRandom.nextDouble(); 
 				person.getAttributes().putAttribute(DESIRED_SPEED, v_0);
 				person.getAttributes().putAttribute(HEADWAY_DISTANCE_PREFERENCE, z_c);
@@ -150,13 +158,16 @@ public class RunMatsim {
 
 		Controler controler = new Controler( scenario ) ;
 
-//		controler.addOverridingQSimModule(new AbstractQSimModule() {
-//			@Override
-//			protected void configureQSim() {
-//				this.bind( QNetworkFactory.class ).to( MadsQNetworkFactory.class ) ;
-//				bind( AgentSource.class).to( MadsPopulationAgentSource.class).asEagerSingleton();
-//			}
-//		});
+		
+		controler.addOverridingQSimModule(new AbstractQSimModule() {
+			@Override
+			protected void configureQSim() {
+				this.bind( QNetworkFactory.class ).to( MadsQNetworkFactory.class ) ;  //mads: does not run (for me) with this enabled.
+				//A binding to org.matsim.core.mobsim.qsim.qnetsimengine.QNetworkFactory was 
+				// already configured at org.matsim.core.mobsim.qsim.QSimModule.install(QSimModule.java:97)
+				this.bind( AgentSource.class).to( MadsPopulationAgentSource.class).asEagerSingleton();  //mads: Will run with this enabled.
+			}
+		});
 
 
 		// ---

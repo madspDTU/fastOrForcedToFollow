@@ -1,92 +1,78 @@
-2018-11-09 14:25:41,184 ERROR MatsimRuntimeModifications:54 Getting uncaught Exception in Thread main
+2018-11-09 16:13:44,516  WARN XY2LinksForFacilities:50 There is no link for at least a facility. Assigning links for such facilities from coords.
+2018-11-09 16:13:44,517  WARN XY2LinksForFacilities:51  This message given only once.
+2018-11-09 16:13:44,675 ERROR AbstractController:208 Mobsim did not complete normally! afterMobsimListeners will be called anyway.
 com.google.inject.ProvisionException: Unable to provision, see the following errors:
 
-1) Error in custom provider, java.lang.RuntimeException: No TravelTime bound for mode bike.
-  at org.matsim.core.router.TripRouterModule.install(TripRouterModule.java:66) (via modules: com.google.inject.util.Modules$CombinedModule -> com.google.inject.util.Modules$CombinedModule -> org.matsim.core.controler.AbstractModule$4 -> com.google.inject.util.Modules$OverrideModule -> org.matsim.core.controler.Controler$2 -> org.matsim.core.controler.ControlerDefaultsModule -> org.matsim.core.router.TripRouterModule)
-  while locating org.matsim.core.router.RoutingModule annotated with @com.google.inject.name.Named(value=bike)
-  while locating org.matsim.core.router.RoutingModule annotated with @com.google.inject.multibindings.Element(setName=,uniqueId=96, type=MAPBINDER, keyType=java.lang.String)
-  at org.matsim.core.router.TripRouter.<init>(TripRouter.java:109)
-  while locating org.matsim.core.router.TripRouter
+1) A binding to org.matsim.core.mobsim.qsim.qnetsimengine.QNetworkFactory was already configured at org.matsim.core.mobsim.qsim.QSimModule.install(QSimModule.java:97) (via modules: com.google.inject.util.Modules$CombinedModule -> com.google.inject.util.Modules$CombinedModule -> org.matsim.core.controler.AbstractModule$4 -> com.google.inject.util.Modules$OverrideModule -> org.matsim.core.controler.Controler$2 -> org.matsim.core.controler.ControlerDefaultsModule -> org.matsim.core.mobsim.DefaultMobsimModule -> org.matsim.core.mobsim.qsim.QSimModule).
+  at org.matsim.run.RunMatsim$1.configureQSim(RunMatsim.java:164) (via modules: org.matsim.core.mobsim.qsim.QSimProvider$1 -> org.matsim.core.mobsim.qsim.AbstractQSimModule$1 -> com.google.inject.util.Modules$OverrideModule -> org.matsim.run.RunMatsim$1)
+  while locating org.matsim.core.mobsim.qsim.QSimProvider
+  while locating org.matsim.core.mobsim.framework.Mobsim
 
 1 error
 	at com.google.inject.internal.InjectorImpl$2.get(InjectorImpl.java:1028)
-	at org.matsim.analysis.ModeStatsControlerListener.notifyStartup(ModeStatsControlerListener.java:115)
-	at org.matsim.core.controler.ControlerListenerManagerImpl.fireControlerStartupEvent(ControlerListenerManagerImpl.java:108)
-	at org.matsim.core.controler.AbstractController$1.run(AbstractController.java:77)
+	at org.matsim.core.controler.NewControler.runMobSim(NewControler.java:126)
+	at org.matsim.core.controler.AbstractController$8.run(AbstractController.java:197)
+	at org.matsim.core.controler.AbstractController.iterationStep(AbstractController.java:229)
+	at org.matsim.core.controler.AbstractController.mobsim(AbstractController.java:193)
+	at org.matsim.core.controler.AbstractController.iteration(AbstractController.java:144)
+	at org.matsim.core.controler.AbstractController.doIterations(AbstractController.java:112)
+	at org.matsim.core.controler.AbstractController.access$100(AbstractController.java:28)
+	at org.matsim.core.controler.AbstractController$1.run(AbstractController.java:80)
 	at org.matsim.core.controler.MatsimRuntimeModifications.run(MatsimRuntimeModifications.java:48)
 	at org.matsim.core.controler.MatsimRuntimeModifications.run(MatsimRuntimeModifications.java:31)
 	at org.matsim.core.controler.AbstractController.run(AbstractController.java:88)
 	at org.matsim.core.controler.NewControler.run(NewControler.java:84)
 	at org.matsim.core.controler.Controler.run(Controler.java:236)
-	at org.matsim.run.RunMatsim.main(RunMatsim.java:163)
-Caused by: java.lang.RuntimeException: No TravelTime bound for mode bike.
-	at org.matsim.core.router.NetworkRoutingProvider.get(NetworkRoutingProvider.java:101)
-	at org.matsim.core.router.NetworkRoutingProvider.get(NetworkRoutingProvider.java:21)
-	at com.google.inject.internal.ProviderInternalFactory.provision(ProviderInternalFactory.java:81)
-	at com.google.inject.internal.InternalFactoryToInitializableAdapter.provision(InternalFactoryToInitializableAdapter.java:53)
-	at com.google.inject.internal.ProviderInternalFactory.circularGet(ProviderInternalFactory.java:61)
-	at com.google.inject.internal.InternalFactoryToInitializableAdapter.get(InternalFactoryToInitializableAdapter.java:45)
-	at com.google.inject.internal.FactoryProxy.get(FactoryProxy.java:56)
-	at com.google.inject.internal.InjectorImpl$2$1.call(InjectorImpl.java:1019)
-	at com.google.inject.internal.InjectorImpl.callInContext(InjectorImpl.java:1092)
-	at com.google.inject.internal.InjectorImpl$2.get(InjectorImpl.java:1015)
-	at com.google.inject.spi.ProviderLookup$1.get(ProviderLookup.java:104)
-	at com.google.inject.multibindings.MapBinder$RealMapBinder$ValueProvider.get(MapBinder.java:821)
-	at org.matsim.core.router.TripRouter.<init>(TripRouter.java:112)
-	at org.matsim.core.router.TripRouter$$FastClassByGuice$$40b051f1.newInstance(<generated>)
-	at com.google.inject.internal.DefaultConstructionProxyFactory$FastClassProxy.newInstance(DefaultConstructionProxyFactory.java:89)
-	at com.google.inject.internal.ConstructorInjector.provision(ConstructorInjector.java:111)
-	at com.google.inject.internal.ConstructorInjector.construct(ConstructorInjector.java:90)
-	at com.google.inject.internal.ConstructorBindingImpl$Factory.get(ConstructorBindingImpl.java:268)
-	at com.google.inject.internal.InjectorImpl$2$1.call(InjectorImpl.java:1019)
-	at com.google.inject.internal.InjectorImpl.callInContext(InjectorImpl.java:1085)
-	at com.google.inject.internal.InjectorImpl$2.get(InjectorImpl.java:1015)
-	... 9 more
-2018-11-09 14:25:41,186 ERROR MatsimRuntimeModifications:60 ERROR --- This is an unexpected shutdown!
-2018-11-09 14:25:41,186 ERROR MatsimRuntimeModifications:63 Shutdown possibly caused by the following Exception:
+	at org.matsim.run.RunMatsim.main(RunMatsim.java:172)
+2018-11-09 16:13:44,675 ERROR MatsimRuntimeModifications:54 Getting uncaught Exception in Thread main
 com.google.inject.ProvisionException: Unable to provision, see the following errors:
 
-1) Error in custom provider, java.lang.RuntimeException: No TravelTime bound for mode bike.
-  at org.matsim.core.router.TripRouterModule.install(TripRouterModule.java:66) (via modules: com.google.inject.util.Modules$CombinedModule -> com.google.inject.util.Modules$CombinedModule -> org.matsim.core.controler.AbstractModule$4 -> com.google.inject.util.Modules$OverrideModule -> org.matsim.core.controler.Controler$2 -> org.matsim.core.controler.ControlerDefaultsModule -> org.matsim.core.router.TripRouterModule)
-  while locating org.matsim.core.router.RoutingModule annotated with @com.google.inject.name.Named(value=bike)
-  while locating org.matsim.core.router.RoutingModule annotated with @com.google.inject.multibindings.Element(setName=,uniqueId=96, type=MAPBINDER, keyType=java.lang.String)
-  at org.matsim.core.router.TripRouter.<init>(TripRouter.java:109)
-  while locating org.matsim.core.router.TripRouter
+1) A binding to org.matsim.core.mobsim.qsim.qnetsimengine.QNetworkFactory was already configured at org.matsim.core.mobsim.qsim.QSimModule.install(QSimModule.java:97) (via modules: com.google.inject.util.Modules$CombinedModule -> com.google.inject.util.Modules$CombinedModule -> org.matsim.core.controler.AbstractModule$4 -> com.google.inject.util.Modules$OverrideModule -> org.matsim.core.controler.Controler$2 -> org.matsim.core.controler.ControlerDefaultsModule -> org.matsim.core.mobsim.DefaultMobsimModule -> org.matsim.core.mobsim.qsim.QSimModule).
+  at org.matsim.run.RunMatsim$1.configureQSim(RunMatsim.java:164) (via modules: org.matsim.core.mobsim.qsim.QSimProvider$1 -> org.matsim.core.mobsim.qsim.AbstractQSimModule$1 -> com.google.inject.util.Modules$OverrideModule -> org.matsim.run.RunMatsim$1)
+  while locating org.matsim.core.mobsim.qsim.QSimProvider
+  while locating org.matsim.core.mobsim.framework.Mobsim
 
 1 error
 	at com.google.inject.internal.InjectorImpl$2.get(InjectorImpl.java:1028)
-	at org.matsim.analysis.ModeStatsControlerListener.notifyStartup(ModeStatsControlerListener.java:115)
-	at org.matsim.core.controler.ControlerListenerManagerImpl.fireControlerStartupEvent(ControlerListenerManagerImpl.java:108)
-	at org.matsim.core.controler.AbstractController$1.run(AbstractController.java:77)
+	at org.matsim.core.controler.NewControler.runMobSim(NewControler.java:126)
+	at org.matsim.core.controler.AbstractController$8.run(AbstractController.java:197)
+	at org.matsim.core.controler.AbstractController.iterationStep(AbstractController.java:229)
+	at org.matsim.core.controler.AbstractController.mobsim(AbstractController.java:193)
+	at org.matsim.core.controler.AbstractController.iteration(AbstractController.java:144)
+	at org.matsim.core.controler.AbstractController.doIterations(AbstractController.java:112)
+	at org.matsim.core.controler.AbstractController.access$100(AbstractController.java:28)
+	at org.matsim.core.controler.AbstractController$1.run(AbstractController.java:80)
 	at org.matsim.core.controler.MatsimRuntimeModifications.run(MatsimRuntimeModifications.java:48)
 	at org.matsim.core.controler.MatsimRuntimeModifications.run(MatsimRuntimeModifications.java:31)
 	at org.matsim.core.controler.AbstractController.run(AbstractController.java:88)
 	at org.matsim.core.controler.NewControler.run(NewControler.java:84)
 	at org.matsim.core.controler.Controler.run(Controler.java:236)
-	at org.matsim.run.RunMatsim.main(RunMatsim.java:163)
-Caused by: java.lang.RuntimeException: No TravelTime bound for mode bike.
-	at org.matsim.core.router.NetworkRoutingProvider.get(NetworkRoutingProvider.java:101)
-	at org.matsim.core.router.NetworkRoutingProvider.get(NetworkRoutingProvider.java:21)
-	at com.google.inject.internal.ProviderInternalFactory.provision(ProviderInternalFactory.java:81)
-	at com.google.inject.internal.InternalFactoryToInitializableAdapter.provision(InternalFactoryToInitializableAdapter.java:53)
-	at com.google.inject.internal.ProviderInternalFactory.circularGet(ProviderInternalFactory.java:61)
-	at com.google.inject.internal.InternalFactoryToInitializableAdapter.get(InternalFactoryToInitializableAdapter.java:45)
-	at com.google.inject.internal.FactoryProxy.get(FactoryProxy.java:56)
-	at com.google.inject.internal.InjectorImpl$2$1.call(InjectorImpl.java:1019)
-	at com.google.inject.internal.InjectorImpl.callInContext(InjectorImpl.java:1092)
-	at com.google.inject.internal.InjectorImpl$2.get(InjectorImpl.java:1015)
-	at com.google.inject.spi.ProviderLookup$1.get(ProviderLookup.java:104)
-	at com.google.inject.multibindings.MapBinder$RealMapBinder$ValueProvider.get(MapBinder.java:821)
-	at org.matsim.core.router.TripRouter.<init>(TripRouter.java:112)
-	at org.matsim.core.router.TripRouter$$FastClassByGuice$$40b051f1.newInstance(<generated>)
-	at com.google.inject.internal.DefaultConstructionProxyFactory$FastClassProxy.newInstance(DefaultConstructionProxyFactory.java:89)
-	at com.google.inject.internal.ConstructorInjector.provision(ConstructorInjector.java:111)
-	at com.google.inject.internal.ConstructorInjector.construct(ConstructorInjector.java:90)
-	at com.google.inject.internal.ConstructorBindingImpl$Factory.get(ConstructorBindingImpl.java:268)
-	at com.google.inject.internal.InjectorImpl$2$1.call(InjectorImpl.java:1019)
-	at com.google.inject.internal.InjectorImpl.callInContext(InjectorImpl.java:1085)
-	at com.google.inject.internal.InjectorImpl$2.get(InjectorImpl.java:1015)
-	... 9 more
-2018-11-09 14:25:41,188 ERROR MatsimRuntimeModifications:78 ERROR --- MATSim unexpectedly terminated. Please check the output or the logfile with warnings and errors for hints.
-2018-11-09 14:25:41,188 ERROR MatsimRuntimeModifications:79 ERROR --- results should not be used for further analysis.
-2018-11-09 14:25:41,188 ERROR MatsimRuntimeModifications:83 ERROR --- This was an unexpected shutdown! See the log file for a possible reason.
+	at org.matsim.run.RunMatsim.main(RunMatsim.java:172)
+2018-11-09 16:13:44,675 ERROR MatsimRuntimeModifications:60 ERROR --- This is an unexpected shutdown!
+2018-11-09 16:13:44,675 ERROR MatsimRuntimeModifications:63 Shutdown possibly caused by the following Exception:
+com.google.inject.ProvisionException: Unable to provision, see the following errors:
+
+1) A binding to org.matsim.core.mobsim.qsim.qnetsimengine.QNetworkFactory was already configured at org.matsim.core.mobsim.qsim.QSimModule.install(QSimModule.java:97) (via modules: com.google.inject.util.Modules$CombinedModule -> com.google.inject.util.Modules$CombinedModule -> org.matsim.core.controler.AbstractModule$4 -> com.google.inject.util.Modules$OverrideModule -> org.matsim.core.controler.Controler$2 -> org.matsim.core.controler.ControlerDefaultsModule -> org.matsim.core.mobsim.DefaultMobsimModule -> org.matsim.core.mobsim.qsim.QSimModule).
+  at org.matsim.run.RunMatsim$1.configureQSim(RunMatsim.java:164) (via modules: org.matsim.core.mobsim.qsim.QSimProvider$1 -> org.matsim.core.mobsim.qsim.AbstractQSimModule$1 -> com.google.inject.util.Modules$OverrideModule -> org.matsim.run.RunMatsim$1)
+  while locating org.matsim.core.mobsim.qsim.QSimProvider
+  while locating org.matsim.core.mobsim.framework.Mobsim
+
+1 error
+	at com.google.inject.internal.InjectorImpl$2.get(InjectorImpl.java:1028)
+	at org.matsim.core.controler.NewControler.runMobSim(NewControler.java:126)
+	at org.matsim.core.controler.AbstractController$8.run(AbstractController.java:197)
+	at org.matsim.core.controler.AbstractController.iterationStep(AbstractController.java:229)
+	at org.matsim.core.controler.AbstractController.mobsim(AbstractController.java:193)
+	at org.matsim.core.controler.AbstractController.iteration(AbstractController.java:144)
+	at org.matsim.core.controler.AbstractController.doIterations(AbstractController.java:112)
+	at org.matsim.core.controler.AbstractController.access$100(AbstractController.java:28)
+	at org.matsim.core.controler.AbstractController$1.run(AbstractController.java:80)
+	at org.matsim.core.controler.MatsimRuntimeModifications.run(MatsimRuntimeModifications.java:48)
+	at org.matsim.core.controler.MatsimRuntimeModifications.run(MatsimRuntimeModifications.java:31)
+	at org.matsim.core.controler.AbstractController.run(AbstractController.java:88)
+	at org.matsim.core.controler.NewControler.run(NewControler.java:84)
+	at org.matsim.core.controler.Controler.run(Controler.java:236)
+	at org.matsim.run.RunMatsim.main(RunMatsim.java:172)
+2018-11-09 16:13:44,675 ERROR MatsimRuntimeModifications:78 ERROR --- MATSim unexpectedly terminated. Please check the output or the logfile with warnings and errors for hints.
+2018-11-09 16:13:44,675 ERROR MatsimRuntimeModifications:79 ERROR --- results should not be used for further analysis.
+2018-11-09 16:13:44,675 ERROR MatsimRuntimeModifications:83 ERROR --- This was an unexpected shutdown! See the log file for a possible reason.

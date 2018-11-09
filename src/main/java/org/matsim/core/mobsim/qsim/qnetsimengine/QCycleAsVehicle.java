@@ -1,7 +1,6 @@
 package org.matsim.core.mobsim.qsim.qnetsimengine;
 
 import fastOrForcedToFollow.Cyclist;
-import fastOrForcedToFollow.Link;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.population.Person;
@@ -56,6 +55,7 @@ public class QCycleAsVehicle implements QVehicle
 	
 	@Override public double getMaximumVelocity() {
 		return qVehicle.getMaximumVelocity() ;
+		//this.cyclist.getDesiredSpeed();
 	}
 	
 	@Override public double getFlowCapacityConsumptionInEquivalents() {
@@ -64,10 +64,12 @@ public class QCycleAsVehicle implements QVehicle
 	
 	@Override public double getEarliestLinkExitTime() {
 		return qVehicle.getEarliestLinkExitTime();
+		//this.cyclist.getTEarliestExit();
 	}
 	
 	@Override public void setEarliestLinkExitTime( final double earliestLinkEndTime ) {
 		qVehicle.setEarliestLinkExitTime( earliestLinkEndTime );
+		//this.cyclist.setTEarliestExit(earliestLinkEndTime);
 	}
 	
 	@Override public double getSizeInEquivalents() {
@@ -88,6 +90,7 @@ public class QCycleAsVehicle implements QVehicle
 	
 	@Override public Link getCurrentLink() {
 		return qVehicle.getCurrentLink();
+		//	this.cyclist.getCurrentLink();
 	}
 	
 	@Override public boolean addPassenger( final PassengerAgent passenger ) {
@@ -108,6 +111,7 @@ public class QCycleAsVehicle implements QVehicle
 	
 	@Override public void setCurrentLink( final Link link ) {
 		qVehicle.setCurrentLink( link );
+		//this.cyclist.setCurrentLink(link);
 	}
 	
 	@Override public void setDriver( final DriverAgent driver ) {

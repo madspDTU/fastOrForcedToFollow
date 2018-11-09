@@ -106,7 +106,7 @@ public class RunMatsim {
 		// adjust network to bicycle stuff:
 		Network network = scenario.getNetwork() ;
 		final NetworkFactory nf = network.getFactory();
-		LinkedList<Link> bikeLinks = new LinkedList();
+		LinkedList<Link> bikeLinks = new LinkedList<Link>();
 		for(Link link : network.getLinks().values()){
 			{
 				Set<String> set = new HashSet<>();

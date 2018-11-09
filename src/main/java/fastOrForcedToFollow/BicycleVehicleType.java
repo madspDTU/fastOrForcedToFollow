@@ -2,6 +2,8 @@ package fastOrForcedToFollow;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.vehicles.EngineInformation;
+import org.matsim.vehicles.EngineInformation.FuelType;
+import org.matsim.vehicles.EngineInformationImpl;
 import org.matsim.vehicles.FreightCapacity;
 import org.matsim.vehicles.VehicleCapacity;
 import org.matsim.vehicles.VehicleType;
@@ -13,7 +15,7 @@ public class BicycleVehicleType implements VehicleType{
 	private double length = Runner.lambda_c;
     private double pcuEquivalents = 1./4;
     private double flowEfficiencyFactor = 1.0;
-	private EngineInformation engineInformation = null;
+	private EngineInformation engineInformation = new EngineInformationImpl(FuelType.biodiesel, 0);
 	private String description = "Average bicycle";
 	
 	private double accessTime = 0.0;

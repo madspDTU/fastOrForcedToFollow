@@ -17,15 +17,11 @@ import org.matsim.vehicles.Vehicle;
 import java.util.Collection;
 import java.util.LinkedList;
 
-import static fastOrForcedToFollow.Runner.theta_0;
-import static fastOrForcedToFollow.Runner.theta_1;
-
 public class QCycleAsVehicle implements QVehicle
 {
 	QVehicle qVehicle  ;
 	Cyclist cyclist ;
 	
-	//mads: Should be alright now. s
 	
 	public QCycleAsVehicle( Vehicle basicVehicle,  Person person) {
 		final String id = basicVehicle.getId().toString();

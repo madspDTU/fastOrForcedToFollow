@@ -146,6 +146,7 @@ public class MadsPopulationAgentSource implements AgentSource {
 		 *      be compatible with variant (1).
 		 *  Also see comment in insertVehicles.
 		 */
+			
 		for ( PlanElement planElement : person.getSelectedPlan().getPlanElements()) {
 			if (planElement instanceof Activity ) {
 				Activity activity = (Activity) planElement;

@@ -110,6 +110,7 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 			} catch ( InstantiationException | IllegalAccessException e ) {
 				e.printStackTrace();
 			}
+					
 			final fastOrForcedToFollow.Link delegate = link1;
 			QLinkImpl.Builder linkBuilder = new QLinkImpl.Builder( context, netsimEngine );
 			linkBuilder.setLaneFactory( new QLinkImpl.LaneFactory(){
@@ -191,6 +192,8 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 						}
 
 						@Override public void addFromUpstream( final QVehicle veh ) {
+							
+							// mads:   Unfortunately, the vehicles are QVehicleImpls here - disallowing casting.
 							QCycleAsVehicle qCyc = (QCycleAsVehicle) veh;
 							Cyclist cyclist = qCyc.getCyclist();
 							if( !cyclist.isNotInFuture(context.getSimTimer().getTimeOfDay()) ){

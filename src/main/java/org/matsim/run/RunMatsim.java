@@ -41,6 +41,7 @@ import org.matsim.core.mobsim.qsim.AbstractQSimModule;
 import org.matsim.core.mobsim.qsim.qnetsimengine.MadsPopulationAgentSource;
 import org.matsim.core.mobsim.qsim.qnetsimengine.MadsQNetworkFactory;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QNetworkFactory;
+import org.matsim.core.mobsim.qsim.qnetsimengine.QVehicle;
 //import org.matsim.core.mobsim.qsim.qnetsimengine.MadsPopulationAgentSource;
 //import org.matsim.core.mobsim.qsim.qnetsimengine.MadsQNetworkFactory;
 //import org.matsim.core.mobsim.qsim.qnetsimengine.QNetworkFactory;
@@ -49,6 +50,8 @@ import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.utils.io.IOUtils;
 import org.matsim.examples.ExamplesUtils;
+
+import fastOrForcedToFollow.BicycleVehicle;
 
 import java.net.URL;
 import java.util.*;
@@ -80,7 +83,7 @@ public class RunMatsim {
 		config.plansCalcRoute().removeModeRoutingParams( TransportMode.bike );
 		config.plansCalcRoute().setNetworkModes( networkModes );
 		config.travelTimeCalculator().setAnalyzedModes( TransportMode.car + "," + TransportMode.bike);
-		// Mads -> Kai: The "setAnalyzedModes" were missing before.. //sideNote: Takes a String as input, but should be List<String>?;
+		// Mads -> Kai: The "setAnalyzedModes" was missing before.. //sideNote: Takes a String as input, but should be List<String>?;
 		
 		
 
@@ -163,13 +166,17 @@ public class RunMatsim {
 			@Override
 			protected void configureQSim() {
 				this.bind( QNetworkFactory.class ).to( MadsQNetworkFactory.class ) ;  //mads: does not run (for me) with this enabled.
-				//A binding to org.matsim.core.mobsim.qsim.qnetsimengine.QNetworkFactory was 
-				// already configured at org.matsim.core.mobsim.qsim.QSimModule.install(QSimModule.java:97)
 				this.bind( AgentSource.class).to( MadsPopulationAgentSource.class).asEagerSingleton();  //mads: Will run with this enabled.
 			}
 		});
+		
+		
+		//mads -> Kai:   It turns out that the MadsPopulationAgentSource is never used;
 
+		// QSim.insertAgentIntoMobsim() is called,   but all of its agentSources (it only has 1)
+		//                                          is of class PopulationAgentSource.class   .
 
+		
 		// ---
 
 		controler.run();

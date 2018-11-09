@@ -360,7 +360,7 @@ public class Link{
 						if(nextLink.cyclistFitsOnLink(cyclist)){
 							this.advanceCyclist(cqo);	
 						} else {
-							cyclist.setTEarliestExit(cyclist.getRoute().peek().getOutQ().peek().getCyclist().getTEarliestExit());
+							cyclist.setTEarliestExit(nextLink.getOutQ().peek().getCyclist().getTEarliestExit());
 							linkFullyProcessed = true;
 						}
 					}

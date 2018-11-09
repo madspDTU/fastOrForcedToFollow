@@ -21,7 +21,7 @@ public class QCycleAsVehicle implements QVehicle
 	QVehicle qVehicle  ;
 	Cyclist cyclist ;
 	
-	//mads: Should be alright now.
+	//mads: Should be alright now. s
 	
 	public QCycleAsVehicle( Vehicle basicVehicle,  Person person) {
 		final String id = basicVehicle.getId().toString();

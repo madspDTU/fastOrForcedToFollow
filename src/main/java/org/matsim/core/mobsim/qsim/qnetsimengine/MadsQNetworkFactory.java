@@ -182,11 +182,12 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 						}
 
 						@Override public Collection<MobsimVehicle> getAllVehicles() {
-							ArrayList<QCycleAsVehicle> qCycs = new ArrayList<QCycleAsVehicle>();
-							for(CyclistQObject cqo : delegate.getOutQ()){
-								qCycs.add(cqo.getQCycle());
-							}
-							return qCycs;
+//							ArrayList<QCycleAsVehicle> qCycs = new ArrayList<QCycleAsVehicle>();
+//							for(CyclistQObject cqo : delegate.getOutQ()){
+//								qCycs.add(cqo.getQCycle());
+//							}
+//							return qCycs;
+							throw new RuntimeException( "abcd") ;
 						}
 
 						@Override public void addFromUpstream( final QVehicle veh ) {

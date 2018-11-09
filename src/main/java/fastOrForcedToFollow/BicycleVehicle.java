@@ -19,7 +19,7 @@ public class BicycleVehicle implements Vehicle{
 		return vehicleType;
 	}
 	
-	BicycleVehicle(String id){
+	public BicycleVehicle( String id ){
 		this.id = Id.createVehicleId(id);
 		this.vehicleType = new BicycleVehicleType();
 	}

@@ -18,7 +18,7 @@
  * *********************************************************************** */
 package org.matsim.run;
 
-import org.hsqldb.lib.Iterator;
+import fastOrForcedToFollow.ToolBox;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
@@ -32,6 +32,7 @@ import org.matsim.api.core.v01.population.PlanElement;
 import org.matsim.api.core.v01.population.Population;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
+import org.matsim.core.config.groups.PlanCalcScoreConfigGroup;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
@@ -46,15 +47,8 @@ import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.utils.io.IOUtils;
 import org.matsim.examples.ExamplesUtils;
 
-import fastOrForcedToFollow.ToolBox;
-
 import java.net.URL;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author nagel
@@ -72,7 +66,16 @@ public class RunMatsim {
 
 		config.controler().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists );
 
-		config.controler().setLastIteration( 2 );
+		config.controler().setLastIteration( 0 );
+
+		PlanCalcScoreConfigGroup.ModeParams params = new PlanCalcScoreConfigGroup.ModeParams(TransportMode.bike) ;
+		config.planCalcScore().addModeParams( params );
+
+		final List<String> networkModes = Arrays.asList( new String[]{TransportMode.car, TransportMode.bike} );
+		config.qsim().setMainModes( networkModes );
+		config.plansCalcRoute().removeModeRoutingParams( TransportMode.bike );
+		config.plansCalcRoute().setNetworkModes( networkModes );
+
 
 		// ---
 
@@ -140,26 +143,20 @@ public class RunMatsim {
 		}
 
 
-		NetworkUtils.writeNetwork( scenario.getNetwork(), "./output/net.xml" );
-		PopulationUtils.writePopulation( scenario.getPopulation(), "./output/pop.xml" );
-
-		System.exit(-1) ;
+		NetworkUtils.writeNetwork( scenario.getNetwork(), "net.xml" );
+		PopulationUtils.writePopulation( scenario.getPopulation(), "pop.xml" );
 
 		// ---
 
 		Controler controler = new Controler( scenario ) ;
 
-		controler.addOverridingModule( new AbstractModule(  ) {
-			@Override public void install() {
-				this.bind( QNetworkFactory.class ).to( MadsQNetworkFactory.class ) ;
-			}
-		} );
-		controler.addOverridingQSimModule(new AbstractQSimModule() {
-			@Override
-			protected void configureQSim() {
-				bind( AgentSource.class).to( MadsPopulationAgentSource.class).asEagerSingleton();
-			}
-		});
+//		controler.addOverridingQSimModule(new AbstractQSimModule() {
+//			@Override
+//			protected void configureQSim() {
+//				this.bind( QNetworkFactory.class ).to( MadsQNetworkFactory.class ) ;
+//				bind( AgentSource.class).to( MadsPopulationAgentSource.class).asEagerSingleton();
+//			}
+//		});
 
 
 		// ---

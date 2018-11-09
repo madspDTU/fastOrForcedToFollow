@@ -60,9 +60,10 @@ public class RunMatsim {
 
 	public static void main(String[] args) {
 
-		final URL configUrl = IOUtils.newUrl( ExamplesUtils.getTestScenarioURL( "equil" ), "config.xml" );
+//		final URL configUrl = IOUtils.newUrl( ExamplesUtils.getTestScenarioURL( "equil" ), "config.xml" );
+//		Config config = ConfigUtils.loadConfig( configUrl ) ;
 
-		Config config = ConfigUtils.loadConfig( configUrl ) ;
+		Config config = ConfigUtils.loadConfig( "scenarios/equil/config.xml" ) ;
 
 		config.controler().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists );
 

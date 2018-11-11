@@ -30,7 +30,7 @@ public class CyclistQObject implements Comparable<CyclistQObject>{
 	 * @param qCyc The QCycleAsVehicle that should be parsed on to the new CyclistQObject
 	 * In this case, the old QCycleAsVehicle can be recycled.
 	 */
-	CyclistQObject(QCycleAsVehicle qCyc){
+	public CyclistQObject(QCycleAsVehicle qCyc){
 		this.qCyc = qCyc;
 	}
 

@@ -4,6 +4,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.LinkedList;
 
+import org.matsim.core.mobsim.qsim.qnetsimengine.QCycleAsVehicle;
+
 
 /**
  * @author mpaulsen
@@ -19,7 +21,8 @@ public class Cyclist  {
 	private LinkedList<Double[]> speedReport = new LinkedList<Double[]>(); 
 	private LinkedList<Link> route; // madsp: Only used in non-MATSim contexts now.
 	private final LinkTransmissionModel ltm;
-	private Link currentLink = Runner.sourceLink;
+	private Link currentLink = null;
+	private QCycleAsVehicle qCyc = null;
 
 	
 	public Cyclist( String id, double desiredSpeed, double theta_0, double theta_1, LinkedList<Link> route ){
@@ -38,8 +41,13 @@ public class Cyclist  {
 		return new Cyclist(id, desiredSpeed, Runner.theta_0 + z_c*Runner.zeta_0, Runner.theta_1 + z_c*Runner.zeta_1, route);
 	}
 	
+	public void setQCycleAsVehicle(QCycleAsVehicle qCyc){
+		this.qCyc = qCyc;
+	}
 	
-	
+	public QCycleAsVehicle getQCycleAsVehicle(){
+		return this.qCyc;
+	}
 
 
 	/**

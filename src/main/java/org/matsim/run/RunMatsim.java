@@ -26,6 +26,7 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.NetworkFactory;
 import org.matsim.api.core.v01.network.Node;
+import org.matsim.api.core.v01.population.Activity;
 import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.api.core.v01.population.PlanElement;
@@ -86,7 +87,6 @@ public class RunMatsim {
 		// Mads -> Kai: The "setAnalyzedModes" was missing before.. //sideNote: Takes a String as input, but should be List<String>?;
 		
 		
-
 		// ---
 
 		Scenario scenario = ScenarioUtils.loadScenario( config ) ;
@@ -111,6 +111,14 @@ public class RunMatsim {
 					if ( pe instanceof Leg ) {
 						( (Leg) pe ).setMode( TransportMode.bike );
 						( (Leg) pe ).setRoute( null  );  // invalidate route since it will be on a different network
+					}
+				}
+				
+				// Change location of activities to be on the bicycle link
+				for ( PlanElement pe : person.getSelectedPlan().getPlanElements()){
+					if( pe instanceof Activity){
+						Activity act =  (Activity) pe;
+						act.setLinkId(Id.createLinkId(act.getLinkId().toString() + "_" + TransportMode.bike));
 					}
 				}
 			}
@@ -140,7 +148,7 @@ public class RunMatsim {
 			bikeLink.setLength( link.getLength() );
 			bikeLink.setFreespeed( 10. );
 			bikeLink.setCapacity( 200000. ); // this is in PCE; should be 3000 _bicycles_ per efficient lane; efficient lane is about 1.5 m.
-			bikeLink.setNumberOfLanes( 2 );
+			bikeLink.setNumberOfLanes( 1 );
 			{
 				Set<String> set = new HashSet<>();
 				set.add( TransportMode.bike );
@@ -171,13 +179,9 @@ public class RunMatsim {
 		});
 		
 		
-		//mads -> Kai:   It turns out that the MadsPopulationAgentSource is never used;
-
-		// QSim.insertAgentIntoMobsim() is called,   but all of its agentSources (it only has 1)
-		//                                          is of class PopulationAgentSource.class   .
-
 		
 		// ---
+
 
 		controler.run();
 

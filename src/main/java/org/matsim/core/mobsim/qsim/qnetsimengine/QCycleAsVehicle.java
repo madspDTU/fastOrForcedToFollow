@@ -41,7 +41,10 @@ public class QCycleAsVehicle implements QVehicle
 	public Cyclist getCyclist() {
 		return this.cyclist;
 	}
-	
+
+	public QVehicle getQVehicle(){
+		return this.qVehicle;
+	}
 
 	
 	

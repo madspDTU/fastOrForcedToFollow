@@ -16,19 +16,19 @@
 			<attribute name="z_c" class="java.lang.Double" >0.9246709777224326</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:10:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:10:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="03:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="03:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -42,15 +42,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.9459319595949695</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -64,15 +64,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.6539350056025907</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -86,15 +86,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.7347106535768744</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -108,15 +108,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.8852843417399283</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -130,15 +130,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.3381524257837536</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -152,15 +152,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.8014819579690626</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -174,15 +174,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.4963817023135738</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -196,15 +196,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.13393708478678823</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -218,15 +218,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.5872766457612703</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -240,15 +240,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.05860886004171517</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -262,15 +262,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.8552163250993805</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -284,15 +284,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.05846138338299445</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="05:59:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="05:59:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="02:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="02:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -306,15 +306,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.671195343677547</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -328,15 +328,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.029951569062363625</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -350,15 +350,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.5491096811521946</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -372,15 +372,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.4991040808505043</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -394,15 +394,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.5773688157227508</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -416,15 +416,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.4011065508437701</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -438,15 +438,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.09234993884923182</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -460,15 +460,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.9295014497367733</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -482,15 +482,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.14145344739029797</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -504,15 +504,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.12179115354737158</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -526,15 +526,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.16401965450956302</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="05:58:30" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="05:58:30" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="01:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="01:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -548,15 +548,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.41452739897041846</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -570,15 +570,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.9865088106723106</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -592,15 +592,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.37855928395255545</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -614,15 +614,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.9315294664891633</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -636,15 +636,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.5603529330618341</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -658,15 +658,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.6661464088645764</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -680,15 +680,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.25803231772108837</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -702,15 +702,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.5210185984403671</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -724,15 +724,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.22222822035353063</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -746,15 +746,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.06628584650527003</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -768,15 +768,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.4661552661966144</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="05:59:30" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="05:59:30" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="02:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="02:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -790,15 +790,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.7983074036806632</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -812,15 +812,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.0021161844042886235</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -834,15 +834,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.44422605375386937</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -856,15 +856,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.18148233207033548</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -878,15 +878,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.4823794279122251</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -900,15 +900,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.826475212921856</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -922,15 +922,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.9716554551339017</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -944,15 +944,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.18199219837779557</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -966,15 +966,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.026882901574437068</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -988,15 +988,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.06984924037213447</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -1010,15 +1010,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.08139376056001102</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="06:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="06:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -1032,15 +1032,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.11172123678611667</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -1054,15 +1054,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.7585489885488865</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -1076,15 +1076,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.3981205724712531</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -1098,15 +1098,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.8360044465636738</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -1120,15 +1120,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.3467630533254057</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -1142,15 +1142,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.09201099382986311</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -1164,15 +1164,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.10998395281607509</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -1186,15 +1186,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.902339489932201</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -1208,15 +1208,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.09878620105242109</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -1230,15 +1230,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.015781540905599356</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -1252,15 +1252,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.046781363759574535</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -1274,15 +1274,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.2615598158744441</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -1296,15 +1296,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.6287282209514957</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -1318,15 +1318,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.9824732941534394</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -1340,15 +1340,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.978942789144743</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -1362,15 +1362,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.4763184591627787</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -1384,15 +1384,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.5817638152121786</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -1406,15 +1406,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.6035914806885702</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -1428,15 +1428,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.4893328498459044</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -1450,15 +1450,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.8901310482365578</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -1472,15 +1472,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.2884977152773972</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -1494,15 +1494,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.47908559620955815</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -1516,15 +1516,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.4606875280922357</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -1538,15 +1538,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.81833502273187</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -1560,15 +1560,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.6019649706430672</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -1582,15 +1582,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.02693028537947928</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -1604,15 +1604,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.7901889888709005</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -1626,15 +1626,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.8829369043676127</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -1648,15 +1648,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.548957456911234</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -1670,15 +1670,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.5849243863412675</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -1692,15 +1692,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.25850638983857244</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -1714,15 +1714,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.38565632707883546</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -1736,15 +1736,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.107445565323115</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -1758,15 +1758,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.5966697926842415</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -1780,15 +1780,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.47487702240064666</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -1802,15 +1802,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.24945809341212566</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -1824,15 +1824,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.48922029690233815</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -1846,15 +1846,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.7456751969093462</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -1868,15 +1868,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.17839825882270388</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -1890,15 +1890,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.12131581446930229</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -1912,15 +1912,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.5304216147530767</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -1934,15 +1934,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.7472362132436845</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -1956,15 +1956,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.6134109977196314</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -1978,15 +1978,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.007979208559583673</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -2000,15 +2000,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.21499554571503654</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -2022,15 +2022,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.536367668199821</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -2044,15 +2044,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.0936774126374822</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -2066,15 +2066,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.1654987819744479</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -2088,15 +2088,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.5833949990403215</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -2110,15 +2110,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.5963742748916384</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -2132,15 +2132,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.3031624885965485</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -2154,15 +2154,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.305993033894697</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -2176,15 +2176,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.3816054891607258</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 
@@ -2198,15 +2198,15 @@
 			<attribute name="z_c" class="java.lang.Double" >0.464047154782368</attribute>
 		</attributes>
 		<plan selected="yes">
-			<activity type="h" link="1" x="-25000.0" y="0.0" end_time="06:00:00" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" end_time="06:00:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="w" link="20" x="10000.0" y="0.0" max_dur="00:30:00" >
+			<activity type="w" link="20_bike" x="10000.0" y="0.0" max_dur="00:30:00" >
 			</activity>
 			<leg mode="bike">
 			</leg>
-			<activity type="h" link="1" x="-25000.0" y="0.0" >
+			<activity type="h" link="1_bike" x="-25000.0" y="0.0" >
 			</activity>
 		</plan>
 

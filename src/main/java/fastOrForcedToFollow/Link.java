@@ -2,10 +2,25 @@ package fastOrForcedToFollow;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.PriorityQueue;
+import java.util.Set;
 
+import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.population.Person;
+import org.matsim.core.mobsim.framework.MobsimAgent;
+import org.matsim.core.mobsim.framework.MobsimDriverAgent;
+import org.matsim.core.mobsim.qsim.interfaces.MobsimVehicle;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QCycleAsVehicle;
+import org.matsim.core.mobsim.qsim.qnetsimengine.QLaneI;
+import org.matsim.core.mobsim.qsim.qnetsimengine.QLinkI;
+import org.matsim.core.mobsim.qsim.qnetsimengine.QVehicle;
+import org.matsim.vehicles.Vehicle;
+import org.matsim.vis.snapshotwriters.VisData;
+import org.omg.CORBA.portable.Delegate;
 
 /**
  * 
@@ -82,6 +97,18 @@ public class Link{
 	 * The earliest possible time that the link can potentially handle traffic (entering or leaving).
 	 */
 	private double tWakeUp = 0;
+	
+	
+	private boolean movedSomethingDownstream = false;
+	
+	public boolean movedSomethingDownstream() {
+		return this.movedSomethingDownstream;
+	}
+
+	public void setMovedSomethingDownstream(boolean movedSomethingDownstream) {
+		this.movedSomethingDownstream = movedSomethingDownstream;
+	}
+	
 
 
 	@SuppressWarnings("unchecked")
@@ -243,27 +270,29 @@ public class Link{
 		cyclist.setCurrentLink(null);
 	}
 
-	public void advanceCyclist(QCycleAsVehicle qCyc){
+	public CyclistQObject advanceCyclist(QCycleAsVehicle qCyc){
 		Cyclist cyclist = qCyc.getCyclist();
 		PseudoLane pseudoLane = cyclist.selectPseudoLane(this); 
 		double vTilde = cyclist.getVMax(pseudoLane);
-		if(cyclist.speedFitsOnLink(vTilde, this)){
-			Link previousLink = cyclist.getCurrentLink();
-			previousLink.incrementOutFlowCounter();
-			previousLink.getOutQ().remove();
-			previousLink.reduceOccupiedSpace( cyclist, cyclist.getSpeed());
+		
+		// The cyclist may not fit, but it is alright that 1 cyclist exceeds the capacity.
+		
+		//if(cyclist.speedFitsOnLink(vTilde, this)){
+			
 			double tLeave = Double.max(pseudoLane.tReady, cyclist.getTEarliestExit());
 
-			previousLink.setWakeUpTime(tLeave);
-
-
-			if(previousLink.getId() != Runner.sourceLink.getId()){
-				cyclist.reportSpeed(previousLink.getLength(), tLeave);
-				previousLink.reportOutputTime(tLeave);
-				previousLink.reportSpeedTime(tLeave, cyclist.getSpeedReport().getLast()[2]);
+			Link previousLink = cyclist.getCurrentLink();
+			if(previousLink != null){
+				
+			//	previousLink.incrementOutFlowCounter();
+				//previousLink.getOutQ().remove();  IS DONE AUTOMATICALLY IN QNodeIMPL;
+				previousLink.reduceOccupiedSpace( cyclist, cyclist.getSpeed());
+				previousLink.setWakeUpTime(tLeave);
+			//	cyclist.reportSpeed(previousLink.getLength(), tLeave);
+			//	previousLink.reportOutputTime(tLeave);
+			//	previousLink.reportSpeedTime(tLeave, cyclist.getSpeedReport().getLast()[2]);
 			}
-			cyclist.initialiseNewSpeedReportElement(this.getId(), tLeave);	
-
+			//cyclist.initialiseNewSpeedReportElement(this.getId(), tLeave);	
 
 
 			cyclist.setSpeed(vTilde);
@@ -272,11 +301,9 @@ public class Link{
 			this.increaseOccupiedSpace(cyclist, vTilde);
 			pseudoLane.updateTs(vTilde, tLeave);
 			this.incrementInFlowCounter();
-			outQ.add(new CyclistQObject(qCyc));
-			cyclist.setCurrentLink(this);
-		} else {
-			System.err.println("Something is terribly wrong");
-		}
+				cyclist.setCurrentLink(this);	
+
+			return new CyclistQObject(qCyc);
 	}
 
 
@@ -288,11 +315,11 @@ public class Link{
 	 * 
 	 * @param speed on which the safety distance will be based.
 	 */
-	void reduceOccupiedSpace(Cyclist cyclist, double speed){
+	public void reduceOccupiedSpace(Cyclist cyclist, double speed){
 		this.supplementOccupiedSpace(-cyclist.getSafetyBufferDistance(speed));
 	}
 
-	void increaseOccupiedSpace(Cyclist cyclist, double speed){
+	public void increaseOccupiedSpace(Cyclist cyclist, double speed){
 		this.supplementOccupiedSpace(cyclist.getSafetyBufferDistance(speed));
 	}
 
@@ -375,5 +402,6 @@ public class Link{
 		double vTilde = cyclist.getVMax(pseudoLane);
 		return cyclist.speedFitsOnLink(vTilde, this);
 	}
+
 
 }

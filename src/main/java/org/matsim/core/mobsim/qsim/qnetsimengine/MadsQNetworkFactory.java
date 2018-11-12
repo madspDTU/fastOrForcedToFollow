@@ -137,7 +137,7 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 						}
 
 						@Override public void addFromUpstream( final QVehicle veh ) {
-							log.debug( "adding: veh=" + veh );
+							log.debug( "adding: veh=" + veh.getId() );
 
 							// upcast:
 							QCycleAsVehicle qCyc = (QCycleAsVehicle) veh;
@@ -183,32 +183,36 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 									continue;
 								}
 								fffLink.getOutQ().remove();
+								//mads:  Problem is, that once removed from the queue,
+								//              the link no longer knows who has left it. 
 								fffLink.reduceOccupiedSpace(cqo.getCyclist(), cqo.getCyclist().getSpeed());
-								fffLink.setMovedSomethingDownstream(true);
+								fffLink.addVehicleToMovedDownstreamVehicles(cqo.getQCycle());
+								
 								final QNodeI toNode = qLinkImpl.getToNode();
 								if ( toNode instanceof QNodeImpl ) { 
 									((QNodeImpl) toNode).activateNode();
 								}
-
 							}
 							return true;
 						}
 
 						@Override public boolean isNotOfferingVehicle() {
-							boolean movedSomethingDownstream = fffLink.movedSomethingDownstream();
-							if ( movedSomethingDownstream==false ) {
-								log.debug( "is offering vehicle" ); // yyyyyy never happens
-							}
-							return !movedSomethingDownstream;
+							return fffLink.isVehiclesMovedDownstreamEmpty();
 
 						}
 
 						@Override public QVehicle popFirstVehicle() {
-							return fffLink.getOutQ().isEmpty() ? null : fffLink.getOutQ().poll().getQCycle();
+						//	return fffLink.getOutQ().isEmpty() ? null : fffLink.getOutQ().poll().getQCycle();
+							return fffLink.pollFirstVehicleMovedDownstream();
 						}
 
 						@Override public QVehicle getFirstVehicle() {
-							return fffLink.getOutQ().isEmpty() ? null : fffLink.getOutQ().peek().getQCycle();
+							
+							//mads: MAJOR PROBLEM: Since the vehicle is removed from outQ in doSimStep(),
+							//          the vehicle can no longer be accessed through the outQ.
+							//              .... and no other way to access it exists. :/
+							//return fffLink.getOutQ().isEmpty() ? null : fffLink.getOutQ().peek().getQCycle();'
+							return fffLink.getFirstVehicleMovedDownstream();
 						}
 
 						@Override public boolean isAcceptingFromWait( final QVehicle veh ) {
@@ -302,7 +306,7 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 						}
 
 						@Override public void initBeforeSimStep() {
-							fffLink.setMovedSomethingDownstream(false);
+							//Intentionally empty
 						}
 					} ;
 				}

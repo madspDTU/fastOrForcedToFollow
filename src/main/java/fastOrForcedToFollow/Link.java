@@ -99,17 +99,21 @@ public class Link{
 	private double tWakeUp = 0;
 	
 	
-	private boolean movedSomethingDownstream = false;
-	
-	public boolean movedSomethingDownstream() {
-		return this.movedSomethingDownstream;
+	//mads TEMPORARY variable, ideally it should do without.
+	private LinkedList<QVehicle> vehiclesMovedDownstream = new LinkedList<QVehicle>();
+	public void addVehicleToMovedDownstreamVehicles(QVehicle veh){
+		this.vehiclesMovedDownstream.addLast(veh);
 	}
-
-	public void setMovedSomethingDownstream(boolean movedSomethingDownstream) {
-		this.movedSomethingDownstream = movedSomethingDownstream;
+	public QVehicle getFirstVehicleMovedDownstream(){
+		return vehiclesMovedDownstream.isEmpty() ? null : vehiclesMovedDownstream.peekFirst();
+	}
+	public QVehicle pollFirstVehicleMovedDownstream(){
+		return vehiclesMovedDownstream.isEmpty() ? null : vehiclesMovedDownstream.pollFirst();
+	}
+	public boolean isVehiclesMovedDownstreamEmpty(){
+		return vehiclesMovedDownstream.isEmpty();
 	}
 	
-
 
 	@SuppressWarnings("unchecked")
 	public Link(String id, double width, double length) throws InstantiationException, IllegalAccessException{

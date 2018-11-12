@@ -39,10 +39,7 @@ import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.mobsim.framework.AgentSource;
 import org.matsim.core.mobsim.qsim.AbstractQSimModule;
-import org.matsim.core.mobsim.qsim.qnetsimengine.MadsPopulationAgentSource;
-import org.matsim.core.mobsim.qsim.qnetsimengine.MadsQNetworkFactory;
-import org.matsim.core.mobsim.qsim.qnetsimengine.QNetworkFactory;
-import org.matsim.core.mobsim.qsim.qnetsimengine.QVehicle;
+import org.matsim.core.mobsim.qsim.qnetsimengine.*;
 //import org.matsim.core.mobsim.qsim.qnetsimengine.MadsPopulationAgentSource;
 //import org.matsim.core.mobsim.qsim.qnetsimengine.MadsQNetworkFactory;
 //import org.matsim.core.mobsim.qsim.qnetsimengine.QNetworkFactory;
@@ -75,6 +72,7 @@ public class RunMatsim {
 		config.controler().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists );
 
 		config.controler().setLastIteration( 0 );
+		config.qsim().setEndTime( 12.*3600. );
 
 		PlanCalcScoreConfigGroup.ModeParams params = new PlanCalcScoreConfigGroup.ModeParams(TransportMode.bike) ;
 		config.planCalcScore().addModeParams( params );
@@ -175,6 +173,7 @@ public class RunMatsim {
 			protected void configureQSim() {
 				this.bind( QNetworkFactory.class ).to( MadsQNetworkFactory.class ) ;  //mads: does not run (for me) with this enabled.
 				this.bind( AgentSource.class).to( MadsPopulationAgentSource.class).asEagerSingleton();  //mads: Will run with this enabled.
+//				this.bind( QVehicleFactory.class ).to( QCycleAsVehicle.Factory.class ) ;
 			}
 		});
 		

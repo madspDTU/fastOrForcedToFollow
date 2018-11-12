@@ -4,6 +4,7 @@ import fastOrForcedToFollow.BicycleVehicle;
 import fastOrForcedToFollow.Cyclist;
 
 import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QVehicle;
@@ -19,10 +20,22 @@ import java.util.LinkedList;
 
 public class QCycleAsVehicle implements QVehicle
 {
+//	public static class Factory implements QVehicleFactory {
+//		@Override public QVehicle createQVehicle( Vehicle vehicle ){
+//			QVehicle qvehicle ;
+//			if ( leg.getMode().equals( TransportMode.bike ) ) {
+//				qvehicle = new QCycleAsVehicle( vehicle, person ) ;
+//			} else {
+//				qvehicle = new QVehicleImpl( vehicle ) ;
+//			}
+//			return qvehicle ;
+//		}
+//	}
+
+
 	QVehicle qVehicle  ;
 	Cyclist cyclist ;
-	
-	
+
 	public QCycleAsVehicle( Vehicle basicVehicle,  Person person) {
 		final String id = basicVehicle.getId().toString();
 		this.qVehicle = new QVehicleImpl(new BicycleVehicle(id));

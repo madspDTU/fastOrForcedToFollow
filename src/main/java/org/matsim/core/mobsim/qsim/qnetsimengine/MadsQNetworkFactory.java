@@ -25,6 +25,7 @@ import fastOrForcedToFollow.Cyclist;
 import fastOrForcedToFollow.CyclistQObject;
 import fastOrForcedToFollow.PseudoLane;
 
+import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
@@ -76,6 +77,8 @@ import java.util.Collection;
  * @see ConfigurableQNetworkFactory
  */
 public final class MadsQNetworkFactory extends QNetworkFactory {
+	private static final Logger log = Logger.getLogger( MadsQNetworkFactory.class ) ;
+
 	private EventsManager events ;
 	private Scenario scenario ;
 	// (vis needs network and may need population attributes and config; in consequence, makes sense to have scenario here. kai, apr'16)
@@ -114,7 +117,7 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 				e.printStackTrace();
 			}
 
-			final fastOrForcedToFollow.Link delegate = link1;
+			final fastOrForcedToFollow.Link fffLink = link1;
 			QLinkImpl.Builder linkBuilder = new QLinkImpl.Builder( context, netsimEngine );
 			linkBuilder.setLaneFactory( new QLinkImpl.LaneFactory(){
 				@Override public QLaneI createLane(AbstractQLink qLinkImpl ) {
@@ -123,30 +126,124 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 					return new QLaneI(){
 
 						@Override public Id<Lane> getId() {
-							return Id.create( delegate.getId(), Lane.class ) ;
+							return Id.create( fffLink.getId(), Lane.class ) ;
 						}
-						@Override public void addFromWait( final QVehicle veh ) {
-							delegate.setMovedSomethingDownstream(true);
-							final QNodeI toNode = qLinkImpl.getToNode();
-							if ( toNode instanceof QNodeImpl && 
-									context.getSimTimer().getTimeOfDay() <= 3600*24 ) {
-								((QNodeImpl) toNode).activateNode();
+
+						@Override public boolean isAcceptingFromUpstream() {
+							return fffLink.getOccupiedSpace() < fffLink.getTotalLaneLength();
+							// In contrast to the standAlone version, here we alllow the space to be
+							// exceeded, but will subsequently disallow movements when exceeded
+							// (Basically corresponding to allowing 1 extra bicycle).
+						}
+
+						@Override public void addFromUpstream( final QVehicle veh ) {
+							log.debug( "adding: veh=" + veh );
+
+							// upcast:
+							QCycleAsVehicle qCyc = (QCycleAsVehicle) veh;
+
+							// get the Cyclist out of it:
+							Cyclist cyclist = qCyc.getCyclist();
+
+							// set back pointer (yy should be done in factory)
+							cyclist.setQCycleAsVehicle(qCyc);
+
+							// internal fff logic:
+							PseudoLane pseudoLane = cyclist.selectPseudoLane(fffLink);
+							double vTilde = cyclist.getVMax(pseudoLane);
+							double tLeave = Double.max(pseudoLane.tReady, cyclist.getTEarliestExit());
+							cyclist.setSpeed(vTilde);
+							cyclist.setTStart(tLeave);
+							cyclist.setTEarliestExit(tLeave + fffLink.getLength()/vTilde);
+							fffLink.increaseOccupiedSpace(cyclist, vTilde);
+							pseudoLane.updateTs(vTilde, tLeave);
+							fffLink.incrementInFlowCounter();
+							cyclist.setCurrentLink(fffLink);
+
+							// wrap the QCycleAsVehicle and memorize it:
+							fffLink.getOutQ().add(new CyclistQObject(qCyc));
+
+							//TODO: A rejected cyclist does not get a new tEarliestExit :/
+							// I think that is okay, it only causes an efficiency loss.
+
+						}
+
+						@Override public boolean doSimStep() {
+							// yyyyyy this method is missing some call to link.processLink or similar.
+
+							CyclistQObject cqo;
+							while((cqo = fffLink.getOutQ().peek()) != null){
+								if(cqo.getCyclist().getTEarliestExit() > context.getSimTimer().getTimeOfDay()){
+									break;
+								}
+								if(cqo.getQCycle().getDriver().isWantingToArriveOnCurrentLink()){
+									qLinkImpl.letVehicleArrive(cqo.getQCycle());
+									fffLink.getOutQ().remove();
+									fffLink.reduceOccupiedSpace(cqo.getCyclist(), cqo.getCyclist().getSpeed());
+									continue;
+								}
+								fffLink.getOutQ().remove();
+								fffLink.reduceOccupiedSpace(cqo.getCyclist(), cqo.getCyclist().getSpeed());
+								fffLink.setMovedSomethingDownstream(true);
+								final QNodeI toNode = qLinkImpl.getToNode();
+								if ( toNode instanceof QNodeImpl &&
+										context.getSimTimer().getTimeOfDay() <= 3600*24 ) { // yyyyyy why that temporal restriction? kai, nov'18
+									((QNodeImpl) toNode).activateNode();
+								}
+
 							}
+							return true;
+						}
+
+						@Override public boolean isNotOfferingVehicle() {
+							boolean movedSomethingDownstream = fffLink.movedSomethingDownstream();
+							if ( movedSomethingDownstream==false ) {
+								log.debug( "is offering vehicle" ); // yyyyyy never happens
+							}
+							return movedSomethingDownstream;
 
 						}
 
+						@Override public QVehicle popFirstVehicle() {
+							return fffLink.getOutQ().isEmpty() ? null : fffLink.getOutQ().poll().getQCycle();
+						}
 
+						@Override public QVehicle getFirstVehicle() {
+							return fffLink.getOutQ().isEmpty() ? null : fffLink.getOutQ().peek().getQCycle();
+						}
 
 						@Override public boolean isAcceptingFromWait( final QVehicle veh ) {
-							Cyclist cyclist = ((QCycleAsVehicle) veh).getCyclist(); 
+//							Cyclist cyclist = ((QCycleAsVehicle) veh).getCyclist();
+//
+//							return cyclist.isNotInFuture(context.getSimTimer().getTimeOfDay()) &&
+//									fffLink.getOccupiedSpace() < fffLink.getTotalLaneLength() ;
 
-							return cyclist.isNotInFuture(context.getSimTimer().getTimeOfDay()) &&
-									delegate.getOccupiedSpace() < delegate.getTotalLaneLength() ;
+							// use same logic as inserting from upstream:
+							return this.isAcceptingFromUpstream() ;
+
+							// (I don't think that the "future" thing will be needed here since it should be handled by the activity end time.  kai, nov'18)
 						}
 
+						@Override public void addFromWait( final QVehicle veh ) {
+//							fffLink.setMovedSomethingDownstream(true);
+//							final QNodeI toNode = qLinkImpl.getToNode();
+//							if ( toNode instanceof QNodeImpl &&
+//									context.getSimTimer().getTimeOfDay() <= 3600*24 ) {
+//								// yyyyyy why that second condition?  kai, nov'18
+//
+//								((QNodeImpl) toNode).activateNode();
+//							}
+							// yyyyyy the vehicle needs to be accepted and memorized somewhere!
+
+							// just inserting them upstream.  For the time being, but might also be ok in the long run.
+							this.addFromUpstream( veh );
+						}
+
+
+
+
 						@Override public boolean isActive() {
-							return true;
-							// yy always active, to get started
+							return true;// yy always active, to get started
 						}
 
 						@Override public double getSimulatedFlowCapacityPerTimeStep() {
@@ -159,7 +256,7 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 
 						@Override public QVehicle getVehicle( final Id<Vehicle> vehicleId ) {
 							QCycleAsVehicle qCyc = null;
-							for(CyclistQObject cqo : delegate.getOutQ()){
+							for(CyclistQObject cqo : fffLink.getOutQ()){
 								if(cqo.getCyclist().getId() == vehicleId.toString()){
 									qCyc = cqo.getQCycle();
 								}
@@ -168,7 +265,7 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 						}
 
 						@Override public double getStorageCapacity() {
-							return delegate.getTotalLaneLength()*bicyclePCE;
+							return fffLink.getTotalLaneLength()*bicyclePCE;
 						}
 
 						@Override public VisData getVisData() {
@@ -187,96 +284,29 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 							throw new RuntimeException( "not implemented" );
 						}
 
-						@Override public boolean doSimStep() {
-							CyclistQObject cqo;
-							while((cqo = delegate.getOutQ().peek()) != null){
-								if(cqo.getCyclist().getTEarliestExit() > context.getSimTimer().getTimeOfDay()){
-									break;
-								}
-								if(cqo.getQCycle().getDriver().isWantingToArriveOnCurrentLink()){
-									qLinkImpl.letVehicleArrive(cqo.getQCycle());
-									delegate.getOutQ().remove();
-									delegate.reduceOccupiedSpace(cqo.getCyclist(), cqo.getCyclist().getSpeed());
-									continue;
-								}
-								delegate.getOutQ().remove();
-								delegate.reduceOccupiedSpace(cqo.getCyclist(), cqo.getCyclist().getSpeed());
-								delegate.setMovedSomethingDownstream(true);
-								final QNodeI toNode = qLinkImpl.getToNode();
-								if ( toNode instanceof QNodeImpl && 
-										context.getSimTimer().getTimeOfDay() <= 3600*24 ) {
-									((QNodeImpl) toNode).activateNode();
-								}
-
-							}
-							return true;
-						}
 
 						@Override public void clearVehicles() {
-							delegate.getOutQ().clear();
+							fffLink.getOutQ().clear();
 						}
 
 						@Override public Collection<MobsimVehicle> getAllVehicles() {
 							ArrayList<MobsimVehicle> qCycs = new ArrayList<MobsimVehicle>();
-							for(CyclistQObject cqo : delegate.getOutQ()){
+							for(CyclistQObject cqo : fffLink.getOutQ()){
 								qCycs.add(cqo.getQCycle());
 							}
 							return qCycs;
 						}
 
-						@Override public void addFromUpstream( final QVehicle veh ) {
-
-							QCycleAsVehicle qCyc = (QCycleAsVehicle) veh;
-							Cyclist cyclist = qCyc.getCyclist();
-							cyclist.setQCycleAsVehicle(qCyc);
-							PseudoLane pseudoLane = cyclist.selectPseudoLane(delegate); 
-							double vTilde = cyclist.getVMax(pseudoLane);
-							double tLeave = Double.max(pseudoLane.tReady, cyclist.getTEarliestExit());
-							cyclist.setSpeed(vTilde);
-							cyclist.setTStart(tLeave);
-							cyclist.setTEarliestExit(tLeave + delegate.getLength()/vTilde);
-							delegate.increaseOccupiedSpace(cyclist, vTilde);
-							pseudoLane.updateTs(vTilde, tLeave);
-							delegate.incrementInFlowCounter();
-							cyclist.setCurrentLink(delegate);
-							delegate.getOutQ().add(new CyclistQObject(qCyc));
-
-							//TODO: A rejected cyclist does not get a new tEarliestExit :/
-							// I think that is okay, it only causes an efficiency loss.
-
-						}
-
-						@Override public boolean isNotOfferingVehicle() {
-							boolean movedSomethingDownstream = delegate.movedSomethingDownstream();
-							return movedSomethingDownstream;
-							
-						}						
-
-						@Override public QVehicle popFirstVehicle() {
-							return delegate.getOutQ().isEmpty() ? null : delegate.getOutQ().poll().getQCycle();
-						}
-
-						@Override public QVehicle getFirstVehicle() {
-							return delegate.getOutQ().isEmpty() ? null : delegate.getOutQ().peek().getQCycle();
-						}
-
 						@Override public double getLastMovementTimeOfFirstVehicle() {
-							return delegate.getWakeUpTime();
-						}
-
-						@Override public boolean isAcceptingFromUpstream() {
-							return delegate.getOccupiedSpace() < delegate.getTotalLaneLength();
-							// In contrast to the standAlone version, here we alllow the space to be
-							// exceeded, but will subsequently disallow movements when exceeded
-							// (Basically corresponding to allowing 1 extra bicycle).
+							return fffLink.getWakeUpTime();
 						}
 
 						@Override public double getLoadIndicator() {
-							return delegate.getOccupiedSpace();
+							return fffLink.getOccupiedSpace();
 						}
 
 						@Override public void initBeforeSimStep() {
-							delegate.setMovedSomethingDownstream(false);
+							fffLink.setMovedSomethingDownstream(false);
 						}
 					} ;
 				}

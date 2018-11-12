@@ -107,12 +107,12 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 		if ( link.getAllowedModes().contains( TransportMode.bike ) ) {
 			Gbl.assertIf( link.getAllowedModes().size()==1 ); // not possible with multi-modal links! kai, oct'18
 			final String id = link.getId().toString();
-			final double width=2. ;
+			final int psi = (int) link.getNumberOfLanes() ;
 			final double length=link.getLength() ;
 			final double bicyclePCE = new BicycleVehicleType().getPcuEquivalents();
 			fastOrForcedToFollow.Link link1 = null;
 			try {
-				link1 = new fastOrForcedToFollow.Link(id, width, length) ;
+				link1 = new fastOrForcedToFollow.Link(id, psi, length) ;
 			} catch ( InstantiationException | IllegalAccessException e ) {
 				e.printStackTrace();
 			}
@@ -137,7 +137,7 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 						}
 
 						@Override public void addFromUpstream( final QVehicle veh ) {
-							log.debug( "adding: veh=" + veh.getId() );
+						//	log.debug( "adding: veh=" + veh.getId() );
 
 							// upcast:
 							QCycleAsVehicle qCyc = (QCycleAsVehicle) veh;
@@ -163,13 +163,14 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 							// wrap the QCycleAsVehicle and memorize it:
 							fffLink.getOutQ().add(new CyclistQObject(qCyc));
 
-							//TODO: A rejected cyclist does not get a new tEarliestExit :/
-							// I think that is okay, it only causes an efficiency loss.
+							//mads: A rejected cyclist does not get a new tEarliestExit.
+								// I think that is okay, it only causes an efficiency loss.
 
 						}
 
 						@Override public boolean doSimStep() {
 							// yyyyyy this method is missing some call to link.processLink or similar.
+							// mads: It seems to do the equivalent to what QueueWithBuffer is doing.
 
 							CyclistQObject cqo;
 							while((cqo = fffLink.getOutQ().peek()) != null){
@@ -183,9 +184,9 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 									continue;
 								}
 								fffLink.getOutQ().remove();
-								//mads:  Problem is, that once removed from the queue,
-								//              the link no longer knows who has left it. 
 								fffLink.reduceOccupiedSpace(cqo.getCyclist(), cqo.getCyclist().getSpeed());
+								
+								//Auxiliary buffer created to fit the piece into MATSim. 
 								fffLink.addVehicleToMovedDownstreamVehicles(cqo.getQCycle());
 								
 								final QNodeI toNode = qLinkImpl.getToNode();
@@ -216,30 +217,15 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 						}
 
 						@Override public boolean isAcceptingFromWait( final QVehicle veh ) {
-//							Cyclist cyclist = ((QCycleAsVehicle) veh).getCyclist();
-//
-//							return cyclist.isNotInFuture(context.getSimTimer().getTimeOfDay()) &&
-//									fffLink.getOccupiedSpace() < fffLink.getTotalLaneLength() ;
-
 							// use same logic as inserting from upstream:
 							return this.isAcceptingFromUpstream() ;
 
-							// (I don't think that the "future" thing will be needed here since it should be handled by the activity end time.  kai, nov'18)
 						}
 
 						@Override public void addFromWait( final QVehicle veh ) {
-//							fffLink.setMovedSomethingDownstream(true);
-//							final QNodeI toNode = qLinkImpl.getToNode();
-//							if ( toNode instanceof QNodeImpl) {
-//								((QNodeImpl) toNode).activateNode();
-//							}
-							// yyyyyy the vehicle needs to be accepted and memorized somewhere!
-
 							// just inserting them upstream.  For the time being, but might also be ok in the long run.
 							this.addFromUpstream( veh );
 						}
-
-
 
 
 						@Override public boolean isActive() {
@@ -265,7 +251,7 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 						}
 
 						@Override public double getStorageCapacity() {
-							return fffLink.getTotalLaneLength()*bicyclePCE;
+							throw new RuntimeException( "not implemented" );
 						}
 
 						@Override public VisData getVisData() {
@@ -298,11 +284,11 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 						}
 
 						@Override public double getLastMovementTimeOfFirstVehicle() {
-							return fffLink.getWakeUpTime();
+							throw new RuntimeException( "not implemented" );
 						}
 
 						@Override public double getLoadIndicator() {
-							return fffLink.getOccupiedSpace();
+							throw new RuntimeException( "not implemented" );
 						}
 
 						@Override public void initBeforeSimStep() {

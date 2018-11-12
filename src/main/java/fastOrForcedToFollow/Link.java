@@ -99,7 +99,7 @@ public class Link{
 	private double tWakeUp = 0;
 	
 	
-	//mads TEMPORARY variable, ideally it should do without.
+	//mads: Buffer created in order to fit the piece into MATSim. Would be nice to do without.
 	private LinkedList<QVehicle> vehiclesMovedDownstream = new LinkedList<QVehicle>();
 	public void addVehicleToMovedDownstreamVehicles(QVehicle veh){
 		this.vehiclesMovedDownstream.addLast(veh);
@@ -115,11 +115,16 @@ public class Link{
 	}
 	
 
-	@SuppressWarnings("unchecked")
 	public Link(String id, double width, double length) throws InstantiationException, IllegalAccessException{
+		this(id, 1 + (int) Math.floor((width-Runner.deadSpace)/Runner.omega), length );
+	}
+	
+	//Constructor using the number of pseudoLanes directly.
+	@SuppressWarnings("unchecked")
+	public Link(String id, int Psi, double length) throws InstantiationException, IllegalAccessException{
 		this.id = id;
 		this.length = length;
-		this.Psi = 1 + (int) Math.floor((width-Runner.deadSpace)/Runner.omega);
+		this.Psi = Psi;
 		psi = createPseudoLanes();
 		speedReports = new LinkedList[Psi];
 		for(int i = 0; i < Psi; i++){

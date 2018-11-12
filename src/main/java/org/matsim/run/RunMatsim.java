@@ -71,7 +71,7 @@ public class RunMatsim {
 
 		config.controler().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists );
 
-		config.controler().setLastIteration( 0 );
+		config.controler().setLastIteration( 10 );
 		config.qsim().setEndTime( 12.*3600. );
 
 		PlanCalcScoreConfigGroup.ModeParams params = new PlanCalcScoreConfigGroup.ModeParams(TransportMode.bike) ;
@@ -144,15 +144,16 @@ public class RunMatsim {
 			final Link bikeLink = nf.createLink( id, fromNode, toNode );
 
 			bikeLink.setLength( link.getLength() );
-			bikeLink.setFreespeed( 10. );
-			bikeLink.setCapacity( 200000. ); // this is in PCE; should be 3000 _bicycles_ per efficient lane; efficient lane is about 1.5 m.
-			bikeLink.setNumberOfLanes( 1 );
+			bikeLink.setFreespeed( Double.MAX_VALUE);  //This is controlled by the desired speed of the individual.
+			bikeLink.setCapacity( Double.MAX_VALUE); //The FFF-framework does not use such value.
+			bikeLink.setNumberOfLanes( 2 ); //Ideally, this should be done by creating a
+			                                         // custom attribute to the link: width.
 			{
 				Set<String> set = new HashSet<>();
 				set.add( TransportMode.bike );
 				bikeLink.setAllowedModes( set );
 			}
-
+			
 			bikeLinks.add(bikeLink);
 		}
 		for(Link link : bikeLinks){

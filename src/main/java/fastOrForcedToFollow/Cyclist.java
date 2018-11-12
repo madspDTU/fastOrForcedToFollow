@@ -18,7 +18,6 @@ public class Cyclist  {
 	private double speed = -1; //Current speed
 	private double tStart = 0; // Time at which the cyclist entered the link.      'madsp: Stricly not needed.
 	private double tEarliestExit = 0;
-	private LinkedList<Double[]> speedReport = new LinkedList<Double[]>(); 
 	private final LinkTransmissionModel ltm;
 	private Link currentLink = null;
 	private QCycleAsVehicle qCyc = null;
@@ -28,7 +27,6 @@ public class Cyclist  {
 		this.id = id;
 		this.desiredSpeed = desiredSpeed;
 		this.ltm = new LinkTransmissionModel(theta_0, theta_1);
-		speedReport.add(new Double[]{-1d, 0d,-1d});
 	}
 	
 	public static Cyclist createGlobalCyclist(String id, double desiredSpeed){
@@ -61,9 +59,6 @@ public class Cyclist  {
 		FileWriter writer = new FileWriter(baseDir + "/Cyclists/speedsOfCyclist" + id +
 				"_" + Runner.N + "Persons.csv");
 		writer.append("Time;Speed\n");
-		for(Double[] reportElement : speedReport){
-			writer.append(reportElement[0] + ";" + reportElement[1] + "\n");
-		}
 		writer.flush();
 		writer.close();
 	}
@@ -87,34 +82,9 @@ public class Cyclist  {
 	}
 	
 
-	/**
-	 * @return The speed report containing the speed (in m/s) at certain times (in seconds) during the simulation.
-	 */
-	public LinkedList<Double[]> getSpeedReport(){
-		return speedReport;
-	}
-
-
-	public void initialiseNewSpeedReportElement(String id, double t){
-		speedReport.addLast(new Double[]{Double.valueOf(id), t, -1d});
-	}
-
 
 	public void moveToNextQ(Link nextLink, double tEnd){
 	}
-
-	public void reportSpeedWeird(double time){
-		speedReport.addLast(new Double[]{time, this.speed});
-	}
-
-	public void reportSpeed(double length){
-		speedReport.getLast()[2] = length/(this.tEarliestExit - speedReport.getLast()[1]);
-	}
-	
-	public void reportSpeed(double length, double tLeave){
-		speedReport.getLast()[2] = length/(tLeave - this.tStart);
-	}
-
 
 
 

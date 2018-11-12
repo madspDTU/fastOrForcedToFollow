@@ -65,16 +65,6 @@ public class Link{
 	private int Psi;
 
 	/**
-	 * Speed report containing the speeds of the cyclists that have traversed the link.
-	 */
-	private LinkedList<Double>[] speedReports;
-
-	/**
-	 * The speed time report containing the speed and time of every cyclist leaving the link.
-	 */
-	private LinkedList<Double[]> speedTimeReport = new LinkedList<Double[]>();
-
-	/**
 	 * The total pseudolane distance, i.e. the product between the length and number of pseudolanes.
 	 */
 	private final double totalLaneLength; 
@@ -106,16 +96,11 @@ public class Link{
 	}
 	
 	//Constructor using the number of pseudoLanes directly.
-	@SuppressWarnings("unchecked")
 	public Link(String id, int Psi, double length) throws InstantiationException, IllegalAccessException{
 		this.id = id;
 		this.length = length;
 		this.Psi = Psi;
 		psi = createPseudoLanes();
-		speedReports = new LinkedList[Psi];
-		for(int i = 0; i < Psi; i++){
-			speedReports[i] = new LinkedList<Double>();
-		}
 		outQ = new PriorityQueue<CyclistQObject>();
 		this.totalLaneLength = this.length * this.Psi * Runner.capacityMultiplier;
 	}
@@ -160,33 +145,7 @@ public class Link{
 		writer.close();
 	}
 
-	public void exportSpeeds(String baseDir) throws IOException{
-		ToolBox.createFolderIfNeeded(baseDir);
-		FileWriter writer = new FileWriter(baseDir + "/speedsOfLinks_" + id + "_" + Runner.N + "Persons.csv");
-		for(int i = 0; i < Psi; i++){
-			writer.append("Speed" + i + ";");
-		}
-		writer.append("\n");
-		while(!speedReports[Psi-1].isEmpty()){
-			for(int i = 0; i < Psi; i++){
-				writer.append(speedReports[i].pollFirst() + ";");
-			}
-			writer.append("\n");
-		}
-		writer.flush();
-		writer.close();
-	}
-
-	public void exportSpeedTimes(String baseDir) throws IOException{
-		FileWriter writer = new FileWriter(baseDir + "/speedTimesLink_" + id + "_" + Runner.N + "Persons.csv");
-		writer.append("Time;Speed\n");
-		while(!this.speedTimeReport.isEmpty()){
-			Double[] element = speedTimeReport.pollFirst();
-			writer.append(element[0] + ";" + element[1] + "\n");
-		}
-		writer.flush();
-		writer.close();
-	}
+	
 
 	/**
 	 * @return The density report storing the density at every time of the simulation.
@@ -259,9 +218,6 @@ public class Link{
 		previousLink.outQ.remove();
 		previousLink.outFlowCounter++;
 		previousLink.reduceOccupiedSpace(cyclist, cyclist.getSpeed());
-		cyclist.reportSpeed(previousLink.length);
-		reportOutputTime(cyclist.getTEarliestExit());
-		reportSpeedTime(cyclist.getTEarliestExit(), cyclist.getSpeedReport().getLast()[2]);
 		cyclist.setCurrentLink(null);
 	}
 
@@ -335,16 +291,6 @@ public class Link{
 
 	public boolean isRelevant(){
 		return !outQ.isEmpty() && Runner.t >= outQ.peek().getCyclist().getTEarliestExit();
-	}
-
-
-	public void reportOutputTime(double tLeave){
-		outflowTimeReport.add(new Double[]{tLeave, (double) this.outFlowCounter});
-	}
-
-
-	public void reportSpeedTime(double t, double speed){
-		speedTimeReport.add(new Double[]{t, speed});
 	}
 
 

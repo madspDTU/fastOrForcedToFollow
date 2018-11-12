@@ -359,14 +359,11 @@ public class Runner {
 	 * @throws IOException
 	 */
 	public static void exportSpeeds() throws IOException{
-		exportCyclistSpeeds(baseDir + "/Cyclists/" + (int) lengthOfLinks);
 		exportCyclistDesiredSpeeds(baseDir + "/Cyclists/DesiredSpeeds");
 
 		for(Link link : links){
-			link.exportSpeeds(baseDir + "/Links/" + (int) lengthOfLinks);
 			link.exportDensities(baseDir + "/Links/" + (int) lengthOfLinks);
 			link.exportFlows(baseDir + "/Links/" + (int) lengthOfLinks);
-			link.exportSpeedTimes(baseDir + "/Links/" + (int) lengthOfLinks);
 			link.exportOutputTimes(baseDir + "/Links/" + (int) lengthOfLinks);
 		}
 	}
@@ -391,29 +388,6 @@ public class Runner {
 		writer.close();
 	}
 
-	/**
-	 * Exporting cyclist speeds to subfolders within the baseDir.
-	 * 
-	 * @param baseDir The base directory into which the output is stored.
-	 * 
-	 * @throws IOException
-	 */
-	public static void exportCyclistSpeeds(String baseDir) throws IOException{
-		ToolBox.createFolderIfNeeded(baseDir);
-		FileWriter writer = new FileWriter(baseDir + "/CyclistSpeeds_" + N + "Persons.csv");
-
-		System.out.println(baseDir + "/CyclistSpeeds_" + N + "Persons.csv");
-		writer.append("CyclistId;LinkId;Time;Speed\n");
-		for(Cyclist cyclist : cyclists){
-			for(Double[] reportElement : cyclist.getSpeedReport()){
-				if(reportElement[0] == 0 || reportElement[2] > 0){  //On all real links, the speed has to be positive.
-					writer.append(cyclist.getId() + ";"  + reportElement[0] + ";" + reportElement[1] + ";" + reportElement[2] + "\n");
-				}
-			}
-		}
-		writer.flush();
-		writer.close();
-	}
 
 
 }

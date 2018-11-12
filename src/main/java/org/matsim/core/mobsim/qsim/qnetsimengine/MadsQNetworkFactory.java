@@ -154,7 +154,6 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 							cyclist.setTEarliestExit(tLeave + fffLink.getLength()/vTilde);
 							fffLink.increaseOccupiedSpace(cyclist, vTilde);
 							pseudoLane.updateTs(vTilde, tLeave);
-							fffLink.incrementInFlowCounter();
 							cyclist.setCurrentLink(fffLink);
 							
 							// wrap the QCycleAsVehicle and memorize it:

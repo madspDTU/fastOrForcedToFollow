@@ -18,6 +18,9 @@ import java.util.Collection;
 
 public class QCycleAsVehicle implements QVehicle
 {
+	
+	//mads: How to determine mode when only knowing the vehicle??? And how to pass on the person?
+	
 //	public static class Factory implements QVehicleFactory {
 //		@Override public QVehicle createQVehicle( Vehicle vehicle ){
 //			QVehicle qvehicle ;

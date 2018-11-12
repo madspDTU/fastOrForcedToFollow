@@ -135,7 +135,10 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 						}
 
 						@Override public void addFromUpstream( final QVehicle veh ) {
-							log.debug( "linkId=" + fffLink.getId() + "; adding: veh=" + veh.getId() );
+							log.warn( "addFromWait/Upstream: now=" + context.getSimTimer().getTimeOfDay() + "; linkId=" + fffLink.getId() + "; adding: vehId=" + veh.getId() );
+
+							// activate link since there is now action on it:
+							qLinkImpl.getInternalInterface().activateLink();
 
 							// upcast:
 							QCycleAsVehicle qCyc = (QCycleAsVehicle) veh;
@@ -162,9 +165,9 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 							pseudoLane.updateTs(vTilde, tLeave);
 							
 							// wrap the QCycleAsVehicle and memorize it:
-							log.debug( "now=" + context.getSimTimer().getTimeOfDay() + "; linkId=" + fffLink.getId() + outqAsString( fffLink.getOutQ() ) ) ;
+//							log.debug( "now=" + context.getSimTimer().getTimeOfDay() + "; linkId=" + fffLink.getId() + outqAsString( fffLink.getOutQ() ) ) ;
 							fffLink.getOutQ().add(new CyclistQObject(qCyc));
-							log.debug( "now=" + context.getSimTimer().getTimeOfDay() + "; linkId=" + fffLink.getId() + outqAsString( fffLink.getOutQ() ) ) ;
+//							log.debug( "now=" + context.getSimTimer().getTimeOfDay() + "; linkId=" + fffLink.getId() + outqAsString( fffLink.getOutQ() ) ) ;
 
 							//mads: A rejected cyclist does not get a new tEarliestExit.
 								// I think that is okay, it only causes an efficiency loss.
@@ -184,7 +187,7 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 							CyclistQObject cqo;
 							while((cqo = fffLink.getOutQ().peek()) != null){
 
-								log.debug( "now=" + context.getSimTimer().getTimeOfDay() + "; linkId=" + fffLink.getId() + outqAsString( fffLink.getOutQ() ) ) ;
+//								log.debug( "now=" + context.getSimTimer().getTimeOfDay() + "; linkId=" + fffLink.getId() + outqAsString( fffLink.getOutQ() ) );
 
 								final double tEarliestExit = cqo.getCyclist().getTEarliestExit();
 								if( tEarliestExit > context.getSimTimer().getTimeOfDay()){
@@ -237,6 +240,9 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 
 						@Override public void addFromWait( final QVehicle veh ) {
 
+							// activate link since there is now action on it:
+							qLinkImpl.getInternalInterface().activateLink();
+
 							double now = context.getSimTimer().getTimeOfDay() ;
 							((QCycleAsVehicle) veh).getCyclist().setTEarliestExit( now );
 
@@ -260,7 +266,7 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 						@Override public QVehicle getVehicle( final Id<Vehicle> vehicleId ) {
 							QCycleAsVehicle qCyc = null;
 							for(CyclistQObject cqo : fffLink.getOutQ()){
-								if(cqo.getCyclist().getId() == vehicleId.toString()){
+								if( cqo.getCyclist().getId().equals( vehicleId.toString() ) ){
 									qCyc = cqo.getQCycle();
 								}
 							}

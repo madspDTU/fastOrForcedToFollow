@@ -134,7 +134,7 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 						}
 
 						@Override public void addFromUpstream( final QVehicle veh ) {
-						//	log.debug( "adding: veh=" + veh.getId() );
+						log.debug( "adding: veh=" + veh.getId() );
 
 							// upcast:
 							QCycleAsVehicle qCyc = (QCycleAsVehicle) veh;
@@ -152,9 +152,9 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 							cyclist.setSpeed(vTilde);
 							cyclist.setTStart(tLeave);
 							cyclist.setTEarliestExit(tLeave + fffLink.getLength()/vTilde);
+							cyclist.setCurrentLink(fffLink);
 							fffLink.increaseOccupiedSpace(cyclist, vTilde);
 							pseudoLane.updateTs(vTilde, tLeave);
-							cyclist.setCurrentLink(fffLink);
 							
 							// wrap the QCycleAsVehicle and memorize it:
 							fffLink.getOutQ().add(new CyclistQObject(qCyc));
@@ -166,21 +166,23 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 
 						@Override public boolean doSimStep() {
 							// yyyyyy this method is missing some call to link.processLink or similar.
-							// mads: It seems to do the equivalent to what QueueWithBuffer is doing.
-
+							// mads: It seems to do the equivalent to what QueueWithBuffer is doing?
+							
+							// mads: At the moment only 1 doSimStep is performed per bike.
+							
 							CyclistQObject cqo;
 							while((cqo = fffLink.getOutQ().peek()) != null){
+								
 								if(cqo.getCyclist().getTEarliestExit() > context.getSimTimer().getTimeOfDay()){
 									break;
 								}
-								if(cqo.getQCycle().getDriver().isWantingToArriveOnCurrentLink()){
-									qLinkImpl.letVehicleArrive(cqo.getQCycle());
-									fffLink.getOutQ().remove();
-									fffLink.reduceOccupiedSpace(cqo.getCyclist(), cqo.getCyclist().getSpeed());
-									continue;
-								}
 								fffLink.getOutQ().remove();
 								fffLink.reduceOccupiedSpace(cqo.getCyclist(), cqo.getCyclist().getSpeed());
+							
+								if(cqo.getQCycle().getDriver().isWantingToArriveOnCurrentLink()){
+									qLinkImpl.letVehicleArrive(cqo.getQCycle());
+									continue;
+								}
 								
 								//Auxiliary buffer created to fit the piece into MATSim. 
 								fffLink.addVehicleToMovedDownstreamVehicles(cqo.getQCycle());

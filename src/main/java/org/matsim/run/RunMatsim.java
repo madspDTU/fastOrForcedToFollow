@@ -71,7 +71,7 @@ public class RunMatsim {
 
 		config.controler().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists );
 
-		config.controler().setLastIteration( 10 );
+		config.controler().setLastIteration( 0 );
 		config.qsim().setEndTime( 12.*3600. );
 
 		PlanCalcScoreConfigGroup.ModeParams params = new PlanCalcScoreConfigGroup.ModeParams(TransportMode.bike) ;
@@ -82,8 +82,6 @@ public class RunMatsim {
 		config.plansCalcRoute().removeModeRoutingParams( TransportMode.bike );
 		config.plansCalcRoute().setNetworkModes( networkModes );
 		config.travelTimeCalculator().setAnalyzedModes( TransportMode.car + "," + TransportMode.bike);
-		// Mads -> Kai: The "setAnalyzedModes" was missing before.. //sideNote: Takes a String as input, but should be List<String>?;
-		
 		
 		// ---
 

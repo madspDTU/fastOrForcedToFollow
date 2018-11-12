@@ -62,16 +62,18 @@ public class QCycleAsVehicle implements QVehicle
 	
 	
 	@Override public double getLinkEnterTime() {
-		return qVehicle.getLinkEnterTime();
+		//Uses cyclist's value
+		return this.getCyclist().getTStart();
 	}
 	
 	@Override public void setLinkEnterTime( final double linkEnterTime ) {
-		qVehicle.setLinkEnterTime( linkEnterTime );
+		//Uses cyclist's value
+		this.getCyclist().setTStart( linkEnterTime );
 	}
 	
 	@Override public double getMaximumVelocity() {
-		return qVehicle.getMaximumVelocity() ;
-		//this.cyclist.getDesiredSpeed();
+		//Uses cyclist's value;
+		return this.getCyclist().getDesiredSpeed();
 	}
 	
 	@Override public double getFlowCapacityConsumptionInEquivalents() {
@@ -79,13 +81,13 @@ public class QCycleAsVehicle implements QVehicle
 	}
 	
 	@Override public double getEarliestLinkExitTime() {
-		return qVehicle.getEarliestLinkExitTime();
-		//this.cyclist.getTEarliestExit();
+		//Uses cyclist's value
+		return this.getCyclist().getTEarliestExit();
 	}
 	
 	@Override public void setEarliestLinkExitTime( final double earliestLinkEndTime ) {
-		qVehicle.setEarliestLinkExitTime( earliestLinkEndTime );
-		//this.cyclist.setTEarliestExit(earliestLinkEndTime);
+		//Uses cyclist's value
+		this.cyclist.setTEarliestExit(earliestLinkEndTime);
 	}
 	
 	@Override public double getSizeInEquivalents() {
@@ -106,7 +108,7 @@ public class QCycleAsVehicle implements QVehicle
 	
 	@Override public Link getCurrentLink() {
 		return qVehicle.getCurrentLink();
-		//	this.cyclist.getCurrentLink();
+		//Cannot (straightforwardly) use cyclist's value, because that Link is of another type.
 	}
 	
 	@Override public boolean addPassenger( final PassengerAgent passenger ) {
@@ -127,7 +129,7 @@ public class QCycleAsVehicle implements QVehicle
 	
 	@Override public void setCurrentLink( final Link link ) {
 		qVehicle.setCurrentLink( link );
-		//this.cyclist.setCurrentLink(link);
+		//See getCurrentLink regarind inheritance from cyclist.
 	}
 	
 	@Override public void setDriver( final DriverAgent driver ) {

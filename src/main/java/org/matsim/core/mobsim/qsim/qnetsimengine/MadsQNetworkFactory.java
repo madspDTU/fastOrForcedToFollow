@@ -159,7 +159,7 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 							pseudoLane.updateTs(vTilde, tLeave);
 							fffLink.incrementInFlowCounter();
 							cyclist.setCurrentLink(fffLink);
-
+							
 							// wrap the QCycleAsVehicle and memorize it:
 							fffLink.getOutQ().add(new CyclistQObject(qCyc));
 

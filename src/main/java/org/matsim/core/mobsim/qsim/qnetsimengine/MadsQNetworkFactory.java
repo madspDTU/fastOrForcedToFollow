@@ -186,8 +186,7 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 								fffLink.reduceOccupiedSpace(cqo.getCyclist(), cqo.getCyclist().getSpeed());
 								fffLink.setMovedSomethingDownstream(true);
 								final QNodeI toNode = qLinkImpl.getToNode();
-								if ( toNode instanceof QNodeImpl &&
-										context.getSimTimer().getTimeOfDay() <= 3600*24 ) { // yyyyyy why that temporal restriction? kai, nov'18
+								if ( toNode instanceof QNodeImpl ) { 
 									((QNodeImpl) toNode).activateNode();
 								}
 
@@ -200,7 +199,7 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 							if ( movedSomethingDownstream==false ) {
 								log.debug( "is offering vehicle" ); // yyyyyy never happens
 							}
-							return movedSomethingDownstream;
+							return !movedSomethingDownstream;
 
 						}
 
@@ -227,10 +226,7 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 						@Override public void addFromWait( final QVehicle veh ) {
 //							fffLink.setMovedSomethingDownstream(true);
 //							final QNodeI toNode = qLinkImpl.getToNode();
-//							if ( toNode instanceof QNodeImpl &&
-//									context.getSimTimer().getTimeOfDay() <= 3600*24 ) {
-//								// yyyyyy why that second condition?  kai, nov'18
-//
+//							if ( toNode instanceof QNodeImpl) {
 //								((QNodeImpl) toNode).activateNode();
 //							}
 							// yyyyyy the vehicle needs to be accepted and memorized somewhere!

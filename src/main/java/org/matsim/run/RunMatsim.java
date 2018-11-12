@@ -169,7 +169,6 @@ public class RunMatsim {
 //				this.bind( QVehicleFactory.class ).to( QCycleAsVehicle.Factory.class ) ;
 			}
 			
-			
 		});
 		
 		

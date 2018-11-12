@@ -13,7 +13,7 @@ import java.util.Random;
  *
  */
 public class Runner {
-	
+
 	// Suppress default constructor for noninstantiability
 	private Runner(){
 		throw new AssertionError();
@@ -337,15 +337,9 @@ public class Runner {
 	public static void simulation() throws InstantiationException, IllegalAccessException, IOException{
 		for( ;t < T; t += timeStep){
 			for(Link link : linksMap.values()){ // Wait before go
-		//	for(Link link : Arrays.asList(linksMap.get("0"), linksMap.get("1"), linksMap.get("2"), linksMap.get("-1"))){ //Go before wait
-		//		link.processLink(t);
+				//	for(Link link : Arrays.asList(linksMap.get("0"), linksMap.get("1"), linksMap.get("2"), linksMap.get("-1"))){ //Go before wait
+				//		link.processLink(t);
 				link.getClass(); //do nothing
-			}
-			if(Runner.reportSpeeds){
-				for(Link link : linksMap.values()){
-					link.getDensityReport().
-					addLast(link.getOutQ().size() / (link.getLength() * link.getNumberOfPseudoLanes() / 1000d) );
-				}
 			}
 		}
 	}
@@ -360,12 +354,6 @@ public class Runner {
 	 */
 	public static void exportSpeeds() throws IOException{
 		exportCyclistDesiredSpeeds(baseDir + "/Cyclists/DesiredSpeeds");
-
-		for(Link link : links){
-			link.exportDensities(baseDir + "/Links/" + (int) lengthOfLinks);
-			link.exportFlows(baseDir + "/Links/" + (int) lengthOfLinks);
-			link.exportOutputTimes(baseDir + "/Links/" + (int) lengthOfLinks);
-		}
 	}
 
 

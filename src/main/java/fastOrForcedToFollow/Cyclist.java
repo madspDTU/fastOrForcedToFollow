@@ -2,7 +2,6 @@ package fastOrForcedToFollow;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.LinkedList;
 
 import org.matsim.core.mobsim.qsim.qnetsimengine.QCycleAsVehicle;
 

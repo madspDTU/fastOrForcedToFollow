@@ -1,7 +1,6 @@
 package fastOrForcedToFollow;
 
-import java.io.FileWriter;
-import java.io.IOException;
+
 import java.util.LinkedList;
 import java.util.PriorityQueue;
 
@@ -14,20 +13,11 @@ import org.matsim.core.mobsim.qsim.qnetsimengine.QVehicle;
  */
 public class Link{
 
-	/**
-	 * Density report containing the densities that have occured during the simulation.
-	 */
-	private LinkedList<Double> densityReport = new LinkedList<Double>();
 
 	/**
 	 * The id of the link.
 	 */
 	private String id;
-
-	/**
-	 * Counts the total number of cyclists that have entered the link.
-	 */
-	private int inFlowCounter = 0;
 
 	/**
 	 * The length of the link.
@@ -39,15 +29,6 @@ public class Link{
 	 */
 	private double occupiedSpace = 0;
 
-	/**
-	 * Counts the total number of cyclists that have left the link.
-	 */
-	private int outFlowCounter = 0;
-
-	/**
-	 * The outflow time report containing the speed and time of every cyclist leaving the link.
-	 */
-	private LinkedList<Double[]> outflowTimeReport = new LinkedList<Double[]>();
 
 	/**
 	 * The Q containing the CQO's for the cyclists that have entered the link but not yet left it.
@@ -116,44 +97,8 @@ public class Link{
 		return psi;
 	}
 
-	public void exportDensities(String baseDir) throws IOException{
-		FileWriter writer = new FileWriter(baseDir + "/densitiesLink_" + id + "_" + Runner.N + "Persons.csv");
-		writer.append("Density\n");
-		while(!densityReport.isEmpty()){
-			writer.append(String.valueOf(densityReport.pollFirst()) + "\n");
-		}
-		writer.flush();
-		writer.close();
-	}
-
-	public void exportFlows(String baseDir) throws IOException{
-		FileWriter writer = new FileWriter(baseDir + "/flowsLink_" + id + "_" + Runner.N + "Persons.csv");
-		writer.append("InFlow;OutFlow\n");
-		writer.append(inFlowCounter + ";" + outFlowCounter + "\n");
-		writer.flush();
-		writer.close();
-	}
-
-	public void exportOutputTimes(String baseDir) throws IOException{
-		FileWriter writer = new FileWriter(baseDir + "/outputTimesLink_" +	id + "_" + Runner.N + "Persons.csv");
-		writer.append("Time;Output\n");
-		while(!this.outflowTimeReport.isEmpty()){
-			Double[] element = outflowTimeReport.pollFirst();
-			writer.append(element[0] + ";" + element[1] + "\n");
-		}
-		writer.flush();
-		writer.close();
-	}
-
 	
-
-	/**
-	 * @return The density report storing the density at every time of the simulation.
-	 */
-	public LinkedList<Double> getDensityReport(){
-		return densityReport;
-	}
-
+	
 	/**
 	 * @return The integer id of the link.
 	 */
@@ -216,7 +161,6 @@ public class Link{
 		Cyclist cyclist = qCyc.getCyclist();
 		Link previousLink = cyclist.getCurrentLink();
 		previousLink.outQ.remove();
-		previousLink.outFlowCounter++;
 		previousLink.reduceOccupiedSpace(cyclist, cyclist.getSpeed());
 		cyclist.setCurrentLink(null);
 	}
@@ -235,15 +179,10 @@ public class Link{
 			Link previousLink = cyclist.getCurrentLink();
 			if(previousLink != null){
 				
-			//	previousLink.incrementOutFlowCounter();
-				//previousLink.getOutQ().remove();  IS DONE AUTOMATICALLY IN QNodeIMPL;
+				previousLink.getOutQ().remove();
 				previousLink.reduceOccupiedSpace( cyclist, cyclist.getSpeed());
 				previousLink.setWakeUpTime(tLeave);
-			//	cyclist.reportSpeed(previousLink.getLength(), tLeave);
-			//	previousLink.reportOutputTime(tLeave);
-			//	previousLink.reportSpeedTime(tLeave, cyclist.getSpeedReport().getLast()[2]);
 			}
-			//cyclist.initialiseNewSpeedReportElement(this.getId(), tLeave);	
 
 
 			cyclist.setSpeed(vTilde);
@@ -251,8 +190,7 @@ public class Link{
 			cyclist.setTEarliestExit(tLeave + this.length/vTilde);
 			this.increaseOccupiedSpace(cyclist, vTilde);
 			pseudoLane.updateTs(vTilde, tLeave);
-			this.incrementInFlowCounter();
-				cyclist.setCurrentLink(this);	
+			cyclist.setCurrentLink(this);	
 
 			return new CyclistQObject(qCyc);
 	}
@@ -275,19 +213,7 @@ public class Link{
 	}
 
 
-	/**
-	 * Increments the in-flow counter of the link by 1.
-	 */
-	public void incrementInFlowCounter(){
-		inFlowCounter++;
-	}
 
-	/**
-	 * Increments the out-flow counter of the link by 1.
-	 */
-	public void incrementOutFlowCounter(){
-		outFlowCounter++;
-	}
 
 	public boolean isRelevant(){
 		return !outQ.isEmpty() && Runner.t >= outQ.peek().getCyclist().getTEarliestExit();

@@ -45,7 +45,10 @@ import org.matsim.core.mobsim.qsim.qnetsimengine.*;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.scenario.ScenarioUtils;
+import org.matsim.core.utils.io.IOUtils;
+import org.matsim.examples.ExamplesUtils;
 
+import java.net.URL;
 import java.util.*;
 
 /**
@@ -59,9 +62,9 @@ public class RunMatsim {
 
 	public static void main(String[] args) {
 
-	//	Config config = ConfigUtils.loadConfig( configUrl ) ;
-	
-		Config config = ConfigUtils.loadConfig( "scenarios/equil/config.xml" ) ;
+		URL url = ExamplesUtils.getTestScenarioURL( "equil" );;
+		URL configUrl = IOUtils.newUrl( url, "config_plans1.xml" ) ;
+		Config config = ConfigUtils.loadConfig( configUrl ) ;
 
 		config.controler().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists );
 

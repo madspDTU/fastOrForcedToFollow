@@ -46,6 +46,7 @@ import org.matsim.vis.snapshotwriters.SnapshotLinkWidthCalculator;
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.PriorityQueue;
 
 
 /**
@@ -134,7 +135,7 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 						}
 
 						@Override public void addFromUpstream( final QVehicle veh ) {
-						log.debug( "adding: veh=" + veh.getId() );
+							log.debug( "linkId=" + fffLink.getId() + "; adding: veh=" + veh.getId() );
 
 							// upcast:
 							QCycleAsVehicle qCyc = (QCycleAsVehicle) veh;
@@ -148,16 +149,22 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 							// internal fff logic:
 							PseudoLane pseudoLane = cyclist.selectPseudoLane(fffLink);
 							double vTilde = cyclist.getVMax(pseudoLane);
-							double tLeave = Double.max(pseudoLane.tReady, cyclist.getTEarliestExit());
+
+							double tLeave = Double.max(pseudoLane.tReady, cyclist.getTEarliestExit()) ;
+
 							cyclist.setSpeed(vTilde);
 							cyclist.setTStart(tLeave);
-							cyclist.setTEarliestExit(tLeave + fffLink.getLength()/vTilde);
+							final double tEarliestExit = tLeave + fffLink.getLength() / vTilde;
+							log.debug("tEarliestExit=" + tEarliestExit ) ;
+							cyclist.setTEarliestExit( tEarliestExit );
 							cyclist.setCurrentLink(fffLink);
 							fffLink.increaseOccupiedSpace(cyclist, vTilde);
 							pseudoLane.updateTs(vTilde, tLeave);
 							
 							// wrap the QCycleAsVehicle and memorize it:
+							log.debug( "now=" + context.getSimTimer().getTimeOfDay() + "; linkId=" + fffLink.getId() + outqAsString( fffLink.getOutQ() ) ) ;
 							fffLink.getOutQ().add(new CyclistQObject(qCyc));
+							log.debug( "now=" + context.getSimTimer().getTimeOfDay() + "; linkId=" + fffLink.getId() + outqAsString( fffLink.getOutQ() ) ) ;
 
 							//mads: A rejected cyclist does not get a new tEarliestExit.
 								// I think that is okay, it only causes an efficiency loss.
@@ -165,17 +172,25 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 						}
 
 						@Override public boolean doSimStep() {
+//							log.debug("linkId=" + fffLink.getId() + "; entering mads link doSimStep method; now = " + context.getSimTimer().getTimeOfDay() ) ;
+
 							// yyyyyy this method is missing some call to link.processLink or similar.
 							// mads: It seems to do the equivalent to what QueueWithBuffer is doing?
 							
 							// mads: At the moment only 1 doSimStep is performed per bike.
-							
+
+//							log.debug( outqAsString( fffLink.getOutQ() ) ) ;
+
 							CyclistQObject cqo;
 							while((cqo = fffLink.getOutQ().peek()) != null){
-								
-								if(cqo.getCyclist().getTEarliestExit() > context.getSimTimer().getTimeOfDay()){
+
+								log.debug( "now=" + context.getSimTimer().getTimeOfDay() + "; linkId=" + fffLink.getId() + outqAsString( fffLink.getOutQ() ) ) ;
+
+								final double tEarliestExit = cqo.getCyclist().getTEarliestExit();
+								if( tEarliestExit > context.getSimTimer().getTimeOfDay()){
 									break;
 								}
+								log.debug( "tEarliestExit="  + tEarliestExit);
 								fffLink.getOutQ().remove();
 								fffLink.reduceOccupiedSpace(cqo.getCyclist(), cqo.getCyclist().getSpeed());
 							
@@ -221,6 +236,10 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 						}
 
 						@Override public void addFromWait( final QVehicle veh ) {
+
+							double now = context.getSimTimer().getTimeOfDay() ;
+							((QCycleAsVehicle) veh).getCyclist().setTEarliestExit( now );
+
 							// just inserting them upstream.  For the time being, but might also be ok in the long run.
 							this.addFromUpstream( veh );
 						}
@@ -302,6 +321,15 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 		}
 
 	}
+
+	private static String outqAsString( PriorityQueue<CyclistQObject> outQ ){
+		String str = " outqExitTimes: " ;
+		for ( CyclistQObject cq : outQ ) {
+			str += cq.getTime() + " " ;
+		}
+		return str ;
+	}
+
 	@Override
 	QNodeI createNetsimNode(final Node node) {
 		QNodeImpl.Builder builder = new QNodeImpl.Builder( netsimEngine, context ) ;

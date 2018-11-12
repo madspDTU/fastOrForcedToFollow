@@ -5,3 +5,7 @@
 *.iml
 /target/
 /output/
+
+/net.xml
+/pop.xml
+

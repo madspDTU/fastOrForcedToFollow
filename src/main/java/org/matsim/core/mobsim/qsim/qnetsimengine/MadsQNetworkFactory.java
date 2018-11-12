@@ -140,6 +140,8 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 							// activate link since there is now action on it:
 							qLinkImpl.getInternalInterface().activateLink();
 
+							veh.setCurrentLink( qLinkImpl.getLink() );
+
 							// upcast:
 							QCycleAsVehicle qCyc = (QCycleAsVehicle) veh;
 

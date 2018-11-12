@@ -19,9 +19,11 @@
 package org.matsim.run;
 
 //import fastOrForcedToFollow.ToolBox;
+import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
+import org.matsim.api.core.v01.events.Event;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.NetworkFactory;
@@ -34,8 +36,10 @@ import org.matsim.api.core.v01.population.Population;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup;
+import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
+import org.matsim.core.events.handler.BasicEventHandler;
 import org.matsim.core.mobsim.framework.AgentSource;
 import org.matsim.core.mobsim.qsim.AbstractQSimModule;
 import org.matsim.core.mobsim.qsim.qnetsimengine.*;
@@ -56,6 +60,8 @@ import java.util.*;
  *
  */
 public class RunMatsim {
+	private static final Logger log = Logger.getLogger( RunMatsim.class ) ;
+
 	public static final String DESIRED_SPEED = "v_0";
 	public static final String HEADWAY_DISTANCE_PREFERENCE = "z_c";
 	public static final long RANDOM_SEED = 5355633;
@@ -79,7 +85,7 @@ public class RunMatsim {
 		config.plansCalcRoute().removeModeRoutingParams( TransportMode.bike );
 		config.plansCalcRoute().setNetworkModes( networkModes );
 		config.travelTimeCalculator().setAnalyzedModes( TransportMode.car + "," + TransportMode.bike);
-		
+
 		// ---
 
 		Scenario scenario = ScenarioUtils.loadScenario( config ) ;
@@ -173,7 +179,14 @@ public class RunMatsim {
 			}
 			
 		});
-		
+
+		controler.addOverridingModule( new AbstractModule(){
+			@Override public void install(){
+				this.addEventHandlerBinding().toInstance( (BasicEventHandler) event -> {
+					log.warn( event ) ;
+				} );
+			}
+		} ) ;
 		
 		
 		// ---

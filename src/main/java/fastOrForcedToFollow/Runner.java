@@ -316,7 +316,8 @@ public class Runner {
 
 			double z_c = headwayRandom.nextGaussian();
 
-			Cyclist cyclist = Cyclist.createIndividualisedCyclist(String.valueOf(id), speed, z_c, defaultRoute);
+			//No route is passed on
+			Cyclist cyclist = Cyclist.createIndividualisedCyclist(String.valueOf(id), speed, z_c);
 			cyclist.setTEarliestExit(time);
 			cyclist.setTStart(time);
 			cyclists.add(cyclist);
@@ -337,7 +338,8 @@ public class Runner {
 		for( ;t < T; t += timeStep){
 			for(Link link : linksMap.values()){ // Wait before go
 		//	for(Link link : Arrays.asList(linksMap.get("0"), linksMap.get("1"), linksMap.get("2"), linksMap.get("-1"))){ //Go before wait
-				link.processLink(t);
+		//		link.processLink(t);
+				link.getClass(); //do nothing
 			}
 			if(Runner.reportSpeeds){
 				for(Link link : linksMap.values()){

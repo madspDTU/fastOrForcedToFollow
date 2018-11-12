@@ -2,25 +2,11 @@ package fastOrForcedToFollow;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 import java.util.PriorityQueue;
-import java.util.Set;
 
-import org.matsim.api.core.v01.Id;
-import org.matsim.api.core.v01.population.Person;
-import org.matsim.core.mobsim.framework.MobsimAgent;
-import org.matsim.core.mobsim.framework.MobsimDriverAgent;
-import org.matsim.core.mobsim.qsim.interfaces.MobsimVehicle;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QCycleAsVehicle;
-import org.matsim.core.mobsim.qsim.qnetsimengine.QLaneI;
-import org.matsim.core.mobsim.qsim.qnetsimengine.QLinkI;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QVehicle;
-import org.matsim.vehicles.Vehicle;
-import org.matsim.vis.snapshotwriters.VisData;
-import org.omg.CORBA.portable.Delegate;
 
 /**
  * 
@@ -377,7 +363,9 @@ public class Link{
 		occupiedSpace += length;
 	}
 
-
+	
+	//No need to keep the non-MATSim functions anymore... 
+/*
 	public void processLink(double now){
 		boolean linkFullyProcessed = false;
 		while(!linkFullyProcessed){
@@ -404,6 +392,7 @@ public class Link{
 			} 
 		}
 	}
+	*/
 
 
 	public boolean cyclistFitsOnLink(Cyclist cyclist){

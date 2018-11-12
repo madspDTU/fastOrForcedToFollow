@@ -4,7 +4,6 @@ import fastOrForcedToFollow.BicycleVehicle;
 import fastOrForcedToFollow.Cyclist;
 
 import org.matsim.api.core.v01.Id;
-import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QVehicle;
@@ -16,7 +15,6 @@ import org.matsim.run.RunMatsim;
 import org.matsim.vehicles.Vehicle;
 
 import java.util.Collection;
-import java.util.LinkedList;
 
 public class QCycleAsVehicle implements QVehicle
 {
@@ -42,8 +40,7 @@ public class QCycleAsVehicle implements QVehicle
 		
 		final double desiredSpeed = (double) person.getAttributes().getAttribute(RunMatsim.DESIRED_SPEED);
 		final double z_c = (double) person.getAttributes().getAttribute(RunMatsim.HEADWAY_DISTANCE_PREFERENCE);
-		final LinkedList<fastOrForcedToFollow.Link> route = null ; // don't need there here; will come from framework
-		this.cyclist = Cyclist.createIndividualisedCyclist(id, desiredSpeed, z_c, route);
+		this.cyclist = Cyclist.createIndividualisedCyclist(id, desiredSpeed, z_c);
 	}
 	
 	public QCycleAsVehicle(Cyclist cyclist){

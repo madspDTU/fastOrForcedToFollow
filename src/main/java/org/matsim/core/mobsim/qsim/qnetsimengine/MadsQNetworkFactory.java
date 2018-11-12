@@ -20,7 +20,6 @@
 package org.matsim.core.mobsim.qsim.qnetsimengine;
 
 
-import fastOrForcedToFollow.BicycleVehicleType;
 import fastOrForcedToFollow.Cyclist;
 import fastOrForcedToFollow.CyclistQObject;
 import fastOrForcedToFollow.PseudoLane;
@@ -34,7 +33,6 @@ import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.config.groups.QSimConfigGroup;
 import org.matsim.core.gbl.Gbl;
-import org.matsim.core.mobsim.framework.MobsimDriverAgent;
 import org.matsim.core.mobsim.framework.MobsimTimer;
 import org.matsim.core.mobsim.qsim.interfaces.AgentCounter;
 import org.matsim.core.mobsim.qsim.interfaces.MobsimVehicle;
@@ -46,7 +44,6 @@ import org.matsim.vehicles.Vehicle;
 import org.matsim.vis.snapshotwriters.SnapshotLinkWidthCalculator;
 
 import javax.inject.Inject;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -109,7 +106,7 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 			final String id = link.getId().toString();
 			final int psi = (int) link.getNumberOfLanes() ;
 			final double length=link.getLength() ;
-			final double bicyclePCE = new BicycleVehicleType().getPcuEquivalents();
+	//		final double bicyclePCE = new BicycleVehicleType().getPcuEquivalents();
 			fastOrForcedToFollow.Link link1 = null;
 			try {
 				link1 = new fastOrForcedToFollow.Link(id, psi, length) ;

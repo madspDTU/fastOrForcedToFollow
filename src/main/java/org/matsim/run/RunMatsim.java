@@ -34,7 +34,6 @@ import org.matsim.api.core.v01.population.Population;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup;
-import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.mobsim.framework.AgentSource;
@@ -46,12 +45,7 @@ import org.matsim.core.mobsim.qsim.qnetsimengine.*;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.scenario.ScenarioUtils;
-import org.matsim.core.utils.io.IOUtils;
-import org.matsim.examples.ExamplesUtils;
 
-import fastOrForcedToFollow.BicycleVehicle;
-
-import java.net.URL;
 import java.util.*;
 
 /**
@@ -170,8 +164,8 @@ public class RunMatsim {
 		controler.addOverridingQSimModule(new AbstractQSimModule() {
 			@Override
 			protected void configureQSim() {
-				this.bind( QNetworkFactory.class ).to( MadsQNetworkFactory.class ) ;  //mads: does not run (for me) with this enabled.
-				this.bind( AgentSource.class).to( MadsPopulationAgentSource.class).asEagerSingleton();  //mads: Will run with this enabled.
+				this.bind( QNetworkFactory.class ).to( MadsQNetworkFactory.class );
+				this.bind( AgentSource.class).to( MadsPopulationAgentSource.class).asEagerSingleton();
 //				this.bind( QVehicleFactory.class ).to( QCycleAsVehicle.Factory.class ) ;
 			}
 		});

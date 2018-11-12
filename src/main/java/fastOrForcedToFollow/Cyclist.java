@@ -19,26 +19,24 @@ public class Cyclist  {
 	private double tStart = 0; // Time at which the cyclist entered the link.      'madsp: Stricly not needed.
 	private double tEarliestExit = 0;
 	private LinkedList<Double[]> speedReport = new LinkedList<Double[]>(); 
-	private LinkedList<Link> route; // madsp: Only used in non-MATSim contexts now.
 	private final LinkTransmissionModel ltm;
 	private Link currentLink = null;
 	private QCycleAsVehicle qCyc = null;
 
 	
-	public Cyclist( String id, double desiredSpeed, double theta_0, double theta_1, LinkedList<Link> route ){
+	public Cyclist( String id, double desiredSpeed, double theta_0, double theta_1){
 		this.id = id;
 		this.desiredSpeed = desiredSpeed;
 		this.ltm = new LinkTransmissionModel(theta_0, theta_1);
-		this.route = route;
 		speedReport.add(new Double[]{-1d, 0d,-1d});
 	}
 	
-	public static Cyclist createGlobalCyclist(String id, double desiredSpeed, LinkedList<Link> route){
-		return new Cyclist(id, desiredSpeed, Runner.theta_0, Runner.theta_1, route);
+	public static Cyclist createGlobalCyclist(String id, double desiredSpeed){
+		return new Cyclist(id, desiredSpeed, Runner.theta_0, Runner.theta_1);
 	}
 	
-	public static Cyclist createIndividualisedCyclist(String id, double desiredSpeed, double z_c, LinkedList<Link> route){
-		return new Cyclist(id, desiredSpeed, Runner.theta_0 + z_c*Runner.zeta_0, Runner.theta_1 + z_c*Runner.zeta_1, route);
+	public static Cyclist createIndividualisedCyclist(String id, double desiredSpeed, double z_c){
+		return new Cyclist(id, desiredSpeed, Runner.theta_0 + z_c*Runner.zeta_0, Runner.theta_1 + z_c*Runner.zeta_1);
 	}
 	
 	public void setQCycleAsVehicle(QCycleAsVehicle qCyc){
@@ -88,12 +86,6 @@ public class Cyclist  {
 		return this.ltm;
 	}
 	
-	/**
-	 * @return The (remaining part of the) route of the cyclist.
-	 */
-	public LinkedList<Link> getRoute(){
-		return route;
-	}
 
 	/**
 	 * @return The speed report containing the speed (in m/s) at certain times (in seconds) during the simulation.

@@ -263,9 +263,9 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 							this.addFromUpstream( veh );
 						}
 
-
 						@Override public boolean isActive() {
-							return true;// yy always active, to get started
+							return !fffLink.getOutQ().isEmpty();
+							// Should be okay, passes tests compared to always true.
 						}
 
 						@Override public double getSimulatedFlowCapacityPerTimeStep() {
@@ -295,7 +295,8 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 						}
 
 						@Override public void addTransitSlightlyUpstreamOfStop( final QVehicle veh ) {
-							throw new RuntimeException( "not implemented" );
+							this.addFromUpstream(veh);
+							//Not sure about that
 						}
 
 						@Override public void changeUnscaledFlowCapacityPerSecond( final double val ) {

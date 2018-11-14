@@ -84,7 +84,7 @@ public class Link{
 		this.Psi = Psi;
 		psi = createPseudoLanes();
 		outQ = new PriorityQueue<CyclistQObject>();
-		this.totalLaneLength = this.length * this.Psi * Runner.capacityMultiplier;
+		this.totalLaneLength = this.length * this.Psi;
 	}
 
 	/**
@@ -157,47 +157,6 @@ public class Link{
 	}
 
 
-
-	public void finishCyclist(QCycleAsVehicle qCyc){
-		Cyclist cyclist = qCyc.getCyclist();
-		Link previousLink = cyclist.getCurrentLink();
-		previousLink.outQ.remove();
-		previousLink.reduceOccupiedSpace(cyclist, cyclist.getSpeed());
-		cyclist.setCurrentLink(null);
-	}
-
-	public CyclistQObject advanceCyclist(QCycleAsVehicle qCyc){
-		Cyclist cyclist = qCyc.getCyclist();
-		PseudoLane pseudoLane = cyclist.selectPseudoLane(this); 
-		double vTilde = cyclist.getVMax(pseudoLane);
-		
-		// The cyclist may not fit, but it is alright that 1 cyclist exceeds the capacity.
-		
-		//if(cyclist.speedFitsOnLink(vTilde, this)){
-			
-			double tLeave = Double.max(pseudoLane.tReady, cyclist.getTEarliestExit());
-
-			Link previousLink = cyclist.getCurrentLink();
-			if(previousLink != null){
-				
-				previousLink.getOutQ().remove();
-				previousLink.reduceOccupiedSpace( cyclist, cyclist.getSpeed());
-				previousLink.setWakeUpTime(tLeave);
-			}
-
-
-			cyclist.setSpeed(vTilde);
-			cyclist.setTStart(tLeave);
-			cyclist.setTEarliestExit(tLeave + this.length/vTilde);
-			this.increaseOccupiedSpace(cyclist, vTilde);
-			pseudoLane.updateTs(vTilde, tLeave);
-			cyclist.setCurrentLink(this);	
-
-			return new CyclistQObject(qCyc);
-	}
-
-
-
 	/**
 	 * Reduces the occupied space of link <code>linkId</code> by the safety distance corresponding to <code>speed</code>
 	 * 
@@ -214,14 +173,6 @@ public class Link{
 	}
 
 
-
-
-	public boolean isRelevant(){
-		return !outQ.isEmpty() && Runner.t >= outQ.peek().getCyclist().getTEarliestExit();
-	}
-
-
-
 	/**
 	 * @param tWakeUp The earliest possible time that the link can potentially handle traffic (entering or leaving).
 	 */
@@ -236,43 +187,14 @@ public class Link{
 		occupiedSpace += length;
 	}
 
-	
-	//No need to keep the non-MATSim functions anymore... 
-/*
-	public void processLink(double now){
-		boolean linkFullyProcessed = false;
-		while(!linkFullyProcessed){
-			if(this.getOutQ().isEmpty()){
-				linkFullyProcessed = true;
-			} else {
-				QCycleAsVehicle cqo = this.getOutQ().peek().getQCycle();
-				Cyclist cyclist = cqo.getCyclist();
-				if(cyclist.getTEarliestExit() > now){
-					linkFullyProcessed = true;
-				} else {
-					if(cyclist.getRoute().isEmpty()){
-						this.finishCyclist(cqo);
-					} else {
-						Link nextLink = cyclist.getRoute().peek();
-						if(nextLink.cyclistFitsOnLink(cyclist)){
-							this.advanceCyclist(cqo);	
-						} else {
-							cyclist.setTEarliestExit(nextLink.getOutQ().peek().getCyclist().getTEarliestExit());
-							linkFullyProcessed = true;
-						}
-					}
-				} 
-			} 
-		}
-	}
-	*/
 
-
+//Keeping it, although not really necessary anymore, as 
+	/*
 	public boolean cyclistFitsOnLink(Cyclist cyclist){
 		PseudoLane pseudoLane = cyclist.selectPseudoLane(this);
 		double vTilde = cyclist.getVMax(pseudoLane);
 		return cyclist.speedFitsOnLink(vTilde, this);
 	}
-
+	*/
 
 }

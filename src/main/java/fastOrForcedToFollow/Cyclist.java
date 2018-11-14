@@ -17,7 +17,6 @@ public class Cyclist {
 	private final double desiredSpeed;
 	private double speed = -1; // Current speed
 	private double tStart = 0; // Time at which the cyclist entered the link.
-								// 'madsp: Stricly not needed.
 	private double tEarliestExit = 0;
 	private final LinkTransmissionModel ltm;
 	private Link currentLink = null;
@@ -46,21 +45,6 @@ public class Cyclist {
 		return this.qCyc;
 	}
 
-	/**
-	 * Advances the cyclist to next link if there is sufficient space on the
-	 * next link.
-	 * 
-	 *
-	 * @return <true> if the cyclist could enter the next link, and <false>
-	 *         otherwise.
-	 */
-
-	public void exportSpeeds(String baseDir) throws IOException {
-		FileWriter writer = new FileWriter(baseDir + "/Cyclists/speedsOfCyclist" + id + "_" + Runner.N + "Persons.csv");
-		writer.append("Time;Speed\n");
-		writer.flush();
-		writer.close();
-	}
 
 	/**
 	 * @return The desired speed (in m/s) of the cyclist.

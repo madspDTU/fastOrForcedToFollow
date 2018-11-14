@@ -76,15 +76,4 @@ public class LinkTransmissionModel {
 	}
 
 
-
-	/**
-	 * Increases the occupied space of link <code>linkId</code> by the safety distance corresponding to <code>speed</code>
-	 * 
-	 * @param linkId of the link that will have its space increased.
-	 * 
-	 * @param speed on which the safety distance will be based.
-	 */
-	void increaseOccupiedSpace(String linkId, double speed){
-		Runner.linksMap.get(linkId).supplementOccupiedSpace(getSafetyBufferDistance(speed));
-	}
 }

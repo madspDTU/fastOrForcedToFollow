@@ -51,6 +51,7 @@ import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.utils.io.IOUtils;
 import org.matsim.examples.ExamplesUtils;
 
+import fastOrForcedToFollow.Runner;
 import fastOrForcedToFollow.ToolBox;
 
 import java.net.URL;
@@ -104,6 +105,7 @@ public class RunMatsim {
 		for ( Person person : population.getPersons().values() ) {
 			if ( true ) {  // Forcing all legs in scenario to be made by bicycle...
 				double v_0 = ToolBox.uniformToJohnson(speedRandom.nextDouble());
+				v_0 = Math.max(v_0, Runner.minimumAllowedDesiredSpeed);
 				//		double v_0 = 5;
 				double z_c = headwayRandom.nextDouble(); 
 				//	double z_c = 0;

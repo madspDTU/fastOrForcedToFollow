@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -66,6 +67,7 @@ import fastOrForcedToFollow.ToolBox;
 
 public class FFFTest {
 
+	private static final Logger log = Logger.getLogger( FFFTest.class);
 	public static final String DESIRED_SPEED = "v_0";
 	public static final String HEADWAY_DISTANCE_PREFERENCE = "z_c";
 	public static final long RANDOM_SEED = 5355633;
@@ -74,48 +76,71 @@ public class FFFTest {
 	@Rule public MatsimTestUtils utils = new MatsimTestUtils() ;
 
 
-
 	@Test
-	public final void test() {
+	public final void testBerlin() {
+		if(true) return;
+		int lanesPerLink = 4;    //Works for 1, 2, 3, and 4
 
-		int lanesPerLink = 1;
-		
-
-		
-
-		Config config = configCreator("equil");
-
-		Scenario scenario = scenarioCreator(config, lanesPerLink, true);
-
+		Config config = configCreator("berlin");
+		Scenario scenario = scenarioCreator(config, lanesPerLink, false);
 		Controler controler = controlerCreator(scenario);
-		
 		try {		
 			controler.run();
 		} catch ( Exception ee ) {
 			ee.printStackTrace();
 		}
-		
-		
+
 		String newEventsFile = utils.getOutputDirectory() + "/output_events.xml.gz";
 		String referenceEventsFile = utils.getInputDirectory() + "/output_events_" + lanesPerLink + ".xml.gz";
 		String referencePopulationFile = utils.getInputDirectory() + "/output_plans_" + lanesPerLink + ".xml.gz";
-		
-		
+
 		Config refConfig = ConfigUtils.createConfig();
 		Scenario refScenario = ScenarioUtils.createScenario(refConfig);
 		PopulationReader pr = new PopulationReader(refScenario);
 		pr.readFile(referencePopulationFile);
 		boolean booleanPopulation = PopulationUtils.equalPopulation(refScenario.getPopulation(), scenario.getPopulation());
-		
+
 		Result resultEvents = EventsFileComparator.compare(referenceEventsFile, newEventsFile);
-		
-		if(booleanPopulation){
-			System.out.println("\t\t\t\t\t\t\t Populations files are semantic equivalent");
-		} else {
-			System.err.println("\t\t\t\t\t\t\t Populations files are not semantic equivalent");
-			
+		if(booleanPopulation){ log.info("Populations files are semantic equivalent"); 			} else {
+			log.warn("Populations files are not semantic equivalent"); 	}
+
+		Assert.assertEquals(resultEvents, Result.FILES_ARE_EQUAL);
+		Assert.assertTrue("Different plans file", booleanPopulation);
+
+	}
+
+
+
+
+	@Test
+	public final void test() {
+		//if(true) return;
+
+		int lanesPerLink = 4;   //Works for 1, 2, 3, and 4
+
+		Config config = configCreator("equil");
+		Scenario scenario = scenarioCreator(config, lanesPerLink, true);
+		Controler controler = controlerCreator(scenario);
+		try {		
+			controler.run();
+		} catch ( Exception ee ) {
+			ee.printStackTrace();
 		}
-		
+
+		String newEventsFile = utils.getOutputDirectory() + "/output_events.xml.gz";
+		String referenceEventsFile = utils.getInputDirectory() + "/output_events_" + lanesPerLink + ".xml.gz";
+		String referencePopulationFile = utils.getInputDirectory() + "/output_plans_" + lanesPerLink + ".xml.gz";
+
+		Config refConfig = ConfigUtils.createConfig();
+		Scenario refScenario = ScenarioUtils.createScenario(refConfig);
+		PopulationReader pr = new PopulationReader(refScenario);
+		pr.readFile(referencePopulationFile);
+		boolean booleanPopulation = PopulationUtils.equalPopulation(refScenario.getPopulation(), scenario.getPopulation());
+
+		Result resultEvents = EventsFileComparator.compare(referenceEventsFile, newEventsFile);
+		if(booleanPopulation){ log.info("Populations files are semantic equivalent"); 			} else {
+			log.warn("Populations files are not semantic equivalent"); 	}
+
 		Assert.assertEquals(resultEvents, Result.FILES_ARE_EQUAL);
 		Assert.assertTrue("Different plans file", booleanPopulation);
 
@@ -128,7 +153,6 @@ public class FFFTest {
 		Config config = ConfigUtils.loadConfig( configUrl ) ;
 
 		config.controler().setOutputDirectory(utils.getOutputDirectory());
-
 		config.controler().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists );
 		config.controler().setLastIteration( 0 );
 		config.controler().setWriteEventsInterval(1);
@@ -138,7 +162,6 @@ public class FFFTest {
 
 		PlanCalcScoreConfigGroup.ModeParams params = new PlanCalcScoreConfigGroup.ModeParams(TransportMode.bike) ;
 		config.planCalcScore().addModeParams( params );
-
 		final List<String> networkModes = Arrays.asList( new String[]{TransportMode.car, TransportMode.bike} );
 		config.qsim().setMainModes( networkModes );
 		config.plansCalcRoute().removeModeRoutingParams( TransportMode.bike );
@@ -151,7 +174,7 @@ public class FFFTest {
 	private Scenario scenarioCreator(Config config, int lanesPerLink, boolean useRandomActivityLocations){
 
 		Scenario scenario = ScenarioUtils.loadScenario( config ) ;
-		
+
 		final int L = scenario.getNetwork().getLinks().size();
 		BigInteger aux = BigInteger.valueOf((long) Math.ceil(L / 4.));
 		int linkStepSize =  Integer.parseInt(String.valueOf(aux.nextProbablePrime()));
@@ -167,13 +190,13 @@ public class FFFTest {
 		int linkInt = 0;
 		for ( Person person : population.getPersons().values() ) {
 			if ( true ) {  // Forcing all legs in scenario to be made by bicycle...
-				double v_0 = ToolBox.uniformToJohnson(speedRandom.nextDouble());
-				v_0 = Math.max(v_0, 2.);
-				//		double v_0 = 5;
-				double z_c = headwayRandom.nextDouble(); 
-				//	double z_c = 0;
-				person.getAttributes().putAttribute(DESIRED_SPEED, v_0);
-				person.getAttributes().putAttribute(HEADWAY_DISTANCE_PREFERENCE, z_c);
+				{
+					double v_0 = ToolBox.uniformToJohnson(speedRandom.nextDouble());
+					v_0 = Math.max(v_0, 2.);
+					double z_c = headwayRandom.nextDouble(); 
+					person.getAttributes().putAttribute(DESIRED_SPEED, v_0);
+					person.getAttributes().putAttribute(HEADWAY_DISTANCE_PREFERENCE, z_c);
+				}
 
 				for ( PlanElement pe : person.getSelectedPlan().getPlanElements() ) {
 					if ( pe instanceof Leg ) {
@@ -183,7 +206,7 @@ public class FFFTest {
 				}
 
 				// Create activities on the bicycle links, ensuring that all links except the first and last
-				// are different (except if only having two acitivites).
+				// are different (except if only having two activities).
 				int N = (person.getSelectedPlan().getPlanElements().size() +1) / 2;
 				int n =1;
 				int firstLinkInt = linkInt;
@@ -191,7 +214,9 @@ public class FFFTest {
 				for ( PlanElement pe : person.getSelectedPlan().getPlanElements()){
 					if( pe instanceof Activity){
 						Activity act =  (Activity) pe;
-						if(useRandomActivityLocations){
+						if(!useRandomActivityLocations){
+							act.setLinkId(Id.createLinkId(act.getLinkId().toString() + "_" + TransportMode.bike));
+						} else {
 							if(n < N  || N == 2){
 								act.setLinkId(Id.createLinkId(((linkInt % L) +1) + "_" + TransportMode.bike));
 							} else{
@@ -199,8 +224,6 @@ public class FFFTest {
 							}
 							linkInt+=linkStepSize;
 							n++;
-						} else {
-							act.setLinkId(Id.createLinkId(act.getLinkId().toString() + "_" + TransportMode.bike));
 						}
 					}
 				}
@@ -223,6 +246,8 @@ public class FFFTest {
 				link.setAllowedModes( set );
 			}
 
+			
+			
 			final Id<Link> id = Id.createLinkId(  link.getId().toString() + "_bike" ) ;
 			final Node fromNode = link.getFromNode() ;
 			final Node toNode = link.getToNode() ;
@@ -249,8 +274,8 @@ public class FFFTest {
 		return scenario;
 
 	}
-	
-	
+
+
 	public Controler controlerCreator(Scenario scenario){
 		Controler controler = new Controler( scenario ) ;
 
@@ -264,7 +289,7 @@ public class FFFTest {
 			}
 
 		});
-		
+
 		return controler;
 	}
 

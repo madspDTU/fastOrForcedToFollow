@@ -3,6 +3,7 @@
 # ignore intellij files:
 /.idea
 *.iml
+
 /scenarios/
 /target/
 /output/
@@ -10,8 +11,6 @@
 
 
 /test/input/org/matsim/test/*
-!/test/input/org/matsim/test/FFFTest/
-/test/input/org/matsim/test/FFFTest/*
 !/test/input/org/matsim/test/FFFTest/test/
 
 

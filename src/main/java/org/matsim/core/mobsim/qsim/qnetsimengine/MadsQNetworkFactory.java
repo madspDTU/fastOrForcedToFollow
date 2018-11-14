@@ -46,7 +46,7 @@ import org.matsim.vis.snapshotwriters.SnapshotLinkWidthCalculator;
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.PriorityQueue;
+//import java.util.PriorityQueue;
 
 
 /**
@@ -107,7 +107,7 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 			final String id = link.getId().toString();
 			final int psi = (int) link.getNumberOfLanes() ;
 			final double length=link.getLength() ;
-	//		final double bicyclePCE = new BicycleVehicleType().getPcuEquivalents();
+			//		final double bicyclePCE = new BicycleVehicleType().getPcuEquivalents();
 			fastOrForcedToFollow.Link link1 = null;
 			try {
 				link1 = new fastOrForcedToFollow.Link(id, psi, length) ;
@@ -135,7 +135,7 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 						}
 
 						@Override public void addFromUpstream( final QVehicle veh ) {
-							log.warn( "addFromWait/Upstream: now=" + context.getSimTimer().getTimeOfDay() + "; linkId=" + fffLink.getId() + "; adding: vehId=" + veh.getId() );
+							//		log.warn( "addFromWait/Upstream: now=" + context.getSimTimer().getTimeOfDay() + "; linkId=" + fffLink.getId() + "; adding: vehId=" + veh.getId() );
 
 							// activate link since there is now action on it:
 							qLinkImpl.getInternalInterface().activateLink();
@@ -154,59 +154,70 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 							// internal fff logic:
 							PseudoLane pseudoLane = cyclist.selectPseudoLane(fffLink);
 							double vTilde = cyclist.getVMax(pseudoLane);
+						//	printDelays(vTilde, cyclist);
+
 
 							double tLeave = Double.max(pseudoLane.tReady, cyclist.getTEarliestExit()) ;
 
 							cyclist.setSpeed(vTilde);
 							cyclist.setTStart(tLeave);
 							final double tEarliestExit = tLeave + fffLink.getLength() / vTilde;
-							log.debug("tEarliestExit=" + tEarliestExit ) ;
+							//		log.debug("tEarliestExit=" + tEarliestExit ) ;
 							cyclist.setTEarliestExit( tEarliestExit );
 							cyclist.setCurrentLink(fffLink);
 							fffLink.increaseOccupiedSpace(cyclist, vTilde);
 							pseudoLane.updateTs(vTilde, tLeave);
-							
+					
+
 							// wrap the QCycleAsVehicle and memorize it:
-//							log.debug( "now=" + context.getSimTimer().getTimeOfDay() + "; linkId=" + fffLink.getId() + outqAsString( fffLink.getOutQ() ) ) ;
+							//							log.debug( "now=" + context.getSimTimer().getTimeOfDay() + "; linkId=" + fffLink.getId() + outqAsString( fffLink.getOutQ() ) ) ;
 							fffLink.getOutQ().add(new CyclistQObject(qCyc));
-//							log.debug( "now=" + context.getSimTimer().getTimeOfDay() + "; linkId=" + fffLink.getId() + outqAsString( fffLink.getOutQ() ) ) ;
+							//							log.debug( "now=" + context.getSimTimer().getTimeOfDay() + "; linkId=" + fffLink.getId() + outqAsString( fffLink.getOutQ() ) ) ;
 
 							//mads: A rejected cyclist does not get a new tEarliestExit.
-								// I think that is okay, it only causes an efficiency loss.
+							// I think that is okay, it only causes an efficiency loss.
 
 						}
 
+						private void printDelays(double vTilde, Cyclist cyclist) {
+							if(vTilde + 0.00001 < cyclist.getDesiredSpeed()){
+								log.info("Cyclist "+ cyclist.getId() + " riding " + String.format("%.1f",
+										 (cyclist.getDesiredSpeed() - vTilde)/cyclist.getDesiredSpeed()*100d)
+										 + "% slower on link " + fffLink.getId());
+							}
+						}
+
 						@Override public boolean doSimStep() {
-//							log.debug("linkId=" + fffLink.getId() + "; entering mads link doSimStep method; now = " + context.getSimTimer().getTimeOfDay() ) ;
+							//							log.debug("linkId=" + fffLink.getId() + "; entering mads link doSimStep method; now = " + context.getSimTimer().getTimeOfDay() ) ;
 
 							// yyyyyy this method is missing some call to link.processLink or similar.
 							// mads: It seems to do the equivalent to what QueueWithBuffer is doing?
-							
+
 							// mads: At the moment only 1 doSimStep is performed per bike.
 
-//							log.debug( outqAsString( fffLink.getOutQ() ) ) ;
+							//							log.debug( outqAsString( fffLink.getOutQ() ) ) ;
 
 							CyclistQObject cqo;
 							while((cqo = fffLink.getOutQ().peek()) != null){
 
-//								log.debug( "now=" + context.getSimTimer().getTimeOfDay() + "; linkId=" + fffLink.getId() + outqAsString( fffLink.getOutQ() ) );
+								//								log.debug( "now=" + context.getSimTimer().getTimeOfDay() + "; linkId=" + fffLink.getId() + outqAsString( fffLink.getOutQ() ) );
 
 								final double tEarliestExit = cqo.getCyclist().getTEarliestExit();
 								if( tEarliestExit > context.getSimTimer().getTimeOfDay()){
 									break;
 								}
-								log.debug( "tEarliestExit="  + tEarliestExit);
+								//		log.debug( "tEarliestExit="  + tEarliestExit);
 								fffLink.getOutQ().remove();
 								fffLink.reduceOccupiedSpace(cqo.getCyclist(), cqo.getCyclist().getSpeed());
-							
+
 								if(cqo.getQCycle().getDriver().isWantingToArriveOnCurrentLink()){
 									qLinkImpl.letVehicleArrive(cqo.getQCycle());
 									continue;
 								}
-								
+
 								//Auxiliary buffer created to fit the piece into MATSim. 
 								fffLink.addVehicleToMovedDownstreamVehicles(cqo.getQCycle());
-								
+
 								final QNodeI toNode = qLinkImpl.getToNode();
 								if ( toNode instanceof QNodeImpl ) { 
 									((QNodeImpl) toNode).activateNode();
@@ -221,12 +232,12 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 						}
 
 						@Override public QVehicle popFirstVehicle() {
-						//	return fffLink.getOutQ().isEmpty() ? null : fffLink.getOutQ().poll().getQCycle();
+							//	return fffLink.getOutQ().isEmpty() ? null : fffLink.getOutQ().poll().getQCycle();
 							return fffLink.pollFirstVehicleMovedDownstream();
 						}
 
 						@Override public QVehicle getFirstVehicle() {
-							
+
 							//mads: MAJOR PROBLEM: Since the vehicle is removed from outQ in doSimStep(),
 							//          the vehicle can no longer be accessed through the outQ.
 							//              .... and no other way to access it exists. :/
@@ -309,7 +320,7 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 						}
 
 						@Override public double getLastMovementTimeOfFirstVehicle() {
-							throw new RuntimeException( "not implemented" );
+							return fffLink.getWakeUpTime();
 						}
 
 						@Override public double getLoadIndicator() {
@@ -330,6 +341,7 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 
 	}
 
+	/*
 	private static String outqAsString( PriorityQueue<CyclistQObject> outQ ){
 		String str = " outqExitTimes: " ;
 		for ( CyclistQObject cq : outQ ) {
@@ -337,6 +349,7 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 		}
 		return str ;
 	}
+	 */
 
 	@Override
 	QNodeI createNetsimNode(final Node node) {

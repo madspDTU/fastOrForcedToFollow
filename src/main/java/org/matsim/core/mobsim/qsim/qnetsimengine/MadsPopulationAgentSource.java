@@ -47,6 +47,7 @@ public class MadsPopulationAgentSource implements AgentSource {
 	public void insertAgentsIntoMobsim() {
 		for (Person p : population.getPersons().values()) {
 			MobsimAgent agent = this.agentFactory.createMobsimAgentFromPerson(p);
+			
 			qsim.insertAgentIntoMobsim(agent);
 		}
 		for (Person p : population.getPersons().values()) {

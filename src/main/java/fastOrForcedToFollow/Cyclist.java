@@ -3,60 +3,60 @@ package fastOrForcedToFollow;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import org.apache.log4j.Logger;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QCycleAsVehicle;
-
 
 /**
  * @author mpaulsen
  *
  */
-public class Cyclist  {
+public class Cyclist {
+
 
 	private final String id;
 	private final double desiredSpeed;
-	private double speed = -1; //Current speed
-	private double tStart = 0; // Time at which the cyclist entered the link.      'madsp: Stricly not needed.
+	private double speed = -1; // Current speed
+	private double tStart = 0; // Time at which the cyclist entered the link.
+								// 'madsp: Stricly not needed.
 	private double tEarliestExit = 0;
 	private final LinkTransmissionModel ltm;
 	private Link currentLink = null;
 	private QCycleAsVehicle qCyc = null;
 
-	
-	public Cyclist( String id, double desiredSpeed, double theta_0, double theta_1){
+	public Cyclist(String id, double desiredSpeed, double theta_0, double theta_1) {
 		this.id = id;
 		this.desiredSpeed = desiredSpeed;
 		this.ltm = new LinkTransmissionModel(theta_0, theta_1);
 	}
-	
-	public static Cyclist createGlobalCyclist(String id, double desiredSpeed){
+
+	public static Cyclist createGlobalCyclist(String id, double desiredSpeed) {
 		return new Cyclist(id, desiredSpeed, Runner.theta_0, Runner.theta_1);
 	}
-	
-	public static Cyclist createIndividualisedCyclist(String id, double desiredSpeed, double z_c){
-		return new Cyclist(id, desiredSpeed, Runner.theta_0 + z_c*Runner.zeta_0, Runner.theta_1 + z_c*Runner.zeta_1);
+
+	public static Cyclist createIndividualisedCyclist(String id, double desiredSpeed, double z_c) {
+		return new Cyclist(id, desiredSpeed, Runner.theta_0 + z_c * Runner.zeta_0,
+				Runner.theta_1 + z_c * Runner.zeta_1);
 	}
-	
-	public void setQCycleAsVehicle(QCycleAsVehicle qCyc){
+
+	public void setQCycleAsVehicle(QCycleAsVehicle qCyc) {
 		this.qCyc = qCyc;
 	}
-	
-	public QCycleAsVehicle getQCycleAsVehicle(){
+
+	public QCycleAsVehicle getQCycleAsVehicle() {
 		return this.qCyc;
 	}
 
-
 	/**
-	 * Advances the cyclist to next link if there is sufficient space on the next link.
+	 * Advances the cyclist to next link if there is sufficient space on the
+	 * next link.
 	 * 
 	 *
-	 * @return <true> if the cyclist could enter the next link, and
-	 *         <false> otherwise.
+	 * @return <true> if the cyclist could enter the next link, and <false>
+	 *         otherwise.
 	 */
 
-
-	public void exportSpeeds(String baseDir) throws IOException{
-		FileWriter writer = new FileWriter(baseDir + "/Cyclists/speedsOfCyclist" + id +
-				"_" + Runner.N + "Persons.csv");
+	public void exportSpeeds(String baseDir) throws IOException {
+		FileWriter writer = new FileWriter(baseDir + "/Cyclists/speedsOfCyclist" + id + "_" + Runner.N + "Persons.csv");
 		writer.append("Time;Speed\n");
 		writer.flush();
 		writer.close();
@@ -65,88 +65,78 @@ public class Cyclist  {
 	/**
 	 * @return The desired speed (in m/s) of the cyclist.
 	 */
-	public double getDesiredSpeed(){
+	public double getDesiredSpeed() {
 		return desiredSpeed;
 	}
 
 	/**
 	 * @return The integer id of the cyclist.
 	 */
-	public String getId(){
+	public String getId() {
 		return id;
 	}
 
-	public LinkTransmissionModel getLTM(){
+	public LinkTransmissionModel getLTM() {
 		return this.ltm;
 	}
-	
 
-
-	public void moveToNextQ(Link nextLink, double tEnd){
+	public void moveToNextQ(Link nextLink, double tEnd) {
 	}
 
-
-
-	public void setSpeed(double newCurrentSpeed){
-		if(newCurrentSpeed < desiredSpeed){
+	public void setSpeed(double newCurrentSpeed) {
+		if (newCurrentSpeed < desiredSpeed) {
 			this.speed = newCurrentSpeed;
 		} else {
 			this.speed = desiredSpeed;
 		}
 	}
 
-
-	public boolean speedFitsOnLink(final double speed, final Link link){
-		return this.ltm.getSafetyBufferDistance(speed) + link.getOccupiedSpace() < link.getTotalLaneLength() || link.getOccupiedSpace() < 0.1;
+	public boolean speedFitsOnLink(final double speed, final Link link) {
+		return this.ltm.getSafetyBufferDistance(speed) + link.getOccupiedSpace() < link.getTotalLaneLength()
+				|| link.getOccupiedSpace() < 0.1;
 	}
-	
-	public PseudoLane selectPseudoLane(Link receivingLink){
+
+	public PseudoLane selectPseudoLane(Link receivingLink) {
 		return this.ltm.selectPseudoLane(receivingLink, this.desiredSpeed, this.tEarliestExit);
 	}
-	
-	public double getVMax(final PseudoLane pseudoLane){
-		return Math.min(desiredSpeed,this.ltm.getVMax(pseudoLane, this.tEarliestExit));
+
+	public double getVMax(final PseudoLane pseudoLane) {
+		return Math.min(desiredSpeed, this.ltm.getVMax(pseudoLane, this.tEarliestExit));
 	}
 
-	
-	public double getTEarliestExit(){
+	public double getTEarliestExit() {
 		return this.tEarliestExit;
 	}
-	
-	public double getTStart(){
+
+	public double getTStart() {
 		return this.tStart;
 	}
-	
-	public void setTEarliestExit(double time){
+
+	public void setTEarliestExit(double time) {
 		this.tEarliestExit = time;
 	}
-	
-	public void setTStart(double time){
+
+	public void setTStart(double time) {
 		this.tStart = time;
 	}
 
-	public boolean isNotInFuture(double now){
+	public boolean isNotInFuture(double now) {
 		return this.getTEarliestExit() <= now;
 	}
-	
 
-	
-		
-	public double getSafetyBufferDistance(double speed){
+	public double getSafetyBufferDistance(double speed) {
 		return this.ltm.getSafetyBufferDistance(speed);
 	}
-	
-	
-	
-	public double getSpeed(){
+
+	public double getSpeed() {
 		return this.speed;
 	}
-	
-	public Link getCurrentLink(){
+
+	public Link getCurrentLink() {
 		return this.currentLink;
 	}
-	
-	public void setCurrentLink(Link newLink){
+
+	public void setCurrentLink(Link newLink) {
 		this.currentLink = newLink;
 	}
 }

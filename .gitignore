@@ -6,7 +6,7 @@
 /target/
 /output/
 /test/output/
-/test/input/*
+/test/input/org/matsim/test/*
 !/test/input/org/matsim/test/FFFTest/
 
 /net.xml

@@ -100,6 +100,8 @@ public class MadsPopulationAgentSource implements AgentSource {
 			// find the vehicle from the vehicles container.  It should be there, see automatic vehicle creation in PrepareForSim.
 			Vehicle vehicle = qsim.getScenario().getVehicles().getVehicles().get(vehicleId);
 			Gbl.assertNotNull(vehicle);
+
+			log.warn( "mode=" + leg.getMode() + "; vehicleTypeId=" + vehicle.getType().getId() ) ;
 			
 			// find the link ID of where to place the vehicle:
 			Id<Link> vehicleLinkId = findVehicleLink(person);
@@ -121,8 +123,9 @@ public class MadsPopulationAgentSource implements AgentSource {
 			} else {
 				this.seenVehicleIds.put( vehicleId, vehicleLinkId ) ;
 				QVehicle qvehicle ;
-				if ( leg.getMode().equals( TransportMode.bike ) ) {
-					qvehicle = new QCycleAsVehicle( vehicle, person ) ;
+//				if ( leg.getMode().equals( TransportMode.bike ) ) {
+				if ( vehicleId.toString().contains( TransportMode.bike ) ) {
+					qvehicle = new QCycleAsVehicle( vehicle, null ) ;
 				} else {
 					qvehicle = new QVehicleImpl( vehicle ) ;
 				}

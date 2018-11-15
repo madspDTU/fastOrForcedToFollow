@@ -1,0 +1,10 @@
+.idea
+*.iml
+.project
+.classpath
+net.xml
+pop.xml
+output
+test/output
+bin
+target

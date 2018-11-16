@@ -1,0 +1,22 @@
+/bin/
+
+# ignore intellij files:
+/.idea
+*.iml
+
+/scenarios/
+/target/
+/output/
+/test/output/
+
+/.settings/
+.classpath
+
+
+
+/test/input/org/matsim/test/*
+!/test/input/org/matsim/test/FFFTest/test/
+
+
+/net.xml
+/pop.xml

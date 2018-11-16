@@ -46,13 +46,12 @@ import org.matsim.api.core.v01.population.Population;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup;
+import org.matsim.core.config.groups.QSimConfigGroup;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.mobsim.framework.AgentSource;
 import org.matsim.core.mobsim.qsim.AbstractQSimModule;
-import org.matsim.core.mobsim.qsim.qnetsimengine.MadsPopulationAgentSource;
-import org.matsim.core.mobsim.qsim.qnetsimengine.MadsQNetworkFactory;
-import org.matsim.core.mobsim.qsim.qnetsimengine.QNetworkFactory;
+import org.matsim.core.mobsim.qsim.qnetsimengine.*;
 import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.population.io.PopulationReader;
 import org.matsim.core.scenario.ScenarioUtils;
@@ -63,6 +62,8 @@ import org.matsim.utils.eventsfilecomparison.EventsFileComparator;
 import org.matsim.utils.eventsfilecomparison.EventsFileComparator.Result;
 
 import fastOrForcedToFollow.ToolBox;
+import org.matsim.vehicles.VehicleType;
+import org.matsim.vehicles.VehicleTypeImpl;
 
 
 public class FFFTest {
@@ -168,6 +169,8 @@ public class FFFTest {
 		config.plansCalcRoute().setNetworkModes( networkModes );
 		config.travelTimeCalculator().setAnalyzedModes( TransportMode.car + "," + TransportMode.bike);
 
+		config.qsim().setVehiclesSource( QSimConfigGroup.VehiclesSource.modeVehicleTypesFromVehiclesData );
+
 		return config;		
 	}
 
@@ -270,6 +273,14 @@ public class FFFTest {
 			network.addLink(link);
 		}
 
+		{
+			VehicleType type = new VehicleTypeImpl( Id.create( TransportMode.car, VehicleType.class  ) ) ;
+			scenario.getVehicles().addVehicleType( type );
+		}
+		{
+			VehicleType type = new VehicleTypeImpl( Id.create( TransportMode.bike, VehicleType.class  ) ) ;
+			scenario.getVehicles().addVehicleType( type );
+		}
 
 		return scenario;
 
@@ -284,8 +295,8 @@ public class FFFTest {
 			@Override
 			protected void configureQSim() {
 				this.bind( QNetworkFactory.class ).to( MadsQNetworkFactory.class );
-				this.bind( AgentSource.class).to( MadsPopulationAgentSource.class).asEagerSingleton();
-				//				this.bind( QVehicleFactory.class ).to( QCycleAsVehicle.Factory.class ) ;
+//				this.bind( AgentSource.class).to( MadsPopulationAgentSource.class).asEagerSingleton();
+								this.bind( QVehicleFactory.class ).to( QCycleAsVehicle.Factory.class ) ;
 			}
 
 		});

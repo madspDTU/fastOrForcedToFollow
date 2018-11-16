@@ -2,13 +2,13 @@ package org.matsim.core.mobsim.qsim.qnetsimengine;
 
 import fastOrForcedToFollow.BicycleVehicle;
 import fastOrForcedToFollow.Cyclist;
-
 import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.population.Person;
-import org.matsim.core.mobsim.qsim.qnetsimengine.QVehicle;
-import org.matsim.core.mobsim.qsim.qnetsimengine.QVehicleImpl;
+import org.matsim.core.gbl.Gbl;
 import org.matsim.core.mobsim.framework.DriverAgent;
+import org.matsim.core.mobsim.framework.HasPerson;
 import org.matsim.core.mobsim.framework.MobsimDriverAgent;
 import org.matsim.core.mobsim.framework.PassengerAgent;
 import org.matsim.run.RunMatsim;
@@ -21,17 +21,17 @@ public class QCycleAsVehicle implements QVehicle
 	
 	//mads: How to determine mode when only knowing the vehicle??? And how to pass on the person?
 	
-//	public static class Factory implements QVehicleFactory {
-//		@Override public QVehicle createQVehicle( Vehicle vehicle ){
-//			QVehicle qvehicle ;
-//			if ( leg.getMode().equals( TransportMode.bike ) ) {
-//				qvehicle = new QCycleAsVehicle( vehicle, person ) ;
-//			} else {
-//				qvehicle = new QVehicleImpl( vehicle ) ;
-//			}
-//			return qvehicle ;
-//		}
-//	}
+	public static class Factory implements QVehicleFactory {
+		@Override public QVehicle createQVehicle( Vehicle vehicle ){
+			QVehicle qvehicle ;
+			if ( vehicle.getId().toString().contains( TransportMode.bike ) ) {
+				qvehicle = new QCycleAsVehicle( vehicle, null ) ;
+			} else {
+				qvehicle = new QVehicleImpl( vehicle ) ;
+			}
+			return qvehicle ;
+		}
+	}
 
 
 	QVehicle qVehicle  ;
@@ -41,9 +41,9 @@ public class QCycleAsVehicle implements QVehicle
 		final String id = basicVehicle.getId().toString();
 		this.qVehicle = new QVehicleImpl(new BicycleVehicle(id));
 		
-		final double desiredSpeed = (double) person.getAttributes().getAttribute(RunMatsim.DESIRED_SPEED);
-		final double z_c = (double) person.getAttributes().getAttribute(RunMatsim.HEADWAY_DISTANCE_PREFERENCE);
-		this.cyclist = Cyclist.createIndividualisedCyclist(id, desiredSpeed, z_c);
+//		final double desiredSpeed = (double) person.getAttributes().getAttribute(RunMatsim.DESIRED_SPEED);
+//		final double z_c = (double) person.getAttributes().getAttribute(RunMatsim.HEADWAY_DISTANCE_PREFERENCE);
+//		this.cyclist = Cyclist.createIndividualisedCyclist(id, desiredSpeed, z_c);
 	}
 	
 	public QCycleAsVehicle(Cyclist cyclist){
@@ -134,6 +134,14 @@ public class QCycleAsVehicle implements QVehicle
 	
 	@Override public void setDriver( final DriverAgent driver ) {
 		qVehicle.setDriver( driver );
+
+		if ( driver!=null ){   // is null when vehicle arrives, and driver LEAVES vehicle!
+			Person person = ((HasPerson) driver).getPerson();
+			final double desiredSpeed = (double) person.getAttributes().getAttribute( RunMatsim.DESIRED_SPEED );
+			final double z_c = (double) person.getAttributes().getAttribute( RunMatsim.HEADWAY_DISTANCE_PREFERENCE );
+			this.cyclist = Cyclist.createIndividualisedCyclist( driver.getId().toString(), desiredSpeed, z_c );
+		}
+
 	}
 	
 	

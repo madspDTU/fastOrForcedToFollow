@@ -1,9 +1,5 @@
 package fastOrForcedToFollow;
 
-import java.io.FileWriter;
-import java.io.IOException;
-
-import org.apache.log4j.Logger;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QCycleAsVehicle;
 
 /**

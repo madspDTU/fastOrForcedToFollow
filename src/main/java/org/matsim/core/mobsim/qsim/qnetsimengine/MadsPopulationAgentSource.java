@@ -125,7 +125,7 @@ public class MadsPopulationAgentSource implements AgentSource {
 				QVehicle qvehicle ;
 //				if ( leg.getMode().equals( TransportMode.bike ) ) {
 				if ( vehicleId.toString().contains( TransportMode.bike ) ) {
-					qvehicle = new QCycleAsVehicle( vehicle, null ) ;
+					qvehicle = new QCycleAsVehicle( vehicle) ;
 				} else {
 					qvehicle = new QVehicleImpl( vehicle ) ;
 				}

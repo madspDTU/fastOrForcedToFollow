@@ -315,7 +315,7 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 						@Override public Collection<MobsimVehicle> getAllVehicles() {
 							ArrayList<MobsimVehicle> qCycs = new ArrayList<MobsimVehicle>();
 							for(CyclistQObject cqo : fffLink.getOutQ()){
-								qCycs.add(cqo.getQCycle());
+								qCycs.add((MobsimVehicle) cqo.getQCycle());
 							}
 							return qCycs;
 						}

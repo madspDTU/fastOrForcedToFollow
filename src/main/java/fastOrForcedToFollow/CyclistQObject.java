@@ -5,7 +5,7 @@ import org.matsim.core.mobsim.qsim.qnetsimengine.QCycle;
 /**
  * @author mpaulsen
  * 
- * A CyclistQObject is essentially a QCycleAsVehicle, but has a modififed compareTo method, allowing it to be sorted
+ * A CyclistQObject is essentially a {@link QCycle}, but has a modififed compareTo method, allowing it to be sorted
  * by earliest possible exit time in the priority queue when inserted.
  *
  */

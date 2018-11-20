@@ -1,6 +1,5 @@
 package org.matsim.core.mobsim.qsim.qnetsimengine;
 
-import fastOrForcedToFollow.BicycleVehicle;
 import fastOrForcedToFollow.Cyclist;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.TransportMode;
@@ -40,18 +39,19 @@ public class QCycle implements QVehicle
 	 * @param basicVehicle
 	 */
 	public QCycle( Vehicle basicVehicle ) {
-		final String id = basicVehicle.getId().toString();
-		this.qVehicle = new QVehicleImpl(new BicycleVehicle(id));
+//		final String id = basicVehicle.getId().toString();
+//		this.qVehicle = new QVehicleImpl(new BicycleVehicle(id));
+		this.qVehicle = new QVehicleImpl( basicVehicle ) ;
 	}
 	
 	public QCycle( Cyclist cyclist ){
-		this.qVehicle = new QVehicleImpl(new BicycleVehicle(cyclist.getId())) ;
-		this.cyclist = cyclist;
+//		this.qVehicle = new QVehicleImpl(new BicycleVehicle(cyclist.getId())) ;
+//		this.cyclist = cyclist;
+		throw new RuntimeException("this execution path is no longer available; please talk to me if needed.  kai, nov'18") ;
 	}
 	
 	/**
 	 * Sets the driver and internally creates the cyclist based on the person being the driver.
-	 * @param basicVehicle
 	 */
 	@Override public void setDriver( final DriverAgent driver ) {
 		qVehicle.setDriver( driver );
@@ -70,12 +70,7 @@ public class QCycle implements QVehicle
 		return this.cyclist;
 	}
 
-	public QVehicle getQVehicle(){
-		return this.qVehicle;
-	}
 
-	
-	
 	@Override public double getLinkEnterTime() {
 		//Uses cyclist's value
 		return this.getCyclist().getTStart();

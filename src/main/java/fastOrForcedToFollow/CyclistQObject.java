@@ -1,6 +1,6 @@
 package fastOrForcedToFollow;
 
-import org.matsim.core.mobsim.qsim.qnetsimengine.QCycleAsVehicle;
+import org.matsim.core.mobsim.qsim.qnetsimengine.QCycle;
 
 /**
  * @author mpaulsen
@@ -15,7 +15,7 @@ public class CyclistQObject implements Comparable<CyclistQObject>{
 	/**
 	 * The QCycleAsVehicle which constitutes the CyclistQObject.
 	 */
-	private QCycleAsVehicle qCyc;
+	private QCycle qCyc;
 	
 	/**
 	 * @param cyclist The cyclist that the QCycleAsVehicle and subsequently the CyclistQObject will be based on.
@@ -23,14 +23,14 @@ public class CyclistQObject implements Comparable<CyclistQObject>{
 	 * can be uniquely determined by the cyclist.
 	 */
 	CyclistQObject(Cyclist cyclist){
-		this.qCyc = new QCycleAsVehicle(cyclist);
+		this.qCyc = new QCycle(cyclist);
 	}
 		
 	/**
 	 * @param qCyc The QCycleAsVehicle that should be parsed on to the new CyclistQObject
 	 * In this case, the old QCycleAsVehicle can be recycled.
 	 */
-	public CyclistQObject(QCycleAsVehicle qCyc){
+	public CyclistQObject( QCycle qCyc ){
 		this.qCyc = qCyc;
 	}
 
@@ -45,7 +45,7 @@ public class CyclistQObject implements Comparable<CyclistQObject>{
 	/**
 	 * @return The QCycleAsVehicle associated with this CQO.
 	 */
-	public QCycleAsVehicle getQCycle(){
+	public QCycle getQCycle(){
 		return this.qCyc;
 	}
 	

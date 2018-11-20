@@ -143,7 +143,7 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 							veh.setCurrentLink( qLinkImpl.getLink() );
 
 							// upcast:
-							QCycleAsVehicle qCyc = (QCycleAsVehicle) veh;
+							QCycle qCyc = (QCycle) veh;
 
 							// get the Cyclist out of it:
 							Cyclist cyclist = qCyc.getCyclist();
@@ -257,7 +257,7 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 							qLinkImpl.getInternalInterface().activateLink();
 
 							double now = context.getSimTimer().getTimeOfDay() ;
-							((QCycleAsVehicle) veh).getCyclist().setTEarliestExit( now );
+							((QCycle) veh).getCyclist().setTEarliestExit( now );
 
 							// just inserting them upstream.  For the time being, but might also be ok in the long run.
 							this.addFromUpstream( veh );
@@ -277,7 +277,7 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 						}
 
 						@Override public QVehicle getVehicle( final Id<Vehicle> vehicleId ) {
-							QCycleAsVehicle qCyc = null;
+							QCycle qCyc = null;
 							for(CyclistQObject cqo : fffLink.getOutQ()){
 								if( cqo.getCyclist().getId().equals( vehicleId.toString() ) ){
 									qCyc = cqo.getQCycle();

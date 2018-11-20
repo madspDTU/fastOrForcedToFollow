@@ -15,14 +15,14 @@ import org.matsim.vehicles.Vehicle;
 
 import java.util.Collection;
 
-public class QCycleAsVehicle implements QVehicle
+public class QCycle implements QVehicle
 {
 		
 	public static class Factory implements QVehicleFactory {
 		@Override public QVehicle createQVehicle( Vehicle vehicle ){
 			QVehicle qvehicle ;
 			if ( vehicle.getId().toString().contains( TransportMode.bike ) ) {
-				qvehicle = new QCycleAsVehicle( vehicle) ;
+				qvehicle = new QCycle( vehicle) ;
 			} else {
 				qvehicle = new QVehicleImpl( vehicle ) ;
 			}
@@ -39,12 +39,12 @@ public class QCycleAsVehicle implements QVehicle
 	 * Creates a QCycleAsVehicle based on the basicVehicle inputted. Cyclist is created later on, when the driver is set, i.e. in {@link #setDriver(DriverAgent)}
 	 * @param basicVehicle
 	 */
-	public QCycleAsVehicle( Vehicle basicVehicle) {
+	public QCycle( Vehicle basicVehicle ) {
 		final String id = basicVehicle.getId().toString();
 		this.qVehicle = new QVehicleImpl(new BicycleVehicle(id));
 	}
 	
-	public QCycleAsVehicle(Cyclist cyclist){
+	public QCycle( Cyclist cyclist ){
 		this.qVehicle = new QVehicleImpl(new BicycleVehicle(cyclist.getId())) ;
 		this.cyclist = cyclist;
 	}

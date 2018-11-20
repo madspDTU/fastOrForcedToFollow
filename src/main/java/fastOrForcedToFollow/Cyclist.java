@@ -1,6 +1,6 @@
 package fastOrForcedToFollow;
 
-import org.matsim.core.mobsim.qsim.qnetsimengine.QCycleAsVehicle;
+import org.matsim.core.mobsim.qsim.qnetsimengine.QCycle;
 
 /**
  * @author mpaulsen
@@ -16,7 +16,7 @@ public class Cyclist {
 	private double tEarliestExit = 0;
 	private final LinkTransmissionModel ltm;
 	private Link currentLink = null;
-	private QCycleAsVehicle qCyc = null;
+	private QCycle qCyc = null;
 
 	public Cyclist(String id, double desiredSpeed, double theta_0, double theta_1) {
 		this.id = id;
@@ -33,11 +33,11 @@ public class Cyclist {
 				Runner.theta_1 + z_c * Runner.zeta_1);
 	}
 
-	public void setQCycleAsVehicle(QCycleAsVehicle qCyc) {
+	public void setQCycleAsVehicle( QCycle qCyc ) {
 		this.qCyc = qCyc;
 	}
 
-	public QCycleAsVehicle getQCycleAsVehicle() {
+	public QCycle getQCycleAsVehicle() {
 		return this.qCyc;
 	}
 

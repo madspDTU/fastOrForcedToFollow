@@ -48,7 +48,7 @@ import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.mobsim.qsim.AbstractQSimModule;
 import org.matsim.core.mobsim.qsim.qnetsimengine.MadsQNetworkFactory;
-import org.matsim.core.mobsim.qsim.qnetsimengine.QCycleAsVehicle;
+import org.matsim.core.mobsim.qsim.qnetsimengine.QCycle;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QNetworkFactory;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QVehicleFactory;
 import org.matsim.core.scenario.ScenarioUtils;
@@ -235,7 +235,7 @@ public class RunMatsim {
 			protected void configureQSim() {
 				this.bind( QNetworkFactory.class ).to( MadsQNetworkFactory.class );
 				//				this.bind( AgentSource.class).to( MadsPopulationAgentSource.class).asEagerSingleton();
-				this.bind( QVehicleFactory.class ).to( QCycleAsVehicle.Factory.class ) ;
+				this.bind( QVehicleFactory.class ).to( QCycle.Factory.class ) ;
 			}
 
 		});

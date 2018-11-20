@@ -171,7 +171,7 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 
 							// wrap the QCycleAsVehicle and memorize it:
 							//							log.debug( "now=" + context.getSimTimer().getTimeOfDay() + "; linkId=" + fffLink.getId() + outqAsString( fffLink.getOutQ() ) ) ;
-							fffLink.getOutQ().add(new CyclistQObject(qCyc));
+							fffLink.getOutQ().add(qCyc);
 							//							log.debug( "now=" + context.getSimTimer().getTimeOfDay() + "; linkId=" + fffLink.getId() + outqAsString( fffLink.getOutQ() ) ) ;
 
 							//mads: A rejected cyclist does not get a new tEarliestExit.
@@ -197,7 +197,7 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 
 							//							log.debug( outqAsString( fffLink.getOutQ() ) ) ;
 
-							CyclistQObject cqo;
+							QCycle cqo;
 							while((cqo = fffLink.getOutQ().peek()) != null){
 
 								//								log.debug( "now=" + context.getSimTimer().getTimeOfDay() + "; linkId=" + fffLink.getId() + outqAsString( fffLink.getOutQ() ) );
@@ -210,13 +210,13 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 								fffLink.getOutQ().remove();
 								fffLink.reduceOccupiedSpace(cqo.getCyclist(), cqo.getCyclist().getSpeed());
 
-								if(cqo.getQCycle().getDriver().isWantingToArriveOnCurrentLink()){
-									qLinkImpl.letVehicleArrive(cqo.getQCycle());
+								if(cqo.getDriver().isWantingToArriveOnCurrentLink()){
+									qLinkImpl.letVehicleArrive(cqo);
 									continue;
 								}
 
 								//Auxiliary buffer created to fit the piece into MATSim. 
-								fffLink.addVehicleToMovedDownstreamVehicles(cqo.getQCycle());
+								fffLink.addVehicleToMovedDownstreamVehicles(cqo);
 
 								final QNodeI toNode = qLinkImpl.getToNode();
 								if ( toNode instanceof QNodeImpl ) { 
@@ -277,13 +277,12 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 						}
 
 						@Override public QVehicle getVehicle( final Id<Vehicle> vehicleId ) {
-							QCycle qCyc = null;
-							for(CyclistQObject cqo : fffLink.getOutQ()){
+							for(QCycle cqo : fffLink.getOutQ()){
 								if( cqo.getCyclist().getId().equals( vehicleId.toString() ) ){
-									qCyc = cqo.getQCycle();
+									return cqo ;
 								}
 							}
-							return qCyc;
+							return null ;
 						}
 
 						@Override public double getStorageCapacity() {
@@ -314,8 +313,8 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 
 						@Override public Collection<MobsimVehicle> getAllVehicles() {
 							ArrayList<MobsimVehicle> qCycs = new ArrayList<MobsimVehicle>();
-							for(CyclistQObject cqo : fffLink.getOutQ()){
-								qCycs.add((MobsimVehicle) cqo.getQCycle());
+							for(QCycle cqo : fffLink.getOutQ()){
+								qCycs.add(cqo);
 							}
 							return qCycs;
 						}

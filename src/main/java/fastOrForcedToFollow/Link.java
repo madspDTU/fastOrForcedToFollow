@@ -1,8 +1,10 @@
 package fastOrForcedToFollow;
 
 
+import org.matsim.core.mobsim.qsim.qnetsimengine.QCycle;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QVehicle;
 
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.PriorityQueue;
 
@@ -32,7 +34,7 @@ public class Link{
 	/**
 	 * The Q containing the CQO's for the cyclists that have entered the link but not yet left it.
 	 */
-	private PriorityQueue<CyclistQObject> outQ;
+	private PriorityQueue<QCycle> outQ;
 
 	/**
 	 * The array containing all <code>Psi</code> pseudolanes of the link.
@@ -81,7 +83,14 @@ public class Link{
 		this.length = length;
 		this.Psi = Psi;
 		psi = createPseudoLanes();
-		outQ = new PriorityQueue<CyclistQObject>();
+
+		outQ = new PriorityQueue<>( new Comparator<QCycle>(){
+			@Override
+			public int compare( QCycle cqo1, QCycle cqo2 ){
+				return Double.compare(cqo1.getCyclist().getTEarliestExit(), cqo2.getCyclist().getTEarliestExit());
+			}
+		} ) ;
+
 		this.totalLaneLength = this.length * this.Psi;
 	}
 
@@ -126,7 +135,7 @@ public class Link{
 	/** 
 	 * @return The outQ belonging to the link.
 	 */
-	public PriorityQueue<CyclistQObject> getOutQ(){
+	public PriorityQueue<QCycle> getOutQ(){
 		return outQ;
 	}
 
@@ -157,8 +166,6 @@ public class Link{
 
 	/**
 	 * Reduces the occupied space of link <code>linkId</code> by the safety distance corresponding to <code>speed</code>
-	 * 
-	 * @param linkId of the link that will have its space reduced.
 	 * 
 	 * @param speed on which the safety distance will be based.
 	 */

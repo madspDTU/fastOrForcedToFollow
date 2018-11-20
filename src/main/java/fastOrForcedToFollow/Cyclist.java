@@ -16,7 +16,6 @@ public class Cyclist {
 	private double tEarliestExit = 0;
 	private final LinkTransmissionModel ltm;
 	private Link currentLink = null;
-	private QCycle qCyc = null;
 
 	public Cyclist(String id, double desiredSpeed, double theta_0, double theta_1) {
 		this.id = id;
@@ -32,15 +31,6 @@ public class Cyclist {
 		return new Cyclist(id, desiredSpeed, Runner.theta_0 + z_c * Runner.zeta_0,
 				Runner.theta_1 + z_c * Runner.zeta_1);
 	}
-
-	public void setQCycleAsVehicle( QCycle qCyc ) {
-		this.qCyc = qCyc;
-	}
-
-	public QCycle getQCycleAsVehicle() {
-		return this.qCyc;
-	}
-
 
 	/**
 	 * @return The desired speed (in m/s) of the cyclist.

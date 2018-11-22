@@ -2,7 +2,6 @@ package org.matsim.core.mobsim.qsim.qnetsimengine;
 
 import fastOrForcedToFollow.Cyclist;
 import org.matsim.api.core.v01.Id;
-import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.core.mobsim.framework.DriverAgent;
@@ -23,7 +22,6 @@ import java.util.Collection;
 public class QCycle implements QVehicle
 {
 
-
 	private QVehicle qVehicle  ;
 	private Cyclist cyclist ;
 	
@@ -33,16 +31,9 @@ public class QCycle implements QVehicle
 	 * @param basicVehicle
 	 */
 	public QCycle( Vehicle basicVehicle ) {
-//		final String id = basicVehicle.getId().toString();
-//		this.qVehicle = new QVehicleImpl(new BicycleVehicle(id));
 		this.qVehicle = new QVehicleImpl( basicVehicle ) ;
 	}
 	
-//	public QCycle( Cyclist cyclist ){
-////		this.qVehicle = new QVehicleImpl(new BicycleVehicle(cyclist.getId())) ;
-////		this.cyclist = cyclist;
-//		throw new RuntimeException("this execution path is no longer available; please talk to me if needed.  kai, nov'18") ;
-//	}
 	
 	/**
 	 * Sets the driver and internally creates the cyclist based on the person being the driver.
@@ -52,9 +43,10 @@ public class QCycle implements QVehicle
 
 		if ( driver!=null ){   // is null when vehicle arrives, and driver LEAVES vehicle!
 			Person person = ((HasPerson) driver).getPerson();
-			final double desiredSpeed = (double) person.getAttributes().getAttribute( RunMatsim.DESIRED_SPEED );
+			final double v_0 = (double) person.getAttributes().getAttribute( RunMatsim.DESIRED_SPEED );
 			final double z_c = (double) person.getAttributes().getAttribute( RunMatsim.HEADWAY_DISTANCE_PREFERENCE );
-			this.cyclist = Cyclist.createIndividualisedCyclist( driver.getId().toString(), desiredSpeed, z_c );
+			final double lambda_c = (double) person.getAttributes().getAttribute( RunMatsim.BICYCLE_LENGTH );
+			this.cyclist = Cyclist.createIndividualisedCyclistWithSqrtLTM( driver.getId().toString(), v_0, z_c, lambda_c);
 		}
 
 	}
@@ -66,13 +58,11 @@ public class QCycle implements QVehicle
 
 
 	@Override public double getLinkEnterTime() {
-		//Uses cyclist's value
-		return this.getCyclist().getTStart();
+        return qVehicle.getLinkEnterTime();
 	}
 	
 	@Override public void setLinkEnterTime( final double linkEnterTime ) {
-		//Uses cyclist's value
-		this.getCyclist().setTStart( linkEnterTime );
+       qVehicle.setLinkEnterTime(linkEnterTime);
 	}
 	
 	@Override public double getMaximumVelocity() {
@@ -81,7 +71,7 @@ public class QCycle implements QVehicle
 	}
 	
 	@Override public double getFlowCapacityConsumptionInEquivalents() {
-		return qVehicle.getFlowCapacityConsumptionInEquivalents() ;
+	     return qVehicle.getFlowCapacityConsumptionInEquivalents();
 	}
 	
 	@Override public double getEarliestLinkExitTime() {
@@ -112,7 +102,6 @@ public class QCycle implements QVehicle
 	
 	@Override public Link getCurrentLink() {
 		return qVehicle.getCurrentLink();
-		//Cannot (straightforwardly) use cyclist's value, because that Link is of another type.
 	}
 	
 	@Override public boolean addPassenger( final PassengerAgent passenger ) {
@@ -133,7 +122,6 @@ public class QCycle implements QVehicle
 	
 	@Override public void setCurrentLink( final Link link ) {
 		qVehicle.setCurrentLink( link );
-		//See getCurrentLink regarind inheritance from cyclist.
 	}
 	
 

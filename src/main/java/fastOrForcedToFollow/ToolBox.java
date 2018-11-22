@@ -1,28 +1,16 @@
 package fastOrForcedToFollow;
 
-import java.io.File;
 
 /**
  * @author mpaulsen
  */
-public class ToolBox {
+public final class ToolBox {
 	
 	// Suppress default constructor for noninstantiability
 	private ToolBox(){
 		throw new AssertionError();
 	}
 
-	/**
-	 * Auxiliary function to create subfolder if needed.
-	 * @param folder The folder being checked for existence.
-	 */
-	public static void createFolderIfNeeded(String folder){
-		File file = new File(folder);
-		if(!file.exists()){
-			file.mkdirs();
-		}
-	}
-	
 	
 	/**
 	 * Method for computing the inverse cumulative distribution function of the standard normal distribution.
@@ -33,7 +21,7 @@ public class ToolBox {
 	 * @return The value that would yield u when inserted into the
 	 * cumulative distribution function of the standard normal distribution 
 	 */
-	public static double qNorm(double u){
+	public static double qNorm(final double u){
 		double a1 = -3.969683028665376e+01;
 		double a2 =  2.209460984245205e+02;
 		double a3 = -2.759285104469687e+02;
@@ -83,7 +71,7 @@ public class ToolBox {
 	}
 	
 	
-	public static double uniformToJohnson(double u){
+	public static double uniformToJohnson(final double u){
 		return Runner.JohnsonLambda * Math.sinh( (qNorm(u) - Runner.JohnsonGamma) / Runner.JohnsonDelta) + Runner.JohnsonXsi;
 	}
 	

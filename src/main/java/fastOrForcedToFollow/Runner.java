@@ -4,7 +4,7 @@ package fastOrForcedToFollow;
  * @author mpaulsen
  *
  */
-public class Runner {
+public final class Runner {
 
 	// Suppress default constructor for noninstantiability
 	private Runner(){

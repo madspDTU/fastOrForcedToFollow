@@ -5,35 +5,34 @@ package fastOrForcedToFollow;
  * @author mpaulsen
  *
  */
-public class PseudoLane {
+public final class PseudoLane {
 
-	public double length;
-	public Link link;
-	public double tEnd;		// The time at which the previous cyclist will have exited the link with his/her entire bicycle.
-	public double tReady; 	// The time at which the previous cyclist will have entered the link with his/her entire bicycle.
+	private final double length;   //
+	private double tEnd;		// The time at which the previous cyclist will have exited the link with his/her entire bicycle.
+	private double tReady; 	// The time at which the previous cyclist will have entered the link with his/her entire bicycle.
 
-	PseudoLane(double length, Link link){
+	PseudoLane(final double length){
 		this.length = length;
-		this.link = link;
-		this.tReady = -1;
-		this.tEnd = tReady + Double.MIN_VALUE;
 	}
 
-	public void update(double newTStart, double newTEnd){
-		this.tReady = newTStart;
+	public double getLength(){
+		return this.length;
+	}
+	
+	public double getTEnd(){
+		return this.tEnd;
+	}
+	
+	public double getTReady(){
+		return this.tReady;
+	}
+
+	public void setTReady(final double newTReady){
+		this.tReady = newTReady;
+	}
+
+	public void setTEnd(final double newTEnd){
 		this.tEnd = newTEnd;
 	}
 
-	public void updateTStart(double newTStart){
-		this.tReady = newTStart;
-	}
-
-	public void updateTEnd(double newTEnd){
-		this.tReady = newTEnd;
-	}
-
-	public void updateTs(double speed, double tStartBasis) {
-		this.tReady = tStartBasis + Runner.lambda_c / speed;
-		this.tEnd = this.tReady + this.length / speed;
-	}
 }

@@ -72,7 +72,7 @@ public class FFFTest {
 	public final void testBerlin() {
 		//if(true) return;
 		
-		int lanesPerLink = 4;
+		int lanesPerLink = 1;
 		
 		Config config = RunMatsim.createConfigFromExampleName("berlin");
 		config.controler().setOutputDirectory(utils.getOutputDirectory());

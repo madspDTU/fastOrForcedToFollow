@@ -1,37 +1,38 @@
 package fastOrForcedToFollow;
 
-import org.matsim.core.mobsim.qsim.qnetsimengine.QCycle;
 
 /**
  * @author mpaulsen
  *
  */
-public class Cyclist {
+public final class Cyclist {
 
 
 	private final String id;
 	private final double desiredSpeed;
-	private double speed = -1; // Current speed
-	private double tStart = 0; // Time at which the cyclist entered the link.
-	private double tEarliestExit = 0;
+	private double speed; // Current speed
+	private double tEarliestExit;
 	private final LinkTransmissionModel ltm;
-	private Link currentLink = null;
 
-	public Cyclist(String id, double desiredSpeed, double theta_0, double theta_1) {
+	private Cyclist(String id, double desiredSpeed, LinkTransmissionModel ltm) {
 		this.id = id;
 		this.desiredSpeed = desiredSpeed;
-		this.ltm = new LinkTransmissionModel(theta_0, theta_1);
+		this.ltm = ltm;
 	}
 
-	public static Cyclist createGlobalCyclist(String id, double desiredSpeed) {
-		return new Cyclist(id, desiredSpeed, Runner.theta_0, Runner.theta_1);
+	public static Cyclist createIndividualisedCyclistWithSqrtLTM(final String id, final double desiredSpeed, final double z_c, final double lambda_c){
+		LinkTransmissionModel ltm = new SqrtLTM(Runner.theta_0 + z_c * Runner.zeta_0,	Runner.theta_1 + z_c * Runner.zeta_1,   lambda_c);
+		return new Cyclist(id, desiredSpeed, ltm);
 	}
-
-	public static Cyclist createIndividualisedCyclist(String id, double desiredSpeed, double z_c) {
-		return new Cyclist(id, desiredSpeed, Runner.theta_0 + z_c * Runner.zeta_0,
-				Runner.theta_1 + z_c * Runner.zeta_1);
+	
+	
+	/**
+	 * @return The bicycle length of the cyclist [m].
+	 */
+	public double getBicycleLength() {
+		return this.ltm.getBicycleLength();
 	}
-
+	
 	/**
 	 * @return The desired speed (in m/s) of the cyclist.
 	 */
@@ -46,14 +47,8 @@ public class Cyclist {
 		return id;
 	}
 
-	public LinkTransmissionModel getLTM() {
-		return this.ltm;
-	}
 
-	public void moveToNextQ(Link nextLink, double tEnd) {
-	}
-
-	public void setSpeed(double newCurrentSpeed) {
+	public void setSpeed(final double newCurrentSpeed) {
 		if (newCurrentSpeed < desiredSpeed) {
 			this.speed = newCurrentSpeed;
 		} else {
@@ -61,40 +56,23 @@ public class Cyclist {
 		}
 	}
 
-	public boolean speedFitsOnLink(final double speed, final Link link) {
-		return this.ltm.getSafetyBufferDistance(speed) + link.getOccupiedSpace() < link.getTotalLaneLength()
-				|| link.getOccupiedSpace() < 0.1;
-	}
-
-	public PseudoLane selectPseudoLane(Link receivingLink) {
+	public PseudoLane selectPseudoLane(final Link receivingLink) {
 		return this.ltm.selectPseudoLane(receivingLink, this.desiredSpeed, this.tEarliestExit);
 	}
 
 	public double getVMax(final PseudoLane pseudoLane) {
-		return Math.min(desiredSpeed, this.ltm.getVMax(pseudoLane, this.tEarliestExit));
+		return Math.min(desiredSpeed, this.ltm.getLaneVMax(pseudoLane, this.tEarliestExit));
 	}
 
 	public double getTEarliestExit() {
 		return this.tEarliestExit;
 	}
 
-	public double getTStart() {
-		return this.tStart;
-	}
-
-	public void setTEarliestExit(double time) {
+	public void setTEarliestExit(final double time) {
 		this.tEarliestExit = time;
 	}
 
-	public void setTStart(double time) {
-		this.tStart = time;
-	}
-
-	public boolean isNotInFuture(double now) {
-		return this.getTEarliestExit() <= now;
-	}
-
-	public double getSafetyBufferDistance(double speed) {
+	public double getSafetyBufferDistance(final double speed) {
 		return this.ltm.getSafetyBufferDistance(speed);
 	}
 
@@ -102,11 +80,4 @@ public class Cyclist {
 		return this.speed;
 	}
 
-	public Link getCurrentLink() {
-		return this.currentLink;
-	}
-
-	public void setCurrentLink(Link newLink) {
-		this.currentLink = newLink;
-	}
 }

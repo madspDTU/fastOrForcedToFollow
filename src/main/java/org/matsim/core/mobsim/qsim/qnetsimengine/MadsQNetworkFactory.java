@@ -77,7 +77,7 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 		this.scenario = scenario;
 	}
 	@Override
-	void initializeFactory( AgentCounter agentCounter, MobsimTimer mobsimTimer, NetsimInternalInterface netsimEngine1 ) {
+	void initializeFactory( AgentCounter agentCounter, MobsimTimer mobsimTimer, NetsimInternalInterface netsimEngine1 ) {	
 		this.netsimEngine = netsimEngine1;
 		double effectiveCellSize = scenario.getNetwork().getEffectiveCellSize() ;
 
@@ -93,8 +93,8 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 	@Override
 	QLinkI createNetsimLink(final Link link, final QNodeI toQueueNode) {
 		if ( link.getAllowedModes().contains( TransportMode.bike ) ) {
+			
 			Gbl.assertIf( link.getAllowedModes().size()==1 ); // not possible with multi-modal links! kai, oct'18
-			//		final double bicyclePCE = new BicycleVehicleType().getPcuEquivalents();
 			QLinkImpl.Builder linkBuilder = new QLinkImpl.Builder( context, netsimEngine );
 			linkBuilder.setLaneFactory( new QLinkImpl.LaneFactory(){
 				@Override public QLaneI createLane(AbstractQLink qLinkImpl ) {
@@ -108,21 +108,13 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 			} );
 			return linkBuilder.build( link, toQueueNode );
 		} else {
+			
 			QLinkImpl.Builder linkBuilder = new QLinkImpl.Builder( context, netsimEngine );
 			return linkBuilder.build( link, toQueueNode );
 		}
 
 	}
 
-	/*
-	private static String outqAsString( PriorityQueue<CyclistQObject> outQ ){
-		String str = " outqExitTimes: " ;
-		for ( CyclistQObject cq : outQ ) {
-			str += cq.getTime() + " " ;
-		}
-		return str ;
-	}
-	 */
 
 	@Override
 	QNodeI createNetsimNode(final Node node) {

@@ -12,19 +12,15 @@ import java.util.PriorityQueue;
  * 
  * @author mpaulsen
  */
-public class Link{
+public final class Link{
 
 	
 	/**
 	 * The id of the link.
 	 */
-	private String id;
+	private final String id;
 
-	/**
-	 * The length of the link.
-	 */
-	private double length;
-
+	
 	/**
 	 * The total pseudolane distance (buffer distance) occupied of the cyclists currently on the link.
 	 */
@@ -34,73 +30,72 @@ public class Link{
 	/**
 	 * The Q containing the CQO's for the cyclists that have entered the link but not yet left it.
 	 */
-	private PriorityQueue<QCycle> outQ;
+	private final PriorityQueue<QCycle> outQ;
 
 	/**
-	 * The array containing all <code>Psi</code> pseudolanes of the link.
+	 * The array containing all pseudolanes of the link.
 	 */
-	private PseudoLane[] psi;
+	private final PseudoLane[] psi;
 
-	/**
-	 * The number of <code>pseudolanes</code> the link has.
-	 */
-	private int Psi;
 
 	/**
 	 * The total pseudolane distance, i.e. the product between the length and number of pseudolanes.
 	 */
 	private final double totalLaneLength; 
 
-	/**
-	 * The earliest possible time that the link can potentially handle traffic (entering or leaving).
-	 */
-	private double tWakeUp = 0;
+	private double lastTimeMoved;
 	
 	
 	//mads: Buffer created in order to fit the piece into MATSim. Would be nice to do without.
-	private LinkedList<QVehicle> vehiclesMovedDownstream = new LinkedList<QVehicle>();
-	public void addVehicleToMovedDownstreamVehicles(QVehicle veh){
-		this.vehiclesMovedDownstream.addLast(veh);
+	private final LinkedList<QVehicle> leavingVehicles;
+	
+	public void addVehicleToLeavingVehicles(final QVehicle veh){
+		this.leavingVehicles.addLast(veh);
 	}
-	public QVehicle getFirstVehicleMovedDownstream(){
-		return vehiclesMovedDownstream.isEmpty() ? null : vehiclesMovedDownstream.peekFirst();
+	public QVehicle getFirstLeavingVehicle(){
+		return leavingVehicles.isEmpty() ? null : leavingVehicles.peekFirst();
 	}
-	public QVehicle pollFirstVehicleMovedDownstream(){
-		return vehiclesMovedDownstream.isEmpty() ? null : vehiclesMovedDownstream.pollFirst();
+	public QVehicle pollFirstLeavingVehicle(){
+		return leavingVehicles.isEmpty() ? null : leavingVehicles.pollFirst();
 	}
-	public boolean isVehiclesMovedDownstreamEmpty(){
-		return vehiclesMovedDownstream.isEmpty();
+	public boolean hasNoLeavingVehicles(){
+		return leavingVehicles.isEmpty();
 	}
 	
 
-	public Link(String id, double width, double length) throws InstantiationException, IllegalAccessException{
+	public Link(final String id, final double width, final double length) throws InstantiationException, IllegalAccessException{
 		this(id, 1 + (int) Math.floor((width-Runner.deadSpace)/Runner.omega), length );
 	}
 	
 	//Constructor using the number of pseudoLanes directly.
-	public Link(String id, int Psi, double length) throws InstantiationException, IllegalAccessException{
+	public Link(final String id, final int Psi, final double length) throws InstantiationException, IllegalAccessException{
 		this.id = id;
-		this.length = length;
-		this.Psi = Psi;
-		psi = createPseudoLanes();
+		this.psi = createPseudoLanes(Psi, length);
 
-		outQ = new PriorityQueue<>( new Comparator<QCycle>(){
+		this.outQ = new PriorityQueue<>( new Comparator<QCycle>(){
 			@Override
 			public int compare( QCycle cqo1, QCycle cqo2 ){
 				return Double.compare(cqo1.getCyclist().getTEarliestExit(), cqo2.getCyclist().getTEarliestExit());
 			}
 		} ) ;
+		
+		this.leavingVehicles = new LinkedList<QVehicle>();
 
-		this.totalLaneLength = this.length * this.Psi;
+		double totalLaneLength = 0.;
+		for(PseudoLane pseudoLane : psi){
+			totalLaneLength += pseudoLane.getLength();
+		}
+		this.totalLaneLength = totalLaneLength;
+		
 	}
 
 	/**
 	 * @return The array of PseudoLanes to be created
 	 */
-	private PseudoLane[] createPseudoLanes(){
+	private PseudoLane[] createPseudoLanes(final int Psi, final double length){
 		PseudoLane[] psi = new PseudoLane[Psi];
 		for(int i = 0; i < Psi; i++){
-			psi[i] = new PseudoLane(length, this);
+			psi[i] = new PseudoLane(length);
 		}
 		return psi;
 	}
@@ -114,23 +109,14 @@ public class Link{
 		return id;
 	}
 
-	public double getLength(){
-		return length;
-	}
 
 	/**
 	 * @return The number of <code>pseudolanes</code>.
 	 */
 	public int getNumberOfPseudoLanes(){
-		return Psi;
+		return psi.length;
 	}
 
-	/**
-	 * @return The occupied space (sum of safetydistances of <code>cyclists</code> currently on the <code>link</code>.
-	 */
-	public double getOccupiedSpace(){
-		return occupiedSpace;
-	}
 
 	/** 
 	 * @return The outQ belonging to the link.
@@ -146,60 +132,47 @@ public class Link{
 	 * 
 	 * @return The i'th <code>pseudolane</code> from the right (0 being the rightmost).
 	 */
-	public PseudoLane getPseudoLane(int i){
+	public PseudoLane getPseudoLane(final int i){
 		return psi[i];
 	}
-	/**
-	 * @return The total lane length, defined as the product of the length and the number of pseudolanes.
-	 */
-	public double getTotalLaneLength(){
-		return totalLaneLength;
-	}
 
+	
 	/**
-	 * @return The earliest possible time that the link can potentially handle traffic (entering or leaving).
+	 * @return <code>true</code> iff the link is full, i.e. the occupied space is at least as large as the total lane length.
 	 */
-	public double getWakeUpTime(){
-		return tWakeUp;
+	public boolean isLinkFull(){
+		return occupiedSpace >= totalLaneLength;
 	}
-
 
 	/**
 	 * Reduces the occupied space of link <code>linkId</code> by the safety distance corresponding to <code>speed</code>
 	 * 
 	 * @param speed on which the safety distance will be based.
 	 */
-	public void reduceOccupiedSpace(Cyclist cyclist, double speed){
+	public void reduceOccupiedSpace(final Cyclist cyclist, final double speed){
 		this.supplementOccupiedSpace(-cyclist.getSafetyBufferDistance(speed));
 	}
 
-	public void increaseOccupiedSpace(Cyclist cyclist, double speed){
+	public void increaseOccupiedSpace(final Cyclist cyclist, final double speed){
 		this.supplementOccupiedSpace(cyclist.getSafetyBufferDistance(speed));
 	}
 
 
 	/**
-	 * @param tWakeUp The earliest possible time that the link can potentially handle traffic (entering or leaving).
-	 */
-	public void setWakeUpTime(double tWakeUp){
-		this.tWakeUp = tWakeUp;
-	}
-
-	/**
 	 * @param length in metres by which the occupied space will be supplemented.
 	 */
-	public void supplementOccupiedSpace(double length){
+	public void supplementOccupiedSpace(final double length){
 		occupiedSpace += length;
 	}
 
-
-//Keeping it, although not really necessary anymore, as 
-	/*
-	public boolean cyclistFitsOnLink(Cyclist cyclist){
-		PseudoLane pseudoLane = cyclist.selectPseudoLane(this);
-		double vTilde = cyclist.getVMax(pseudoLane);
-		return cyclist.speedFitsOnLink(vTilde, this);
+	
+	
+	public double getLastTimeMoved(){
+		return this.lastTimeMoved;
 	}
-	*/
+	
+	public void setLastTimeMoved(final double lastTimeMoved){
+		this.lastTimeMoved = lastTimeMoved;
+	}
 
 }

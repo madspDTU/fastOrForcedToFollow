@@ -54,6 +54,7 @@ import org.matsim.examples.ExamplesUtils;
 import org.matsim.vehicles.VehicleType;
 import org.matsim.vehicles.VehicleTypeImpl;
 
+import fastOrForcedToFollow.Runner;
 import fastOrForcedToFollow.ToolBox;
 
 /**
@@ -65,6 +66,7 @@ public class RunMatsim {
 
 	public static final String DESIRED_SPEED = "v_0";
 	public static final String HEADWAY_DISTANCE_PREFERENCE = "z_c";
+	public static final String BICYCLE_LENGTH = "lambda_c";
 	public static final long RANDOM_SEED = 5355633;
 	
 	public static void main(String[] args) {
@@ -135,6 +137,8 @@ public class RunMatsim {
 					double z_c = headwayRandom.nextDouble(); 
 					person.getAttributes().putAttribute(DESIRED_SPEED, v_0);
 					person.getAttributes().putAttribute(HEADWAY_DISTANCE_PREFERENCE, z_c);
+					person.getAttributes().putAttribute(BICYCLE_LENGTH, Runner.lambda_c);
+					
 				}
 
 				for ( PlanElement pe : person.getSelectedPlan().getPlanElements() ) {

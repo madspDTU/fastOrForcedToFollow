@@ -43,11 +43,17 @@ public final class Link{
 	 */
 	private final double totalLaneLength; 
 
+	/**
+	 * The last time a vehicle was moved through the downstream end of the link.
+	 */
 	private double lastTimeMoved;
 	
 	
-	//mads: Buffer created in order to fit the piece into MATSim. Would be nice to do without.
+	/**
+	 * A LinkedList containing the vehicles which will be leaving the link. 
+	 */
 	private final LinkedList<QVehicle> leavingVehicles;
+	
 	
 	public void addVehicleToLeavingVehicles(final QVehicle veh){
 		this.leavingVehicles.addLast(veh);
@@ -63,12 +69,26 @@ public final class Link{
 	}
 	
 
-	public Link(final String id, final double width, final double length) throws InstantiationException, IllegalAccessException{
-		this(id, 1 + (int) Math.floor((width-Runner.DEAD_SPACE)/Runner.OMEGA), length );
+	/**
+	 * Static factory method creating a link based on the width of the link. See also the {@link #Link(String, int, double) constructor}.
+	 */
+	public static Link createLinkFromWidth(final String id, final double width, final double length){
+		return new Link(id, 1 + (int) Math.floor((width-Runner.DEAD_SPACE)/Runner.OMEGA), length );
 	}
 	
-	//Constructor using the number of pseudoLanes directly.
-	public Link(final String id, final int Psi, final double length) throws InstantiationException, IllegalAccessException{
+	/**
+	 * Static factory method creating a link based directly on the number of pseudolanes of the link. See also the {@link #Link(String, int, double) constructor}.
+	 */
+	public static Link createLinkFromNumberOfPseudoLanes(final String id, final int Psi, final double length){
+		return new Link(id, Psi, length);
+	}
+	
+	/**
+	 * @param id The id of the link.
+	 * @param Psi The number of pseudolanes that the link has.
+	 * @param length The length [m] of the link.
+	 */
+	private Link(final String id, final int Psi, final double length){
 		this.id = id;
 		this.psi = createPseudoLanes(Psi, length);
 
@@ -101,32 +121,22 @@ public final class Link{
 	}
 
 	
-	
-	/**
-	 * @return The integer id of the link.
-	 */
 	public String getId(){
 		return id;
 	}
 
 
-	/**
-	 * @return The number of <code>pseudolanes</code>.
-	 */
 	public int getNumberOfPseudoLanes(){
 		return psi.length;
 	}
 
 
-	/** 
-	 * @return The outQ belonging to the link.
-	 */
 	public PriorityQueue<QCycle> getOutQ(){
 		return outQ;
 	}
 
 	/**
-	 * Gets a <code>pseudolane</code> from the <code>link</code>.
+	 * Gets a specific <code>pseudolane</code> from the <code>link</code>.
 	 * 
 	 * @param i the index where 0 is the rightmost <code>pseudolane</code>, and <code>Psi</code> - 1 is the leftmost.
 	 * 
@@ -145,13 +155,21 @@ public final class Link{
 	}
 
 	/**
-	 * Reduces the occupied space of link <code>linkId</code> by the safety distance corresponding to <code>speed</code>
+	 * Reduces the occupied space of link by the safety distance corresponding to <code>speed</code> of <code>cyclist</code>.
 	 * 
-	 * @param speed on which the safety distance will be based.
+	 * @param cyclist The cyclist which is removed from the link.
+	 * @param speed The speed the cyclist was assigned to the link.
 	 */
 	public void reduceOccupiedSpace(final Cyclist cyclist, final double speed){
 		this.supplementOccupiedSpace(-cyclist.getSafetyBufferDistance(speed));
 	}
+
+	/**
+	 * Increases the occupied space of link by the safety distance corresponding to <code>speed</code> of <code>cyclist</code>.
+	 * 
+	 * @param cyclist The cyclist which enters the link.
+	 * @param speed The speed the cyclist is assigned to the link.
+	 */
 
 	public void increaseOccupiedSpace(final Cyclist cyclist, final double speed){
 		this.supplementOccupiedSpace(cyclist.getSafetyBufferDistance(speed));
@@ -159,7 +177,7 @@ public final class Link{
 
 
 	/**
-	 * @param length in metres by which the occupied space will be supplemented.
+	 * @param length The length [m] by which the occupied space will be supplemented.
 	 */
 	public void supplementOccupiedSpace(final double length){
 		occupiedSpace += length;

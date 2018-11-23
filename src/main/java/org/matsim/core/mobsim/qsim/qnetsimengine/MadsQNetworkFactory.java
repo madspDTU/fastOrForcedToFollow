@@ -98,12 +98,8 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 			QLinkImpl.Builder linkBuilder = new QLinkImpl.Builder( context, netsimEngine );
 			linkBuilder.setLaneFactory( new QLinkImpl.LaneFactory(){
 				@Override public QLaneI createLane(AbstractQLink qLinkImpl ) {
-					try{
-						return new QCycleLane( new fastOrForcedToFollow.Link( link.getId().toString(), (int) link.getNumberOfLanes(), link.getLength() ), qLinkImpl, context );
-					} catch( InstantiationException | IllegalAccessException e ){ // yy maybe push these exceptions down?  kai, nov'18
-						e.printStackTrace();
-					}
-					return null ;  // yy yuck
+						return new QCycleLane( fastOrForcedToFollow.Link.createLinkFromNumberOfPseudoLanes( 
+								link.getId().toString(), (int) link.getNumberOfLanes(), link.getLength() ), qLinkImpl, context );
 				}
 			} );
 			return linkBuilder.build( link, toQueueNode );

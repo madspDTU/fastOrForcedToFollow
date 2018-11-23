@@ -71,6 +71,13 @@ public final class ToolBox {
 	}
 	
 	
+	/**
+	 * Converts a uniform number to a appropriately Johnson S_u distributed number.
+	 * 
+	 * @param u The uniform number to be transformed
+	 * 
+	 * @return A number from the appropriate Johnson S_u distribution.
+	 */
 	public static double uniformToJohnson(final double u){
 		return Runner.JOHNSON_LAMBDA * Math.sinh( (qNorm(u) - Runner.JOHNSON_GAMMA) / Runner.JOHNSON_DELTA) + Runner.JOHNSON_XSI;
 	}

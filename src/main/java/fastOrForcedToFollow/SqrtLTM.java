@@ -1,5 +1,11 @@
 package fastOrForcedToFollow;
 
+/**
+ * 
+ * @author madsp
+ *
+ * An implementation of LinkTransmissionModel that is based on individualised square root modelled safety distances.
+ */
 
 public final class SqrtLTM extends LinkTransmissionModel {
 

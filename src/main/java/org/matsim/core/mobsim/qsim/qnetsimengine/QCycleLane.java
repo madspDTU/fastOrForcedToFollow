@@ -3,7 +3,6 @@ package org.matsim.core.mobsim.qsim.qnetsimengine;
 import fastOrForcedToFollow.Cyclist;
 import fastOrForcedToFollow.Link;
 import fastOrForcedToFollow.PseudoLane;
-import fastOrForcedToFollow.Runner;
 
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;

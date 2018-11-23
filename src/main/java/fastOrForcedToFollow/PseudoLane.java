@@ -7,9 +7,21 @@ package fastOrForcedToFollow;
  */
 public final class PseudoLane {
 
-	private final double length;   //
-	private double tEnd;		// The time at which the previous cyclist will have exited the link with his/her entire bicycle.
-	private double tReady; 	// The time at which the previous cyclist will have entered the link with his/her entire bicycle.
+	/**
+	 * The length [m] of the PseudoLane.
+	 */
+	private final double length;
+	
+	/**
+	 * The time [s] at which the previous cyclist will have exited the link with his/her entire bicycle.
+	 */
+	private double tEnd;
+	
+	/**
+	 * The time [s] at which the previous cyclist will have entered the link with his/her entire bicycle.
+	 */
+	private double tReady;
+	
 
 	PseudoLane(final double length){
 		this.length = length;

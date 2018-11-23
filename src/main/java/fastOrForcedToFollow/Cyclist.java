@@ -7,47 +7,91 @@ package fastOrForcedToFollow;
  */
 public final class Cyclist {
 
-
-	private final String id;
+	/**
+	 * The desired (/maximum) speed [m/s] of the cyclist.
+	 */
 	private final double desiredSpeed;
-	private double speed; // Current speed
-	private double tEarliestExit;
+	
+	/**
+	 * The link transmission model handling the length, safety distance, lane choice, and speed of the cyclist.
+	 */
 	private final LinkTransmissionModel ltm;
+	
+	/**
+	 * The current speed [m/s] of the cyclist.
+	 */
+	private double speed;
+	
+	/**
+	 * The time [s] at which the cyclist will get to the end of the current link, and thus have a non-zero probability of leaving the link.
+	 */
+	private double tEarliestExit;
 
-	private Cyclist(String id, double desiredSpeed, LinkTransmissionModel ltm) {
-		this.id = id;
+	
+	/**
+	 * A static factory method for constructing a cyclist with a square root based link transmission model.
+	 * 
+	 * @param desiredSpeed The desired speed [m/s] of the cyclist.
+	 * @param z_c The value in [0,1] determining the headway preferences of the cyclist.
+	 * @param lambda_c The length of the cyclist's bicycle.
+	 * @return A cyclist having desired speed, headway preferences, and a length based on the above.
+	 */
+	public static Cyclist createIndividualisedCyclistWithSqrtLTM(final double desiredSpeed, final double z_c, final double lambda_c){
+		LinkTransmissionModel ltm = new SqrtLTM(Runner.THETA_0 + z_c * Runner.ZETA_0,	Runner.THETA_1 + z_c * Runner.ZETA_1,   lambda_c);
+		return new Cyclist(desiredSpeed, ltm);
+	}
+	
+	private Cyclist(double desiredSpeed, LinkTransmissionModel ltm) {
 		this.desiredSpeed = desiredSpeed;
 		this.ltm = ltm;
-	}
-
-	public static Cyclist createIndividualisedCyclistWithSqrtLTM(final String id, final double desiredSpeed, final double z_c, final double lambda_c){
-		LinkTransmissionModel ltm = new SqrtLTM(Runner.theta_0 + z_c * Runner.zeta_0,	Runner.theta_1 + z_c * Runner.zeta_1,   lambda_c);
-		return new Cyclist(id, desiredSpeed, ltm);
 	}
 	
 	
 	/**
-	 * @return The bicycle length of the cyclist [m].
+	 * See corresponding method in {@link fastOrForcedToFollow.LinkTransmissionModel#getBicycleLength() LinkTransmissionModel}
 	 */
 	public double getBicycleLength() {
 		return this.ltm.getBicycleLength();
 	}
 	
-	/**
-	 * @return The desired speed (in m/s) of the cyclist.
-	 */
+
 	public double getDesiredSpeed() {
 		return desiredSpeed;
 	}
 
+
 	/**
-	 * @return The integer id of the cyclist.
+	 * See corresponding method in {@link fastOrForcedToFollow.LinkTransmissionModel#getSafetyBufferDistance(double) LinkTransmissionModel}
 	 */
-	public String getId() {
-		return id;
+	public double getSafetyBufferDistance(final double speed) {
+		return this.ltm.getSafetyBufferDistance(speed);
 	}
 
+	public double getSpeed() {
+		return this.speed;
+	}
 
+	public double getTEarliestExit() {
+		return this.tEarliestExit;
+	}
+
+	/**
+	 * See corresponding method in {@link fastOrForcedToFollow.LinkTransmissionModel#getLaneVMax(PseudoLane, double) LinkTransmissionModel}
+	 */
+	public double getVMax(final PseudoLane pseudoLane) {
+		return this.ltm.getLaneVMax(pseudoLane, this.tEarliestExit);
+	}
+
+	/**
+	 * See corresponding method in {@link fastOrForcedToFollow.LinkTransmissionModel#selectPseudoLane(Link, double, double) LinkTransmissionModel}
+	 */
+	public PseudoLane selectPseudoLane(final Link receivingLink) {
+		return this.ltm.selectPseudoLane(receivingLink, this.desiredSpeed, this.tEarliestExit);
+	}
+
+	/**s
+	 * @param newCurrentSpeed The provisional speed that the cyclist will get if it doesn't exceed his/her desired speed.
+	 */
 	public void setSpeed(final double newCurrentSpeed) {
 		if (newCurrentSpeed < desiredSpeed) {
 			this.speed = newCurrentSpeed;
@@ -56,28 +100,8 @@ public final class Cyclist {
 		}
 	}
 
-	public PseudoLane selectPseudoLane(final Link receivingLink) {
-		return this.ltm.selectPseudoLane(receivingLink, this.desiredSpeed, this.tEarliestExit);
-	}
-
-	public double getVMax(final PseudoLane pseudoLane) {
-		return Math.min(desiredSpeed, this.ltm.getLaneVMax(pseudoLane, this.tEarliestExit));
-	}
-
-	public double getTEarliestExit() {
-		return this.tEarliestExit;
-	}
-
 	public void setTEarliestExit(final double time) {
 		this.tEarliestExit = time;
-	}
-
-	public double getSafetyBufferDistance(final double speed) {
-		return this.ltm.getSafetyBufferDistance(speed);
-	}
-
-	public double getSpeed() {
-		return this.speed;
 	}
 
 }

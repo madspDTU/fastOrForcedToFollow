@@ -7,18 +7,18 @@ public final class SqrtLTM extends LinkTransmissionModel {
 	final double theta_1;
 	final double lambda_c;
 	
-	SqrtLTM(final double theta_0, final double theta_1, final double lambda_c){
+	/* package */ SqrtLTM(final double theta_0, final double theta_1, final double lambda_c){
 		this.theta_0 = theta_0;
 		this.theta_1 = theta_1;
 		this.lambda_c = lambda_c;
 	}
 	
-	double getBicycleLength(){
+	/* package */ double getBicycleLength(){
 		return this.lambda_c;
 	}
 	
-	double getLaneVMax(final PseudoLane pseudoLane, final double time){
-		double constants = Runner.lambda_c + pseudoLane.getLength() - this.theta_0;
+	/* package */ double getLaneVMax(final PseudoLane pseudoLane, final double time){
+		double constants = this.lambda_c + pseudoLane.getLength() - this.theta_0;
 		if(time >= pseudoLane.getTEnd() - this.theta_1*this.theta_1/4./constants){ 
 			return 4*Math.pow((constants/this.theta_1),2); //Case 4 from paper
 		}
@@ -36,18 +36,12 @@ public final class SqrtLTM extends LinkTransmissionModel {
 	}
 
 	
-	/**
-	 * @param speed given in m/s that the safety distance will be based on.
-	 * 
-	 * @return safety distance (including the length of its own bicycle) given in metres.
-	 */
-	double getSafetyBufferDistance(final double speed) {
+	/* package */ double getSafetyBufferDistance(final double speed) {
 		return this.theta_0  + this.theta_1 * Math.sqrt(speed);// 
 	}
 
 	
-
-	PseudoLane selectPseudoLane(final Link receivingLink, final double desiredSpeed, final double time){
+	/* package */ PseudoLane selectPseudoLane(final Link receivingLink, final double desiredSpeed, final double time){
 		double maxSpeed = 0;
 		int maxLane = 0;
 		for(int i = 0; i < receivingLink.getNumberOfPseudoLanes(); i++){

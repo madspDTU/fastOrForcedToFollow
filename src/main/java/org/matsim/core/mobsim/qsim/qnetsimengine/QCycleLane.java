@@ -57,6 +57,7 @@ class QCycleLane implements QLaneI{
 
         	// Assigning a provisional, maximum speed for this link:
         double vTilde = cyclist.getVMax(pseudoLane);
+        vTilde = Math.min(cyclist.getDesiredSpeed(), vTilde);
         cyclist.setSpeed(vTilde);
         
         		//					 printDelay(cyclist);
@@ -171,8 +172,8 @@ class QCycleLane implements QLaneI{
 
     @Override public QVehicle getVehicle( final Id<Vehicle> vehicleId ) {
         for(QCycle cqo : fffLink.getOutQ()){
-            if( cqo.getCyclist().getId().equals( vehicleId.toString() ) ){
-                return cqo ;
+            if( cqo.getVehicle().getId().equals( vehicleId.toString() ) ){
+                return cqo;
             }
         }
         return null ;

@@ -64,7 +64,7 @@ public final class Link{
 	
 
 	public Link(final String id, final double width, final double length) throws InstantiationException, IllegalAccessException{
-		this(id, 1 + (int) Math.floor((width-Runner.deadSpace)/Runner.omega), length );
+		this(id, 1 + (int) Math.floor((width-Runner.DEAD_SPACE)/Runner.OMEGA), length );
 	}
 	
 	//Constructor using the number of pseudoLanes directly.

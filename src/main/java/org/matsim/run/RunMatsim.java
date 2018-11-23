@@ -133,11 +133,11 @@ public class RunMatsim {
 			if ( true ) {  // Forcing all legs in scenario to be made by bicycle...
 				{
 					double v_0 = ToolBox.uniformToJohnson(speedRandom.nextDouble());
-					v_0 = Math.max(v_0, 2.);
+					v_0 = Math.max(v_0, Runner.MINIMUM_ALLOWED_DESIRED_SPEED);  //Minimum value is 2 m/s. 
 					double z_c = headwayRandom.nextDouble(); 
 					person.getAttributes().putAttribute(DESIRED_SPEED, v_0);
 					person.getAttributes().putAttribute(HEADWAY_DISTANCE_PREFERENCE, z_c);
-					person.getAttributes().putAttribute(BICYCLE_LENGTH, Runner.lambda_c);
+					person.getAttributes().putAttribute(BICYCLE_LENGTH, Runner.LAMBDA_C);
 					
 				}
 

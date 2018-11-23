@@ -86,7 +86,11 @@ public class RunMatsim {
 
 
 
-
+	/**
+	 * @param exampleName The example name that a config will be created from
+	 * 
+	 * @return A config based on a given example name.
+	 */
 	public static Config createConfigFromExampleName(String exampleName){
 		URL url = ExamplesUtils.getTestScenarioURL( exampleName);;
 		URL configUrl = IOUtils.newUrl( url, "config.xml" ) ;

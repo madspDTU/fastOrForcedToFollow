@@ -88,7 +88,12 @@ public final class Runner {
 	 * Average length of a bicycle according to Andresen et al. (2014),
 	 * Basic Driving Dynamics of Cyclists, In: Simulation of Urban Mobility;
 	 */
-	public static final double LAMBDA_C = 1.73; 
-
+	public static final double LAMBDA_C = 1.73;
+	
+	
+	/**
+	 * Maximum length [m] of link
+	 */
+	public static final double L_MAX = 60.;   //60:2363   100:2363  1000: 2369
 
 }

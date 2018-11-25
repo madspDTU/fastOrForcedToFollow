@@ -193,4 +193,16 @@ public final class Link{
 		this.lastTimeMoved = lastTimeMoved;
 	}
 
+	
+	/**
+	 * Static factory method creating a link based directly on the number of pseudolanes of the link. See also the {@link #Link(String, int, double) constructor}.
+	 */
+	public static Link[] createLinkArrayFromNumberOfPseudoLanes(final String id, final int Psi, final double length){
+		int N = (int) Math.ceil(length / Runner.L_MAX);
+		Link[] linkArray = new Link[N];
+		for(int i = 0; i < linkArray.length; i++){
+			linkArray[i] = new Link(id + "_part_" + (i+1) , Psi, length/N);
+		}
+		return linkArray;
+	}
 }

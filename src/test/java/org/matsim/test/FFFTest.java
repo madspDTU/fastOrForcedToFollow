@@ -47,7 +47,30 @@ public class FFFTest {
 
 	
 	
+	@Test
+	public final void testBerlinMax60() {
+		//if(true) return;
+		
+		int lanesPerLink = 2;
+		
+		Config config = RunMatsim.createConfigFromExampleName("berlin");
+		config.controler().setOutputDirectory(utils.getOutputDirectory());
+		
+		Scenario scenario = RunMatsim.createScenario(config, lanesPerLink, false);
+		Controler controler = RunMatsim.createControler(scenario);
+		try {		
+			controler.run();
+		} catch ( Exception ee ) {
+			ee.printStackTrace();
+		}
+
+		testAux(scenario, lanesPerLink);
+
+	}
+
 	
+	
+	/*
 	@Test
 	public final void test() {
 		int lanesPerLink = 4;
@@ -87,7 +110,7 @@ public class FFFTest {
 		testAux(scenario, lanesPerLink);
 
 	}
-
+	*/
 
 	private void testAux(Scenario scenario, int lanesPerLink){
 		String newEventsFile = utils.getOutputDirectory() + "/output_events.xml.gz";

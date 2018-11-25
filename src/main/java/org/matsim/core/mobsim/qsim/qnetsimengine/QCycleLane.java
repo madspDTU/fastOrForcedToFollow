@@ -21,10 +21,11 @@ class QCycleLane implements QLaneI{
     private final NetsimEngineContext context;
 
     public QCycleLane( Link fffLink, AbstractQLink qLinkImpl, NetsimEngineContext context ){
-        this.fffLink = fffLink;
+        this.fffLink = fffLink;  //Change to array
         this.qLinkImpl = qLinkImpl;
         this.context = context;
     }
+    
 
     @Override public Id<Lane> getId() {
         return Id.create( fffLink.getId(), Lane.class ) ;

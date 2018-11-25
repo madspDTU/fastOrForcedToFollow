@@ -98,8 +98,11 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 			QLinkImpl.Builder linkBuilder = new QLinkImpl.Builder( context, netsimEngine );
 			linkBuilder.setLaneFactory( new QLinkImpl.LaneFactory(){
 				@Override public QLaneI createLane(AbstractQLink qLinkImpl ) {
-						return new QCycleLane( fastOrForcedToFollow.Link.createLinkFromNumberOfPseudoLanes( 
+					//	return new QCycleLane( fastOrForcedToFollow.Link.createLinkFromNumberOfPseudoLanes( 
+					//			link.getId().toString(), (int) link.getNumberOfLanes(), link.getLength() ), qLinkImpl, context );
+						return new QCycleLaneWithArray( fastOrForcedToFollow.Link.createLinkArrayFromNumberOfPseudoLanes( 
 								link.getId().toString(), (int) link.getNumberOfLanes(), link.getLength() ), qLinkImpl, context );
+			
 				}
 			} );
 			return linkBuilder.build( link, toQueueNode );

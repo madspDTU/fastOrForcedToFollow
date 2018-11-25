@@ -20,7 +20,9 @@ package org.matsim.run;
 
 import java.math.BigInteger;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -28,6 +30,7 @@ import java.util.Random;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
@@ -46,8 +49,10 @@ import org.matsim.core.config.groups.PlanCalcScoreConfigGroup;
 import org.matsim.core.config.groups.QSimConfigGroup;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
+import org.matsim.core.gbl.Gbl;
 import org.matsim.core.mobsim.qsim.AbstractQSimModule;
 import org.matsim.core.mobsim.qsim.qnetsimengine.*;
+import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.utils.io.IOUtils;
 import org.matsim.examples.ExamplesUtils;
@@ -68,17 +73,17 @@ public class RunMatsim {
 	public static final String HEADWAY_DISTANCE_PREFERENCE = "z_c";
 	public static final String BICYCLE_LENGTH = "lambda_c";
 	public static final long RANDOM_SEED = 5355633;
-	
+
 	public static void main(String[] args) {
-		
+
 		String scenarioExample = "berlin";
-		int lanesPerLink = 1;
+		int lanesPerLink = 4;
 		boolean useRandomActivityLocations = false;
 
 		Config config = createConfigFromExampleName(scenarioExample);
 		Scenario scenario = createScenario(config, lanesPerLink, useRandomActivityLocations);
 		Controler controler = createControler(scenario);
-		
+
 		controler.run();
 
 	}
@@ -117,6 +122,8 @@ public class RunMatsim {
 	}
 
 	public static Scenario createScenario(Config config, int lanesPerLink, boolean useRandomActivityLocations){
+		
+		double l_max = 100.;
 
 		Scenario scenario = ScenarioUtils.loadScenario( config ) ;
 
@@ -142,7 +149,7 @@ public class RunMatsim {
 					person.getAttributes().putAttribute(DESIRED_SPEED, v_0);
 					person.getAttributes().putAttribute(HEADWAY_DISTANCE_PREFERENCE, z_c);
 					person.getAttributes().putAttribute(BICYCLE_LENGTH, Runner.LAMBDA_C);
-					
+
 				}
 
 				for ( PlanElement pe : person.getSelectedPlan().getPlanElements() ) {
@@ -226,6 +233,11 @@ public class RunMatsim {
 			scenario.getVehicles().addVehicleType( type );
 		}
 
+		
+	//	scenario = chopNetwork(scenario, l_max);
+	//	scenario = moveActivitiesToChoppedLinks(scenario);
+
+
 		return scenario;
 
 	}
@@ -245,6 +257,107 @@ public class RunMatsim {
 		});
 
 		return controler;
+	}
+
+
+	private static Scenario chopNetwork(final Scenario scenario, final double l_max){
+
+		ArrayList<Double> linkLengths = new ArrayList<Double>();
+		int totalNumberOfPieces = 0;
+		LinkedList<Link> oldLinks = new LinkedList<Link>();
+		for(Link link : scenario.getNetwork().getLinks().values()){
+			oldLinks.add(link);
+		}
+		for(Link link : oldLinks){
+			if(link.getAllowedModes().contains(TransportMode.bike)){
+				Gbl.assertIf(link.getAllowedModes().size() == 1);  // Only do so if the link has been separated.
+				if(link.getLength() > l_max){
+					int noOfPieces = (int) Math.ceil(link.getLength() / l_max);
+					double newLength = link.getLength() / noOfPieces;
+					totalNumberOfPieces += noOfPieces;
+					for(int i = 1; i <= noOfPieces; i++){
+						linkLengths.add(newLength);
+					}
+
+
+					if(noOfPieces == 1){
+						// do nothing
+					} else {
+						//Create nodes
+						Node fromNode = link.getFromNode();
+						double fromX = fromNode.getCoord().getX();
+						double fromY = fromNode.getCoord().getY();
+						Node toNode = link.getToNode();
+						double toX = toNode.getCoord().getX();
+						double toY = toNode.getCoord().getY();
+						String baseName = fromNode.getId() + "_to_" + toNode.getId();
+						for(int i = 1; i < noOfPieces; i++){
+							Node newNode = NetworkUtils.createNode(Id.createNodeId(baseName + "_part_" + i)); 
+							double rho = (double) i / noOfPieces;
+							double newX = fromX + rho*(toX - fromX);
+							double newY = fromY + rho*(toY - fromY);
+							newNode.setCoord(new Coord(newX, newY));
+							scenario.getNetwork().addNode(newNode);
+						}
+
+						//Create links using new nodes, (and original nodes for outermost links)
+						for(int i = 1; i <= noOfPieces; i++){
+							Node newFromNode = i == 1 ? fromNode : scenario.getNetwork().getNodes().get(Id.createNodeId(baseName + "_part_" + (i-1)));
+							Node newToNode = i == noOfPieces ? toNode : scenario.getNetwork().getNodes().get(Id.createNodeId(baseName + "_part_" + i));
+							Link newLink = NetworkUtils.createLink(Id.createLinkId(link.getId() + "_part_" + i),
+									newFromNode, newToNode, scenario.getNetwork(), newLength,	link.getFreespeed(), link.getCapacity(), link.getNumberOfLanes());
+							newLink.setAllowedModes(link.getAllowedModes());
+							
+							scenario.getNetwork().addLink(newLink);
+						}
+						
+						//Remove original non-splitted link.
+						scenario.getNetwork().removeLink(link.getId());
+					}
+				}
+			}
+		}
+
+		
+		/*
+		linkLengths.sort( new Comparator<Double>(){
+			@Override
+			public int compare(Double o1,Double o2){
+				return Double.compare(o1,o2);
+			}
+		});
+
+		System.out.println("Minimum value is   " + linkLengths.get(0) + "m");
+
+		System.out.println("0.1% quantile is   " + linkLengths.get(totalNumberOfPieces/1000) + "m");
+		System.out.println("0.5% quantile is   " + linkLengths.get(totalNumberOfPieces/200) + "m");
+		System.out.println("1th percentile is  " + linkLengths.get(totalNumberOfPieces/100) + "m");
+		System.out.println("2.5% quantile is   " + linkLengths.get(totalNumberOfPieces/40) + "m");
+		System.out.println("5th percentile is  " + linkLengths.get(totalNumberOfPieces/20) + "m");
+		System.out.println("10th percentile is " + linkLengths.get(totalNumberOfPieces/10) + "m");
+		System.out.println("25th percentile is " + linkLengths.get(totalNumberOfPieces/4) + "m");
+		System.out.println("Median is          " + linkLengths.get(totalNumberOfPieces/2) + "m");
+
+
+		System.out.println((double) totalNumberOfPieces / scenario.getNetwork().getLinks().values().size() + " times as many links now"); 
+		*/
+
+		return scenario;
+	}
+
+	public static Scenario moveActivitiesToChoppedLinks(final Scenario scenario){
+		
+		for(Person person : scenario.getPopulation().getPersons().values()){
+			for(PlanElement pe : person.getSelectedPlan().getPlanElements()){
+				if(pe instanceof Activity){
+					Activity activity = (Activity) pe;
+					if(!scenario.getNetwork().getLinks().containsKey(activity.getLinkId())){
+						activity.setLinkId(Id.createLinkId(activity.getLinkId() + "_part_2"));
+					}
+				}
+			}
+		}
+		return scenario;
 	}
 }
 

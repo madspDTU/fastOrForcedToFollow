@@ -39,7 +39,7 @@ abstract class LinkTransmissionModel {
 	 * @return The selected pseudolane, i.e. the right-most pseudolane to accomodate the desired speed,
 	 *         alternatively the pseudolane with the highest speed.
 	 */
-	abstract PseudoLane selectPseudoLane(final Link receivingLink, final double desiredSpeed, final double time);
+	abstract PseudoLane selectPseudoLane(final Sublink receivingLink, final double desiredSpeed, final double time);
 	
 	
 	

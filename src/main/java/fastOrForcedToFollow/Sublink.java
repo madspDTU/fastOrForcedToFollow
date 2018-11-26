@@ -12,7 +12,7 @@ import java.util.PriorityQueue;
  * 
  * @author mpaulsen
  */
-public final class Link{
+public class Sublink{
 
 	
 	/**
@@ -26,12 +26,7 @@ public final class Link{
 	 */
 	private double occupiedSpace = 0;
 
-
-	/**
-	 * The Q containing the CQO's for the cyclists that have entered the link but not yet left it.
-	 */
-	private final PriorityQueue<QCycle> outQ;
-
+	
 	/**
 	 * The array containing all pseudolanes of the link.
 	 */
@@ -72,15 +67,15 @@ public final class Link{
 	/**
 	 * Static factory method creating a link based on the width of the link. See also the {@link #Link(String, int, double) constructor}.
 	 */
-	public static Link createLinkFromWidth(final String id, final double width, final double length){
-		return new Link(id, 1 + (int) Math.floor((width-Runner.DEAD_SPACE)/Runner.OMEGA), length );
+	public static Sublink createLinkFromWidth(final String id, final double width, final double length){
+		return new Sublink(id, 1 + (int) Math.floor((width-Runner.DEAD_SPACE)/Runner.OMEGA), length );
 	}
 	
 	/**
 	 * Static factory method creating a link based directly on the number of pseudolanes of the link. See also the {@link #Link(String, int, double) constructor}.
 	 */
-	public static Link createLinkFromNumberOfPseudoLanes(final String id, final int Psi, final double length){
-		return new Link(id, Psi, length);
+	public static Sublink createLinkFromNumberOfPseudoLanes(final String id, final int Psi, final double length){
+		return new Sublink(id, Psi, length);
 	}
 	
 	/**
@@ -88,17 +83,10 @@ public final class Link{
 	 * @param Psi The number of pseudolanes that the link has.
 	 * @param length The length [m] of the link.
 	 */
-	private Link(final String id, final int Psi, final double length){
+	private Sublink(final String id, final int Psi, final double length){
 		this.id = id;
 		this.psi = createPseudoLanes(Psi, length);
-
-		this.outQ = new PriorityQueue<>( new Comparator<QCycle>(){
-			@Override
-			public int compare( QCycle cqo1, QCycle cqo2 ){
-				return Double.compare(cqo1.getCyclist().getTEarliestExit(), cqo2.getCyclist().getTEarliestExit());
-			}
-		} ) ;
-		
+	
 		this.leavingVehicles = new LinkedList<QVehicle>();
 
 		double totalLaneLength = 0.;
@@ -130,10 +118,6 @@ public final class Link{
 		return psi.length;
 	}
 
-
-	public PriorityQueue<QCycle> getOutQ(){
-		return outQ;
-	}
 
 	/**
 	 * Gets a specific <code>pseudolane</code> from the <code>link</code>.
@@ -197,11 +181,11 @@ public final class Link{
 	/**
 	 * Static factory method creating a link based directly on the number of pseudolanes of the link. See also the {@link #Link(String, int, double) constructor}.
 	 */
-	public static Link[] createLinkArrayFromNumberOfPseudoLanes(final String id, final int Psi, final double length){
+	public static Sublink[] createLinkArrayFromNumberOfPseudoLanes(final String id, final int Psi, final double length){
 		int N = (int) Math.ceil(length / Runner.L_MAX);
-		Link[] linkArray = new Link[N];
+		Sublink[] linkArray = new Sublink[N];
 		for(int i = 0; i < linkArray.length; i++){
-			linkArray[i] = new Link(id + "_part_" + (i+1) , Psi, length/N);
+			linkArray[i] = new Sublink(id + "_part_" + (i+1) , Psi, length/N);
 		}
 		return linkArray;
 	}

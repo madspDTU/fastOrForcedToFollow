@@ -47,7 +47,7 @@ public final class SqrtLTM extends LinkTransmissionModel {
 	}
 
 	
-	/* package */ PseudoLane selectPseudoLane(final Link receivingLink, final double desiredSpeed, final double time){
+	/* package */ PseudoLane selectPseudoLane(final Sublink receivingLink, final double desiredSpeed, final double time){
 		double maxSpeed = 0;
 		int maxLane = 0;
 		for(int i = 0; i < receivingLink.getNumberOfPseudoLanes(); i++){

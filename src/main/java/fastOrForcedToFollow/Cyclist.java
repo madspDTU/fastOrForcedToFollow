@@ -26,6 +26,11 @@ public final class Cyclist {
 	 * The time [s] at which the cyclist will get to the end of the current link, and thus have a non-zero probability of leaving the link.
 	 */
 	private double tEarliestExit;
+	
+	/**
+	 * The current sublink index, i.e. at which sublink [zero-indiced] is the cyclist currently at.
+	 */
+	private int currentSublinkIndex;
 
 	
 	/**
@@ -59,6 +64,9 @@ public final class Cyclist {
 		return desiredSpeed;
 	}
 
+	public int getCurrentLinkIndex(){
+		return this.currentSublinkIndex;
+	}
 
 	/**
 	 * See corresponding method in {@link fastOrForcedToFollow.LinkTransmissionModel#getSafetyBufferDistance(double) LinkTransmissionModel}
@@ -83,10 +91,18 @@ public final class Cyclist {
 	}
 
 	/**
-	 * See corresponding method in {@link fastOrForcedToFollow.LinkTransmissionModel#selectPseudoLane(Link, double, double) LinkTransmissionModel}
+	 * See corresponding method in {@link fastOrForcedToFollow.LinkTransmissionModel#selectPseudoLane(Sublink, double, double) LinkTransmissionModel}
 	 */
-	public PseudoLane selectPseudoLane(final Link receivingLink) {
+	public PseudoLane selectPseudoLane(final Sublink receivingLink) {
 		return this.ltm.selectPseudoLane(receivingLink, this.desiredSpeed, this.tEarliestExit);
+	}
+	
+	public void resetCurrentLinkIndex(){
+		this.currentSublinkIndex = 0;
+	}
+	
+	public void incrementCurrentLinkIndex(){
+		this.currentSublinkIndex++;
 	}
 
 	/**s

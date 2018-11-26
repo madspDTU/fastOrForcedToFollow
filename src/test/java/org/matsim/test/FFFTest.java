@@ -38,10 +38,6 @@ import org.matsim.utils.eventsfilecomparison.EventsFileComparator.Result;
 public class FFFTest {
 
 	private static final Logger log = Logger.getLogger( FFFTest.class);
-	public static final String DESIRED_SPEED = "v_0";
-	public static final String HEADWAY_DISTANCE_PREFERENCE = "z_c";
-	public static final long RANDOM_SEED = 5355633;
-
 
 	@Rule public MatsimTestUtils utils = new MatsimTestUtils() ;
 
@@ -51,7 +47,7 @@ public class FFFTest {
 	public final void testBerlinMax60() {
 		//if(true) return;
 		
-		int lanesPerLink = 2;
+		int lanesPerLink = 4;
 		
 		Config config = RunMatsim.createConfigFromExampleName("berlin");
 		config.controler().setOutputDirectory(utils.getOutputDirectory());

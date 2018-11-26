@@ -94,6 +94,6 @@ public final class Runner {
 	/**
 	 * Maximum length [m] of link
 	 */
-	public static final double L_MAX = 60.;   //60:2363   100:2363  1000: 2369
+	public static final double L_MAX = 60.;   
 
 }

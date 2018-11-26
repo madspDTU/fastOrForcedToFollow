@@ -1,12 +1,9 @@
 package fastOrForcedToFollow;
 
 
-import org.matsim.core.mobsim.qsim.qnetsimengine.QCycle;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QVehicle;
 
-import java.util.Comparator;
 import java.util.LinkedList;
-import java.util.PriorityQueue;
 
 /**
  * 

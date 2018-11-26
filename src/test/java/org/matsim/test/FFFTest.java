@@ -20,6 +20,7 @@ package org.matsim.test;
 
 import org.apache.log4j.Logger;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.matsim.api.core.v01.Scenario;
@@ -45,7 +46,6 @@ public class FFFTest {
 	
 	@Test
 	public final void testBerlinMax60() {
-		//if(true) return;
 		
 		int lanesPerLink = 4;
 		
@@ -66,8 +66,7 @@ public class FFFTest {
 
 	
 	
-	/*
-	@Test
+	@Test  @Ignore
 	public final void test() {
 		int lanesPerLink = 4;
 		
@@ -86,10 +85,8 @@ public class FFFTest {
 	
 	}
 
-	@Test
+	@Test @Ignore
 	public final void testBerlin() {
-		//if(true) return;
-		
 		int lanesPerLink = 1;
 		
 		Config config = RunMatsim.createConfigFromExampleName("berlin");
@@ -106,7 +103,7 @@ public class FFFTest {
 		testAux(scenario, lanesPerLink);
 
 	}
-	*/
+	
 
 	private void testAux(Scenario scenario, int lanesPerLink){
 		String newEventsFile = utils.getOutputDirectory() + "/output_events.xml.gz";

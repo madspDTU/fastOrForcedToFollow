@@ -2,6 +2,7 @@ package fastOrForcedToFollow;
 
 
 import org.matsim.core.mobsim.qsim.qnetsimengine.QVehicle;
+import org.matsim.run.FFFConfigGroup;
 
 import java.util.LinkedList;
 
@@ -64,8 +65,8 @@ public class Sublink{
 	/**
 	 * Static factory method creating a link based on the width of the link. See also the {@link #Link(String, int, double) constructor}.
 	 */
-	public static Sublink createLinkFromWidth(final String id, final double width, final double length){
-		return new Sublink(id, 1 + (int) Math.floor((width-Runner.DEAD_SPACE)/Runner.OMEGA), length );
+	public static Sublink createLinkFromWidth(final String id, final double width, final double length, final FFFConfigGroup fffConfig){
+		return new Sublink(id, 1 + (int) Math.floor((width-fffConfig.getUnusedWidth())/fffConfig.getEfficientLaneWidth()), length );
 	}
 	
 	/**
@@ -178,8 +179,9 @@ public class Sublink{
 	/**
 	 * Static factory method creating a link based directly on the number of pseudolanes of the link. See also the {@link #Link(String, int, double) constructor}.
 	 */
-	public static Sublink[] createLinkArrayFromNumberOfPseudoLanes(final String id, final int Psi, final double length){
-		int N = (int) Math.ceil(length / Runner.L_MAX);
+	public static Sublink[] createLinkArrayFromNumberOfPseudoLanes(final String id, final int Psi, final double length, 
+			final double L_MAX){
+		int N = (int) Math.ceil(length / L_MAX);
 		Sublink[] linkArray = new Sublink[N];
 		for(int i = 0; i < linkArray.length; i++){
 			linkArray[i] = new Sublink(id + "_part_" + (i+1) , Psi, length/N);

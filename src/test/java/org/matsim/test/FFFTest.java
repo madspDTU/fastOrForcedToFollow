@@ -30,6 +30,7 @@ import org.matsim.core.controler.Controler;
 import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.population.io.PopulationReader;
 import org.matsim.core.scenario.ScenarioUtils;
+import org.matsim.run.FFFConfigGroup;
 import org.matsim.run.RunMatsim;
 import org.matsim.testcases.MatsimTestUtils;
 import org.matsim.utils.eventsfilecomparison.EventsFileComparator;
@@ -45,12 +46,15 @@ public class FFFTest {
 	
 	
 	@Test
-	public final void testBerlinMax60() {
-		
-		int lanesPerLink = 4;
-		
+	public final void berlinTest_Max50_2() {
+		int lanesPerLink = 2;
+				
 		Config config = RunMatsim.createConfigFromExampleName("berlin");
 		config.controler().setOutputDirectory(utils.getOutputDirectory());
+		
+		//Possible changes to config
+		FFFConfigGroup fffConfig = ConfigUtils.addOrGetModule(config, FFFConfigGroup.class);
+		fffConfig.setLMax(50.);
 		
 		Scenario scenario = RunMatsim.createScenario(config, lanesPerLink, false);
 		Controler controler = RunMatsim.createControler(scenario);
@@ -60,16 +64,17 @@ public class FFFTest {
 			ee.printStackTrace();
 		}
 
-		testAux(scenario, lanesPerLink);
+		testAux(scenario);
 
 	}
 
 	
 	
-	@Test  @Ignore
-	public final void test() {
-		int lanesPerLink = 4;
+	@Test @Ignore
+	public final void test_2() {
+		int lanesPerLink = 2;
 		
+
 		Config config = RunMatsim.createConfigFromExampleName("equil");
 		config.controler().setOutputDirectory(utils.getOutputDirectory());
 		
@@ -81,14 +86,14 @@ public class FFFTest {
 			ee.printStackTrace();
 		}
 
-		testAux(scenario, lanesPerLink);
+		testAux(scenario);
 	
 	}
 
 	@Test @Ignore
-	public final void testBerlin() {
-		int lanesPerLink = 1;
-		
+	public final void berlinTest_2() {
+		int lanesPerLink = 2;
+
 		Config config = RunMatsim.createConfigFromExampleName("berlin");
 		config.controler().setOutputDirectory(utils.getOutputDirectory());
 		
@@ -100,15 +105,15 @@ public class FFFTest {
 			ee.printStackTrace();
 		}
 
-		testAux(scenario, lanesPerLink);
+		testAux(scenario);
 
 	}
 	
 
-	private void testAux(Scenario scenario, int lanesPerLink){
+	private void testAux(Scenario scenario){
 		String newEventsFile = utils.getOutputDirectory() + "/output_events.xml.gz";
-		String referenceEventsFile = utils.getInputDirectory() + "/output_events_" + lanesPerLink + ".xml.gz";
-		String referencePopulationFile = utils.getInputDirectory() + "/output_plans_" + lanesPerLink + ".xml.gz";
+		String referenceEventsFile = utils.getInputDirectory() + "/output_events.xml.gz";
+		String referencePopulationFile = utils.getInputDirectory() + "/output_plans.xml.gz";
 
 		Config refConfig = ConfigUtils.createConfig();
 		Scenario refScenario = ScenarioUtils.createScenario(refConfig);

@@ -26,6 +26,7 @@ import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.api.experimental.events.EventsManager;
+import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.QSimConfigGroup;
 import org.matsim.core.gbl.Gbl;
 import org.matsim.core.mobsim.framework.MobsimTimer;
@@ -33,7 +34,10 @@ import org.matsim.core.mobsim.qsim.interfaces.AgentCounter;
 import org.matsim.core.mobsim.qsim.pt.TransitStopAgentTracker;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QNetsimEngine.NetsimInternalInterface;
 import org.matsim.core.mobsim.qsim.qnetsimengine.vehicleq.VehicleQ;
+import org.matsim.run.FFFConfigGroup;
 import org.matsim.vis.snapshotwriters.SnapshotLinkWidthCalculator;
+
+import fastOrForcedToFollow.Sublink;
 
 import javax.inject.Inject;
 //import java.util.PriorityQueue;
@@ -72,9 +76,12 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 	// (vis needs network and may need population attributes and config; in consequence, makes sense to have scenario here. kai, apr'16)
 	private NetsimEngineContext context;
 	private NetsimInternalInterface netsimEngine ;
+
+	private FFFConfigGroup fffConfig;
 	@Inject MadsQNetworkFactory( EventsManager events, Scenario scenario ) {
 		this.events = events;
 		this.scenario = scenario;
+		this.fffConfig = ConfigUtils.addOrGetModule(scenario.getConfig(), FFFConfigGroup.class);
 	}
 	@Override
 	void initializeFactory( AgentCounter agentCounter, MobsimTimer mobsimTimer, NetsimInternalInterface netsimEngine1 ) {	
@@ -98,11 +105,9 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 			QLinkImpl.Builder linkBuilder = new QLinkImpl.Builder( context, netsimEngine );
 			linkBuilder.setLaneFactory( new QLinkImpl.LaneFactory(){
 				@Override public QLaneI createLane(AbstractQLink qLinkImpl ) {
-					//	return new QCycleLane( fastOrForcedToFollow.Link.createLinkFromNumberOfPseudoLanes( 
-					//			link.getId().toString(), (int) link.getNumberOfLanes(), link.getLength() ), qLinkImpl, context );
-						return new QCycleLaneWithSublinks( fastOrForcedToFollow.Sublink.createLinkArrayFromNumberOfPseudoLanes( 
-								link.getId().toString(), (int) link.getNumberOfLanes(), link.getLength() ), qLinkImpl, context );
-			
+					Sublink[] sublinkArray = Sublink.createLinkArrayFromNumberOfPseudoLanes( link.getId().toString() + "_" + TransportMode.bike, 
+							(int) link.getNumberOfLanes(), link.getLength(), fffConfig.getLMax() );
+						return new QCycleLaneWithSublinks(sublinkArray, qLinkImpl, context );
 				}
 			} );
 			return linkBuilder.build( link, toQueueNode );

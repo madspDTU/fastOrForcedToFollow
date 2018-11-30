@@ -41,8 +41,8 @@ public final class Cyclist {
 	 * @param lambda_c The length of the cyclist's bicycle.
 	 * @return A cyclist having desired speed, headway preferences, and a length based on the above.
 	 */
-	public static Cyclist createIndividualisedCyclistWithSqrtLTM(final double desiredSpeed, final double z_c, final double lambda_c){
-		LinkTransmissionModel ltm = new SqrtLTM(Runner.THETA_0 + z_c * Runner.ZETA_0,	Runner.THETA_1 + z_c * Runner.ZETA_1,   lambda_c);
+	public static Cyclist createIndividualisedCyclistWithSqrtLTM(final double desiredSpeed, final double theta_0, final double theta_1, final double lambda_c){
+		LinkTransmissionModel ltm = new SqrtLTM(theta_0, theta_1, lambda_c);
 		return new Cyclist(desiredSpeed, ltm);
 	}
 	

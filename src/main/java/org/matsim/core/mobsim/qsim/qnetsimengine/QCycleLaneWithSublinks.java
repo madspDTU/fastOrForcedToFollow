@@ -33,6 +33,7 @@ class QCycleLaneWithSublinks implements QLaneI{
 				return Double.compare(qc1.getCyclist().getTEarliestExit(), qc2.getCyclist().getTEarliestExit());
 			}
 		} ) ;
+		
 	}
 
 

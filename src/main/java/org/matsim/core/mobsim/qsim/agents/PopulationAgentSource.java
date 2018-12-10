@@ -134,13 +134,14 @@ public final class PopulationAgentSource implements AgentSource {
 				// to resolve this.)
 
 			} else {
-				this.seenVehicleIds.put( vehicleId, vehicleLinkId ) ;
-				//				qsim.createAndParkVehicleOnLink(vehicle, vehicleLinkId);
 				//mads starts
-				if(vehicle.getId().toString().contains(TransportMode.bike)){
-					vehicleLinkId = Id.createLinkId(vehicleLinkId.toString() + "_" + TransportMode.bike);
+				if(leg.getMode().equals(TransportMode.bike)){
+					vehicleLinkId = leg.getRoute().getStartLinkId();
 				}
 				//mads ends
+				
+				this.seenVehicleIds.put( vehicleId, vehicleLinkId ) ;
+				//qsim.createAndParkVehicleOnLink(vehicle, vehicleLinkId);
 				qsim.addParkedVehicle( this.qVehicleFactory.createQVehicle( vehicle ) , vehicleLinkId );
 				
 				}

@@ -455,10 +455,13 @@ VehicleAbortsEventHandler {
 			@Override
 			public double getLinkTravelTime(Link link, double time, Person person, Vehicle vehicle) {
 				//mads start;
-			//	if(person.getAttributes().getAsMap().containsKey("v_0")){
-			//		double maxSpeed = (double) person.getAttributes().getAttribute("v_0");
-			//		return Math.max(TravelTimeCalculator.this.getLinkTravelTime(link, time), link.getLength() / maxSpeed);
-			//	}
+				
+				//It happened to me once that "person" was null... Not sure why?? Probably some other module calling this method.
+				
+				if(person != null && person.getAttributes().getAsMap().containsKey("v_0")){
+					double maxSpeed = (double) person.getAttributes().getAttribute("v_0");
+					return Math.max(TravelTimeCalculator.this.getLinkTravelTime(link, time), link.getLength() / maxSpeed);
+				}
 				//mads end;
 				return TravelTimeCalculator.this.getLinkTravelTime(link, time);
 			}

@@ -11,28 +11,28 @@ public final class Cyclist {
 	 * The desired (/maximum) speed [m/s] of the cyclist.
 	 */
 	private final double desiredSpeed;
-	
+
 	/**
 	 * The link transmission model handling the length, safety distance, lane choice, and speed of the cyclist.
 	 */
 	private final LinkTransmissionModel ltm;
-	
+
 	/**
 	 * The current speed [m/s] of the cyclist.
 	 */
 	private double speed;
-	
+
 	/**
 	 * The time [s] at which the cyclist will get to the end of the current link, and thus have a non-zero probability of leaving the link.
 	 */
 	private double tEarliestExit;
-	
+
 	/**
 	 * The current sublink index, i.e. at which sublink [zero-indiced] is the cyclist currently at.
 	 */
 	private int currentSublinkIndex;
 
-	
+
 	/**
 	 * A static factory method for constructing a cyclist with a square root based link transmission model.
 	 * 
@@ -45,20 +45,20 @@ public final class Cyclist {
 		LinkTransmissionModel ltm = new SqrtLTM(theta_0, theta_1, lambda_c);
 		return new Cyclist(desiredSpeed, ltm);
 	}
-	
+
 	private Cyclist(double desiredSpeed, LinkTransmissionModel ltm) {
 		this.desiredSpeed = desiredSpeed;
 		this.ltm = ltm;
 	}
-	
-	
+
+
 	/**
 	 * See corresponding method in {@link fastOrForcedToFollow.LinkTransmissionModel#getBicycleLength() LinkTransmissionModel}
 	 */
 	public double getBicycleLength() {
 		return this.ltm.getBicycleLength();
 	}
-	
+
 
 	public double getDesiredSpeed() {
 		return desiredSpeed;
@@ -96,11 +96,11 @@ public final class Cyclist {
 	public PseudoLane selectPseudoLane(final Sublink receivingLink) {
 		return this.ltm.selectPseudoLane(receivingLink, this.desiredSpeed, this.tEarliestExit);
 	}
-	
+
 	public void resetCurrentLinkIndex(){
 		this.currentSublinkIndex = 0;
 	}
-	
+
 	public void incrementCurrentLinkIndex(){
 		this.currentSublinkIndex++;
 	}

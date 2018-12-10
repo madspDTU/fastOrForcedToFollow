@@ -25,7 +25,7 @@ public final class SqrtLTM extends LinkTransmissionModel {
 	
 	/* package */ double getLaneVMax(final PseudoLane pseudoLane, final double time){
 		double constants = this.lambda_c + pseudoLane.getLength() - this.theta_0;
-		if(time >= pseudoLane.getTEnd() - this.theta_1*this.theta_1/4./constants){ 
+		if(time >= pseudoLane.getTEnd() - this.theta_1*this.theta_1/4./constants){ 		
 			return 4*Math.pow((constants/this.theta_1),2); //Case 4 from paper
 		}
 		double speed = pseudoLane.getLength() / (pseudoLane.getTEnd() - pseudoLane.getTReady());

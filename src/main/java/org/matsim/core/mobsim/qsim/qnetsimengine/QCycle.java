@@ -44,7 +44,7 @@ public class QCycle implements QVehicle
 		if ( driver!=null ){   // is null when vehicle arrives, and driver LEAVES vehicle!
 			Person person = ((HasPerson) driver).getPerson();
 			final double v_0 = (double) person.getAttributes().getAttribute( RunMatsim.DESIRED_SPEED );
-			final double theta_0 = (double) person.getAttributes().getAttribute( RunMatsim.HEADWAY_DISTANCE_INTERSECTION );
+			final double theta_0 = (double) person.getAttributes().getAttribute( RunMatsim.HEADWAY_DISTANCE_INTERCEPT );
 			final double theta_1 = (double) person.getAttributes().getAttribute( RunMatsim.HEADWAY_DISTANCE_SLOPE );
 			final double lambda_c = (double) person.getAttributes().getAttribute( RunMatsim.BICYCLE_LENGTH );
 			this.cyclist = Cyclist.createIndividualisedCyclistWithSqrtLTM(v_0, theta_0, theta_1, lambda_c);

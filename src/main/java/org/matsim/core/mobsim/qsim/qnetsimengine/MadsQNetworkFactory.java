@@ -107,7 +107,7 @@ public final class MadsQNetworkFactory extends QNetworkFactory {
 				@Override public QLaneI createLane(AbstractQLink qLinkImpl ) {
 					Sublink[] sublinkArray = Sublink.createLinkArrayFromNumberOfPseudoLanes( link.getId().toString() + "_" + TransportMode.bike, 
 							(int) link.getNumberOfLanes(), link.getLength(), fffConfig.getLMax() );
-						return new QCycleLaneWithSublinks(sublinkArray, qLinkImpl, context );
+						return new QCycleLaneWithSublinks(sublinkArray, qLinkImpl, context, fffConfig.getCorrectionFactor() );
 				}
 			} );
 			return linkBuilder.build( link, toQueueNode );

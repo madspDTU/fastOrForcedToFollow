@@ -22,8 +22,9 @@ class QCycleLaneWithSublinks implements QLaneI{
 	private final AbstractQLink qLinkImpl;
 	private final NetsimEngineContext context;
 	private final PriorityQueue<QCycle> globalQ;
-
-	public QCycleLaneWithSublinks( Sublink[] fffLinkArray, AbstractQLink qLinkImpl, NetsimEngineContext context ){
+	private final double correctionFactor;
+	
+	public QCycleLaneWithSublinks( Sublink[] fffLinkArray, AbstractQLink qLinkImpl, NetsimEngineContext context, double correctionFactor ){
 		this.fffLinkArray = fffLinkArray; 
 		this.qLinkImpl = qLinkImpl;
 		this.context = context;
@@ -33,6 +34,8 @@ class QCycleLaneWithSublinks implements QLaneI{
 				return Double.compare(qc1.getCyclist().getTEarliestExit(), qc2.getCyclist().getTEarliestExit());
 			}
 		} ) ;
+		
+		this.correctionFactor = correctionFactor;
 		
 	}
 
@@ -84,9 +87,10 @@ class QCycleLaneWithSublinks implements QLaneI{
 
 		// Updating tReady and tExit of the link:
 		double tOneBicycleLength = cyclist.getBicycleLength() / vTilde;
-		pseudoLane.setTReady(tStart + tOneBicycleLength);
-		pseudoLane.setTEnd(cyclist.getTEarliestExit() + tOneBicycleLength);
-
+		double surplus = pseudoLane.getLength() / vTilde * (correctionFactor-1);
+		pseudoLane.setTReady(tStart + tOneBicycleLength + surplus);
+		pseudoLane.setTEnd(cyclist.getTEarliestExit() + tOneBicycleLength + surplus);
+		
 
 		// Add qCycle to the downstream queue of the next link.
 		//	fffLinkArray[0].getOutQ().add(qCyc ); 
@@ -155,10 +159,10 @@ class QCycleLaneWithSublinks implements QLaneI{
 
 				// Updating tReady and tExit of the link:
 				double tOneBicycleLength = cyclist.getBicycleLength() / vTilde;
-				pseudoLane.setTReady(tStart + tOneBicycleLength);
-				pseudoLane.setTEnd(cyclist.getTEarliestExit() + tOneBicycleLength);
-
-
+				double surplus = pseudoLane.getLength() / vTilde * (correctionFactor-1);
+				pseudoLane.setTReady(tStart + tOneBicycleLength + surplus);
+				pseudoLane.setTEnd(cyclist.getTEarliestExit() + tOneBicycleLength + surplus);
+			
 				// Add qCycle to the downstream queue of the next link.
 				//	receivingFFFLink.getOutQ().add(cqo ); 
 				cqo.getCyclist().incrementCurrentLinkIndex();

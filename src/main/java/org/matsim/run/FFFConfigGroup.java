@@ -7,6 +7,20 @@ public class FFFConfigGroup extends ReflectiveConfigGroup {
 
 	static final String GROUP_NAME = "fastOrForcedToFollow";
 
+	
+	/**
+	 * Excess travel time factor forced onto tReady and tEnd. 
+	 */
+	private double correctionFactor = 1.;
+	
+	public double getCorrectionFactor() {
+		return this.correctionFactor;
+	}
+
+	public void setCorrectionFactor(final double correctionFactor) {
+		this.correctionFactor = correctionFactor;
+	}
+
 	/**
 	 * Average length of a bicycle according to Andresen et al. (2014),
 	 * Basic Driving Dynamics of Cyclists, In: Simulation of Urban Mobility;

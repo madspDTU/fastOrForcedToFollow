@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
@@ -43,7 +44,9 @@ import org.matsim.api.core.v01.population.Population;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup;
+import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ActivityParams;
 import org.matsim.core.config.groups.QSimConfigGroup;
+import org.matsim.core.config.groups.StrategyConfigGroup.StrategySettings;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.mobsim.qsim.AbstractQSimModule;
@@ -51,6 +54,8 @@ import org.matsim.core.mobsim.qsim.qnetsimengine.MadsQNetworkFactory;
 import org.matsim.core.mobsim.qsim.qnetsimengine.MadsQVehicleFactory;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QNetworkFactory;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QVehicleFactory;
+import org.matsim.core.replanning.strategies.DefaultPlanStrategiesModule.DefaultSelector;
+import org.matsim.core.replanning.strategies.DefaultPlanStrategiesModule.DefaultStrategy;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.utils.io.IOUtils;
 import org.matsim.examples.ExamplesUtils;
@@ -65,7 +70,7 @@ public class RunMatsim {
 	private static final Logger log = Logger.getLogger( RunMatsim.class ) ;
 
 	public static final String DESIRED_SPEED = "v_0";
-	public static final String HEADWAY_DISTANCE_INTERSECTION = "theta_0";
+	public static final String HEADWAY_DISTANCE_INTERCEPT = "theta_0";
 	public static final String HEADWAY_DISTANCE_SLOPE= "theta_1";
 	public static final String BICYCLE_LENGTH = "lambda_c";
 	public static final long RANDOM_SEED = 5355633;
@@ -73,7 +78,7 @@ public class RunMatsim {
 	public static void main(String[] args) {
 
 		String scenarioExample = "berlin";
-		int lanesPerLink = 4;
+		int lanesPerLink = 2;
 		boolean useRandomActivityLocations = false;
 
 		Config config = createConfigFromExampleName(scenarioExample);		
@@ -98,10 +103,10 @@ public class RunMatsim {
 		Config config = ConfigUtils.loadConfig( configUrl ) ;
 
 		config.controler().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists );
-		config.controler().setLastIteration( 0 );
-		config.controler().setWriteEventsInterval(1);
-		config.controler().setWritePlansInterval(1);
-		
+		config.controler().setLastIteration( 25 );
+		config.controler().setWriteEventsInterval(25);
+		config.controler().setWritePlansInterval(25);
+
 		config.qsim().setEndTime( 100.*3600. );
 
 		PlanCalcScoreConfigGroup.ModeParams params = new PlanCalcScoreConfigGroup.ModeParams(TransportMode.bike) ;
@@ -110,21 +115,67 @@ public class RunMatsim {
 		config.qsim().setMainModes( networkModes );
 		config.plansCalcRoute().removeModeRoutingParams( TransportMode.bike );
 		config.plansCalcRoute().setNetworkModes( networkModes );
+		config.plansCalcRoute().setInsertingAccessEgressWalk(true);
+		config.planCalcScore().getOrCreateModeParams(TransportMode.access_walk);
+		config.planCalcScore().getOrCreateModeParams(TransportMode.egress_walk);
+
+		
+		config.strategy().clearStrategySettings();
+		StrategySettings reRoute = new StrategySettings();
+		reRoute.setStrategyName(DefaultStrategy.ReRoute);
+		reRoute.setWeight(0.2);
+		StrategySettings bestScore = new StrategySettings();
+		bestScore.setStrategyName(DefaultSelector.BestScore);
+		bestScore.setWeight(0.8);
+		config.strategy().addStrategySettings(reRoute);
+		config.strategy().addStrategySettings(bestScore);
+
 		config.travelTimeCalculator().setAnalyzedModes( TransportMode.car + "," + TransportMode.bike);
 
 		config.qsim().setVehiclesSource( QSimConfigGroup.VehiclesSource.modeVehicleTypesFromVehiclesData );
 
 		config.global().setRandomSeed(RANDOM_SEED);
-		
+
 		return config;		
 	}
 
-	public static Scenario createScenario(Config config, int lanesPerLink, boolean useRandomActivityLocations){
-		
-		
+	public static Scenario addCyclistAttributes(Config config){
 		final Scenario scenario = ScenarioUtils.loadScenario( config ) ;
 		final long RANDOM_SEED = config.global().getRandomSeed();
-		
+
+		final Random speedRandom = new Random(RANDOM_SEED);
+		final Random headwayRandom = new Random(RANDOM_SEED + 341);
+		for(int i = 0; i <200; i++){
+			speedRandom.nextDouble();
+			headwayRandom.nextDouble();
+		}
+
+		final FFFConfigGroup fffConfig = ConfigUtils.addOrGetModule(config, FFFConfigGroup.class);
+		final Population population= scenario.getPopulation() ;
+
+		for ( Person person : population.getPersons().values() ) {
+			double v_0 = uniformToJohnson(speedRandom.nextDouble(), fffConfig);
+			v_0 = Math.max(v_0, fffConfig.getMinimumAllowedDesiredSpeed());
+			double z_c = headwayRandom.nextDouble(); 
+			double theta_0 = fffConfig.getTheta_0() + z_c * fffConfig.getZeta_0();
+			double theta_1 = fffConfig.getTheta_1() + z_c * fffConfig.getZeta_1();
+			person.getAttributes().putAttribute(DESIRED_SPEED, v_0);
+			person.getAttributes().putAttribute(HEADWAY_DISTANCE_INTERCEPT, theta_0);
+			person.getAttributes().putAttribute(HEADWAY_DISTANCE_SLOPE, theta_1);
+			person.getAttributes().putAttribute(BICYCLE_LENGTH, fffConfig.getLambda_c());
+		}
+
+		VehicleType type = new VehicleTypeImpl( Id.create( TransportMode.bike, VehicleType.class  ) ) ;
+		scenario.getVehicles().addVehicleType( type );
+		return scenario;
+	}
+
+	public static Scenario createScenario(Config config, int lanesPerLink, boolean useRandomActivityLocations){
+
+
+		final Scenario scenario = ScenarioUtils.loadScenario( config ) ;
+		final long RANDOM_SEED = config.global().getRandomSeed();
+
 		final int L = scenario.getNetwork().getLinks().size();
 		final BigInteger aux = BigInteger.valueOf((long) Math.ceil(L / 4.));
 		final int linkStepSize =  Integer.parseInt(String.valueOf(aux.nextProbablePrime()));
@@ -138,7 +189,7 @@ public class RunMatsim {
 
 		final FFFConfigGroup fffConfig = ConfigUtils.addOrGetModule(config, FFFConfigGroup.class);
 		final Population population= scenario.getPopulation() ;
-		
+
 		int linkInt = 0;
 		for ( Person person : population.getPersons().values() ) {
 			if ( true ) {  // Forcing all legs in scenario to be made by bicycle...
@@ -149,7 +200,7 @@ public class RunMatsim {
 					double theta_0 = fffConfig.getTheta_0() + z_c * fffConfig.getZeta_0();
 					double theta_1 = fffConfig.getTheta_1() + z_c * fffConfig.getZeta_1();
 					person.getAttributes().putAttribute(DESIRED_SPEED, v_0);
-					person.getAttributes().putAttribute(HEADWAY_DISTANCE_INTERSECTION, theta_0);
+					person.getAttributes().putAttribute(HEADWAY_DISTANCE_INTERCEPT, theta_0);
 					person.getAttributes().putAttribute(HEADWAY_DISTANCE_SLOPE, theta_1);
 					person.getAttributes().putAttribute(BICYCLE_LENGTH, fffConfig.getLambda_c());
 
@@ -172,9 +223,9 @@ public class RunMatsim {
 					if( pe instanceof Activity){
 						Activity act =  (Activity) pe;
 						if(!useRandomActivityLocations){
-						//	act.setLinkId(Id.createLinkId(act.getLinkId().toString() + "_" + TransportMode.bike));
-						//	act.setCoord(scenario.getNetwork().getLinks().get(act.getLinkId()).getCoord());
-						//	act.setLinkId(null);
+							//	act.setLinkId(Id.createLinkId(act.getLinkId().toString() + "_" + TransportMode.bike));
+							//	act.setCoord(scenario.getNetwork().getLinks().get(act.getLinkId()).getCoord());
+							//	act.setLinkId(null);
 						} else {
 							if(n < N  || N == 2){
 								act.setLinkId(Id.createLinkId(((linkInt % L) +1) + "_" + TransportMode.bike));
@@ -238,7 +289,7 @@ public class RunMatsim {
 			scenario.getVehicles().addVehicleType( type );
 		}
 
-		
+
 		return scenario;
 
 	}
@@ -246,7 +297,7 @@ public class RunMatsim {
 
 	public static Controler createControler(Scenario scenario){
 		Controler controler = new Controler( scenario ) ;
-	
+
 
 		controler.addOverridingQSimModule(new AbstractQSimModule() {
 			@Override
@@ -259,9 +310,9 @@ public class RunMatsim {
 
 		return controler;
 	}
-	
-	
-	
+
+
+
 	/**
 	 * Method for computing the inverse cumulative distribution function of the standard normal distribution.
 	 * Taken directly from https://stackedboxes.org/2017/05/01/acklams-normal-quantile-function/
@@ -319,8 +370,8 @@ public class RunMatsim {
 
 
 	}
-	
-	
+
+
 	/**
 	 * Converts a uniform number to a appropriately Johnson S_u distributed number.
 	 * 
@@ -329,7 +380,7 @@ public class RunMatsim {
 	 * @return A number from the appropriate Johnson S_u distribution.
 	 */
 
-	private static double uniformToJohnson(final double u, FFFConfigGroup fffConfig){
+	public static double uniformToJohnson(final double u, FFFConfigGroup fffConfig){
 		return fffConfig.getJohnsonLambda() * Math.sinh( (qNorm(u) - fffConfig.getJohnsonGamma()) / fffConfig.getJohnsonDelta()) + fffConfig.getJohnsonXsi();
 	}
 

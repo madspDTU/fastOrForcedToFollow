@@ -107,6 +107,7 @@ public class RunBicycleCopenhagen {
 		for(String mode : Arrays.asList(TransportMode.bike, TransportMode.access_walk, TransportMode.egress_walk)){
 			ModeParams modeParams = config.planCalcScore().getModes().get(mode);
 			modeParams.setMarginalUtilityOfTraveling(-60.);
+			//The distance coefficient is used as coefficient for congestion time... ... Not proud of it myself.
 			modeParams.setMarginalUtilityOfDistance(-30./3600);
 		}
 

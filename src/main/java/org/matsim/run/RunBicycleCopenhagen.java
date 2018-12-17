@@ -27,7 +27,9 @@ public class RunBicycleCopenhagen {
 
 	public final int numberOfThreads = 20;
 	public final static String outputBaseDir = "/work1/s103232/ABMTRANS2019/"; //With final /
-	public final static String inputBaseDir = "/zhome/81/e/64390/MATSim/ABMTRANS2019/input/"; //With final /
+	//public final static String inputBaseDir = "/zhome/81/e/64390/MATSim/ABMTRANS2019/input/"; //With final /
+	public final static String inputBaseDir = "./input/"; //With final /
+	
 	
 	
 	public static void main(String[] args) throws IOException{

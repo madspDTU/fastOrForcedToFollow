@@ -51,6 +51,7 @@ import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.mobsim.qsim.AbstractQSimModule;
 import org.matsim.core.mobsim.qsim.qnetsimengine.MadsQNetworkFactory;
+import org.matsim.core.mobsim.qsim.qnetsimengine.MadsQNetworkFactoryWithoutCongestion;
 import org.matsim.core.mobsim.qsim.qnetsimengine.MadsQVehicleFactory;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QNetworkFactory;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QVehicleFactory;
@@ -303,6 +304,23 @@ public class RunMatsim {
 			@Override
 			protected void configureQSim() {
 				this.bind( QNetworkFactory.class ).to( MadsQNetworkFactory.class );
+				this.bind( QVehicleFactory.class ).to( MadsQVehicleFactory.class ) ;
+			}
+
+		});
+
+		return controler;
+	}
+	
+	
+	public static Controler createControlerWithoutCongestion(Scenario scenario){
+		Controler controler = new Controler( scenario ) ;
+
+
+		controler.addOverridingQSimModule(new AbstractQSimModule() {
+			@Override
+			protected void configureQSim() {
+				this.bind( QNetworkFactory.class ).to( MadsQNetworkFactoryWithoutCongestion.class );
 				this.bind( QVehicleFactory.class ).to( MadsQVehicleFactory.class ) ;
 			}
 

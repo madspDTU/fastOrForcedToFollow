@@ -93,7 +93,7 @@ public class FDEventsHandler implements BasicEventHandler {
 					entryTimes.get(linkId).remove(personId);
 				}
 			}
-		}
+		} 
 
 	}
 

@@ -3,6 +3,7 @@
 	<name>fastOrForcedToFollow</name>
 	<comment></comment>
 	<projects>
+		<project>matsim</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

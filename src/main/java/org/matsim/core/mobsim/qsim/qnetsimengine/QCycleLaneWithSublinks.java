@@ -39,7 +39,10 @@ class QCycleLaneWithSublinks implements QLaneI{
 		
 	}
 
-
+	public void activateLink(){
+		qLinkImpl.getInternalInterface().activateLink();
+	}
+ 
 	@Override public Id<Lane> getId() { //Done!?
 		//TODO There must be a better way... But it is even necessary. 
 
@@ -53,7 +56,7 @@ class QCycleLaneWithSublinks implements QLaneI{
 	@Override public void addFromUpstream( final QVehicle veh ) {  
 		// activate link since there is now action on it:
 		qLinkImpl.getInternalInterface().activateLink();
-
+		
 		veh.setCurrentLink( qLinkImpl.getLink() );
 
 		// upcast:
@@ -185,6 +188,8 @@ class QCycleLaneWithSublinks implements QLaneI{
 				final QNodeI toNode = qLinkImpl.getToNode();
 				if ( toNode instanceof QNodeImpl ) {
 					((QNodeImpl) toNode).activateNode();
+				} else if ( toNode instanceof QFFFNode){ //mads: Added QFFFNode here...
+					((QFFFNode) toNode).activateNode();
 				}
 			}
 		}
@@ -228,6 +233,11 @@ class QCycleLaneWithSublinks implements QLaneI{
 		}
 	}
 
+	public void addVehicleToFrontOfLeavingVehicles(final QVehicle veh){
+		this.fffLinkArray[this.fffLinkArray.length - 1].getLeavingVehicles().addFirst(veh);
+	}
+
+	
 	@Override public double getSimulatedFlowCapacityPerTimeStep() {
 		throw new RuntimeException( "not implemented" );
 	}
@@ -289,5 +299,15 @@ class QCycleLaneWithSublinks implements QLaneI{
 
 	@Override public void initBeforeSimStep() {
 		//Intentionally empty
+	}
+	
+	
+	/**
+	 * Used by left turning cyclists who will be skipping the queue when making a two-phase left turn.
+	 */
+	public void placeVehicleAtFront(QVehicle veh){
+		QCycle qCyc = (QCycle) veh;
+		qCyc.getCyclist().setCurrentLinkIndex(fffLinkArray.length -1);
+		globalQ.add(qCyc);
 	}
 }

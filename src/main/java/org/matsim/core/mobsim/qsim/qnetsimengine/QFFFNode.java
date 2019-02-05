@@ -122,7 +122,7 @@ final class QFFFNode implements QNodeI {
 		 * We expect the value to be false, i.e. the node is de-activated. If this is
 		 * true, the value is changed to true and the activator is informed.
 		 */
-
+		
 		if (this.active.compareAndSet(false, true)) {
 			this.activator.registerNodeAsActive(this);
 		}
@@ -418,7 +418,6 @@ final class QFFFNode implements QNodeI {
 	protected boolean moveVehicleOverNode( final QVehicle veh, QLinkI fromLink, final QLaneI fromLane, final double now ) {
 		Id<Link> nextLinkId = veh.getDriver().chooseNextLinkId();
 		Link currentLink = fromLink.getLink() ;
-
 		AcceptTurn turn = turnAcceptanceLogic.isAcceptingTurn(currentLink, fromLane, nextLinkId, veh, this.netsimEngine.getNetsimNetwork(), now);
 		if ( turn.equals(AcceptTurn.ABORT) ) {
 			moveVehicleFromInlinkToAbort( veh, fromLane, now, currentLink.getId() ) ;

@@ -55,8 +55,8 @@ class QCycleLaneWithSublinks implements QLaneI{
 
 	@Override public void addFromUpstream( final QVehicle veh ) {  
 		// activate link since there is now action on it:
-		qLinkImpl.getInternalInterface().activateLink();
-		
+		activateLink();
+			
 		veh.setCurrentLink( qLinkImpl.getLink() );
 
 		// upcast:
@@ -235,6 +235,8 @@ class QCycleLaneWithSublinks implements QLaneI{
 		final QNodeI toNode = qLinkImpl.getToNode();
 		if ( toNode instanceof QNodeImpl ) {
 			((QNodeImpl) toNode).activateNode();
+		} else if ( toNode instanceof QFFFNode){ //mads: Added QFFFNode here...			
+			((QFFFNode) toNode).activateNode();		
 		}
 	}
 

@@ -52,12 +52,16 @@ public class QFFFRightPriorityNode extends QFFFAbstractNode{
 			return false;
 		}
 
+		
+		
 		Collections.shuffle(inLinkOrder, random);
 
 		for(int i : inLinkOrder){
 			bicycleMoveWithFullLeftTurns(i, now, nowish, new RightPriorityBicycleTimeoutModifier());
 			carMoveAllowingLeftTurns(i, now, nowish, new RightPriorityCarTimeoutModifier());
 		}
+		
+		
 		return true;
 	}
 

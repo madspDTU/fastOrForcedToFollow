@@ -53,7 +53,7 @@ import org.matsim.vehicles.VehicleTypeImpl;
 public class RunMatsimWithRoW {
 	
 	public static boolean omitEastLinks = true;
-	public static boolean useEqualCapacities = false;
+	public static boolean useEqualCapacities = true;
 
 	private static double bicycleMarketShare = 0.5;
 

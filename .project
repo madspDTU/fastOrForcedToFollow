@@ -4,7 +4,7 @@
 	<name>fastOrForcedToFollow</name>
 	<comment></comment>
 	<projects>
-		<project>matsrereim</project>
+		<project>matsim</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

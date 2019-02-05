@@ -26,13 +26,12 @@ import org.matsim.vehicles.VehicleTypeImpl;
 public class RunBicycleCopenhagen {
 
 	public final int numberOfThreads = 20;
-	//public final static String outputBaseDir = "/work1/s103232/ABMTRANS2019/"; //With final /
-	public final static String outputBaseDir = "./output/ABMTRANS2019/"; //With final / 
+	public final static String outputBaseDir = "/work1/s103232/ABMTRANS2019/"; //With final /
+	//public final static String outputBaseDir = "./output/ABMTRANS2019/"; //With final / 
 	
-	//public final static String inputBaseDir = "/zhome/81/e/64390/MATSim/ABMTRANS2019/input/"; //With final /
-	public final static String inputBaseDir = "./input/"; //With final /
-	
-	
+	//public final static String inputBaseDir = "./input/";  //With final /
+	public final static String inputBaseDir = "/zhome/81/e/64390/MATSim/ABMTRANS2019/input/"; //With final /
+		
 	
 	public static void main(String[] args) throws IOException{
 		boolean congestion = true;
@@ -55,6 +54,9 @@ public class RunBicycleCopenhagen {
 
 		Config config = RunMatsim.createConfigFromExampleName("berlin");
 		config.controler().setOutputDirectory(outputBaseDir + size);
+		
+
+		
 		if(size.substring(0,4).equals("full")){
 			size = "full";
 		} else if(size.substring(0,5).equals("small")){
@@ -166,7 +168,8 @@ public class RunBicycleCopenhagen {
 		} catch ( Exception ee ) {
 			ee.printStackTrace();
 		}
-
+		
+		
 		if(oneLane){
 			size += "OneLane";
 		}

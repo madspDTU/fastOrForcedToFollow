@@ -89,7 +89,7 @@ public class FlowHandler implements BasicEventHandler {
 			String personId = e.getVehicleId().toString();
 			if(entryTimes.containsKey(linkId) && entryTimes.get(linkId).containsKey(personId)){
 				flows.get(linkId)[slot]++;
-				double speed = network.getLinks().get(e.getLinkId()).getLength() / (now - entryTimes.get(linkId).get(personId));
+				double speed = network.getLinks().get(linkId).getLength() / (now - entryTimes.get(linkId).get(personId));
 				speeds.get(linkId)[slot].add(speed);
 
 				//To safe memory

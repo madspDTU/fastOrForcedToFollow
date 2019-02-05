@@ -45,10 +45,10 @@
 		<dependency>
 			<groupId>org.matsim</groupId>
 			<artifactId>matsim</artifactId>
- 			<!--<version>0.10.0</version>-->
+ 			<!--<version>0.11.0</version>-->
 			<!--<version>0.11.0-apr17</version>-->
 			<version>0.11.0-SNAPSHOT</version>
-			<!--<version>0.11.0-2018w44</version>-->
+			<!--<version>0.11.0-2018w45</version>-->
 		</dependency>
 
 		<dependency>
@@ -56,7 +56,7 @@
 			<groupId>org.matsim</groupId>
 			<artifactId>matsim</artifactId>
 			<type>test-jar</type>
- 			<!--<version>0.10.0</version>-->
+ 			<!--<version>0.11.0</version>-->
 			<!--<version>0.11.0-apr17</version>-->
 			<version>0.11.0-SNAPSHOT</version>
 			<scope>test</scope>
@@ -66,7 +66,7 @@
 		<dependency>
 			<groupId>org.matsim</groupId>
 			<artifactId>matsim-examples</artifactId>
- 			<!--<version>0.10.0</version>-->
+ 			<!--<version>0.11.0</version>-->
 			<!--<version>0.11.0-apr17</version>-->
 			<version>0.11.0-SNAPSHOT</version>
 		</dependency>

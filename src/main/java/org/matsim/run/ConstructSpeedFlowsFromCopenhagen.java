@@ -59,7 +59,8 @@ public class ConstructSpeedFlowsFromCopenhagen {
 		Network network = NetworkUtils.readNetwork(networkString);
 
 		double totalTravelTime = 0;
-		{
+		
+		
 			FlowHandler eventsHandler = new FlowHandler();
 			eventsHandler.setNetwork(network);
 
@@ -81,8 +82,9 @@ public class ConstructSpeedFlowsFromCopenhagen {
 			}
 
 			totalTravelTime = eventsHandler.totalTravelTime;
-		}
-		{
+			
+			eventsHandler = null;
+			eventsManager = null;
 			if(it < 0){
 				pr.readFile(outputBaseDir + type + "/output_plans.xml.gz");
 			} else {
@@ -109,16 +111,6 @@ public class ConstructSpeedFlowsFromCopenhagen {
 			writer.append(s);
 			writer.flush();
 			writer.close();
-		}
-
-
-
-
-
-
-
-
-
 
 	}
 

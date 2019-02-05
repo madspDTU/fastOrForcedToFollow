@@ -154,6 +154,7 @@ public class RunBicycleCopenhagen {
 		Controler controler;
 		if(congestion){
 			controler = RunMatsim.createControler(scenario);
+			// controler = RunMatsim.createControlerWithRoW(scenario);	
 		} else {
 			controler = RunMatsim.createControlerWithoutCongestion(scenario);
 		}

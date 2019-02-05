@@ -317,7 +317,7 @@ final class QFFFNode implements QNodeI {
 			} else {
 				if(areCarCapacitiesEqual && !areBicycleCapacitiesEqual){
 					if(bicycleCapacities.lastEntry().getValue().size() >= 4){
-						this.nodeType = new QFFFAntiPriorityNode(this, bundleMap, network, carCapacities);
+						this.nodeType = new QFFFAntiPriorityNode(this, bundleMap, network, bicycleCapacities);
 					} else {
 						this.nodeType = new QFFFNodeDirectedPriorityNode(this, bundleMap, network, bicycleCapacities);
 						//	this.nodeType = new QNodeRightPriorityIntersection(this, bundleMap, network);

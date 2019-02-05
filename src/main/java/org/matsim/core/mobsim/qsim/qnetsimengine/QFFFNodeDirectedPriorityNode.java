@@ -292,7 +292,10 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode{
 
 				System.out.println("Rethink this...");
 			} else if(carInLinks.length == 3){
-				System.err.println("This really shouldn't be possible");
+				System.err.println("This really shouldn't be possible: " + cumCount + " v " + carInLinks.length);
+				if(cumCount == carInLinks.length){
+					System.err.println(" All capacities ARE equal in this case... See in QFFFNode why this happens");
+				}
 				System.exit(-1);
 			}
 		}

@@ -328,6 +328,22 @@ public class RunMatsim {
 		return controler;
 	}
 
+	public static Controler createControlerWithoutCongestion(Scenario scenario){
+		Controler controler = new Controler( scenario ) ;
+
+
+		controler.addOverridingQSimModule(new AbstractQSimModule() {
+			@Override
+			protected void configureQSim() {
+				this.bind( QNetworkFactory.class ).to( MadsQNetworkFactoryWithoutCongestion.class );
+				this.bind( QVehicleFactory.class ).to( MadsQVehicleFactory.class ) ;
+			}
+
+		});
+
+		return controler;
+	}
+	
 	public static Controler createControlerWithRoW(Scenario scenario){
 		Controler controler = new Controler( scenario ) ;
 

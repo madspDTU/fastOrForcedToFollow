@@ -56,7 +56,7 @@ public class FFFTest {
 		FFFConfigGroup fffConfig = ConfigUtils.addOrGetModule(config, FFFConfigGroup.class);
 		fffConfig.setLMax(50.);
 		
-		Scenario scenario = RunMatsim.createScenario(config, lanesPerLink, false);
+		Scenario scenario = RunMatsim.createScenario(config, lanesPerLink, false, 1.);
 		Controler controler = RunMatsim.createControler(scenario);
 		try {		
 			controler.run();
@@ -78,7 +78,7 @@ public class FFFTest {
 		Config config = RunMatsim.createConfigFromExampleName("equil");
 		config.controler().setOutputDirectory(utils.getOutputDirectory());
 		
-		Scenario scenario = RunMatsim.createScenario(config, lanesPerLink, true);
+		Scenario scenario = RunMatsim.createScenario(config, lanesPerLink, true, 1.);
 		Controler controler = RunMatsim.createControler(scenario);
 		try {		
 			controler.run();
@@ -97,7 +97,7 @@ public class FFFTest {
 		Config config = RunMatsim.createConfigFromExampleName("berlin");
 		config.controler().setOutputDirectory(utils.getOutputDirectory());
 		
-		Scenario scenario = RunMatsim.createScenario(config, lanesPerLink, false);
+		Scenario scenario = RunMatsim.createScenario(config, lanesPerLink, false, 1.);
 		Controler controler = RunMatsim.createControler(scenario);
 		try {		
 			controler.run();

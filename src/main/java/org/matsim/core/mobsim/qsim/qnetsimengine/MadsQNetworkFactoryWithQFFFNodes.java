@@ -20,27 +20,15 @@
 package org.matsim.core.mobsim.qsim.qnetsimengine;
 
 
-import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Scenario;
-import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.api.experimental.events.EventsManager;
-import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.QSimConfigGroup;
-import org.matsim.core.gbl.Gbl;
-import org.matsim.core.mobsim.framework.MobsimTimer;
 import org.matsim.core.mobsim.qsim.interfaces.AgentCounter;
 import org.matsim.core.mobsim.qsim.pt.TransitStopAgentTracker;
-import org.matsim.core.mobsim.qsim.qnetsimengine.QNetsimEngine.NetsimInternalInterface;
 import org.matsim.core.mobsim.qsim.qnetsimengine.vehicleq.VehicleQ;
-import org.matsim.run.FFFConfigGroup;
-import org.matsim.vis.snapshotwriters.SnapshotLinkWidthCalculator;
-
-import fastOrForcedToFollow.Sublink;
-
 import javax.inject.Inject;
-//import java.util.PriorityQueue;
 
 
 /**
@@ -68,61 +56,16 @@ import javax.inject.Inject;
  * 
  * @see ConfigurableQNetworkFactory
  */
-public class MadsQNetworkFactory extends QNetworkFactory {
-	private static final Logger log = Logger.getLogger( MadsQNetworkFactory.class ) ;
-
-	private EventsManager events ;
-	private Scenario scenario ;
-	// (vis needs network and may need population attributes and config; in consequence, makes sense to have scenario here. kai, apr'16)
-	protected NetsimEngineContext context;
-	protected NetsimInternalInterface netsimEngine ;
-
-	private FFFConfigGroup fffConfig;
-	@Inject MadsQNetworkFactory( EventsManager events, Scenario scenario ) {
-		this.events = events;
-		this.scenario = scenario;
-		this.fffConfig = ConfigUtils.addOrGetModule(scenario.getConfig(), FFFConfigGroup.class);
+public class MadsQNetworkFactoryWithQFFFNodes extends MadsQNetworkFactory{ //Extends the original and overrides a single method
+	
+	@Inject
+	MadsQNetworkFactoryWithQFFFNodes(EventsManager events, Scenario scenario) {
+		super(events, scenario);
 	}
-	@Override
-	void initializeFactory( AgentCounter agentCounter, MobsimTimer mobsimTimer, NetsimInternalInterface netsimEngine1 ) {	
-		this.netsimEngine = netsimEngine1;
-		double effectiveCellSize = scenario.getNetwork().getEffectiveCellSize() ;
-
-		SnapshotLinkWidthCalculator linkWidthCalculator = new SnapshotLinkWidthCalculator();
-		linkWidthCalculator.setLinkWidthForVis( scenario.getConfig().qsim().getLinkWidthForVis() );
-		linkWidthCalculator.setLaneWidth( scenario.getNetwork().getEffectiveLaneWidth() );
-
-		AbstractAgentSnapshotInfoBuilder agentSnapshotInfoBuilder = QNetsimEngine.createAgentSnapshotInfoBuilder( scenario, linkWidthCalculator );
-
-		context = new NetsimEngineContext( events, effectiveCellSize, agentCounter, agentSnapshotInfoBuilder, scenario.getConfig().qsim(), 
-				mobsimTimer, linkWidthCalculator );
-	}
-	@Override
-	QLinkI createNetsimLink(final Link link, final QNodeI toQueueNode) {
-		if ( link.getAllowedModes().contains( TransportMode.bike ) ) {
-			
-			Gbl.assertIf( link.getAllowedModes().size()==1 ); // not possible with multi-modal links! kai, oct'18
-			QLinkImpl.Builder linkBuilder = new QLinkImpl.Builder( context, netsimEngine );
-			linkBuilder.setLaneFactory( new QLinkImpl.LaneFactory(){
-				@Override public QLaneI createLane(AbstractQLink qLinkImpl ) {
-					Sublink[] sublinkArray = Sublink.createLinkArrayFromNumberOfPseudoLanes( link.getId().toString() + "_" + TransportMode.bike, 
-							(int) link.getNumberOfLanes(), link.getLength(), fffConfig.getLMax() );
-						return new QCycleLaneWithSublinks(sublinkArray, qLinkImpl, context, fffConfig.getCorrectionFactor() );
-				}
-			} );
-			return linkBuilder.build( link, toQueueNode );
-		} else {
-			
-			QLinkImpl.Builder linkBuilder = new QLinkImpl.Builder( context, netsimEngine );
-			return linkBuilder.build( link, toQueueNode );
-		}
-
-	}
-
 
 	@Override
 	QNodeI createNetsimNode(final Node node) {
-		QNodeImpl.Builder builder = new QNodeImpl.Builder( netsimEngine, context ) ;
+		QFFFNode.Builder builder = new QFFFNode.Builder( netsimEngine, context ) ;
 		return builder.build( node ) ;
 	}
 

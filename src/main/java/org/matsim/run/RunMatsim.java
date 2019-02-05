@@ -45,18 +45,22 @@ import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ActivityParams;
+import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ModeParams;
 import org.matsim.core.config.groups.QSimConfigGroup;
 import org.matsim.core.config.groups.StrategyConfigGroup.StrategySettings;
+import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.mobsim.qsim.AbstractQSimModule;
 import org.matsim.core.mobsim.qsim.qnetsimengine.MadsQNetworkFactory;
+import org.matsim.core.mobsim.qsim.qnetsimengine.MadsQNetworkFactoryWithQFFFNodes;
 import org.matsim.core.mobsim.qsim.qnetsimengine.MadsQVehicleFactory;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QNetworkFactory;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QVehicleFactory;
 import org.matsim.core.replanning.strategies.DefaultPlanStrategiesModule.DefaultSelector;
 import org.matsim.core.replanning.strategies.DefaultPlanStrategiesModule.DefaultStrategy;
 import org.matsim.core.scenario.ScenarioUtils;
+import org.matsim.core.scoring.ScoringFunctionPenalisingCongestedTimeFactory;
 import org.matsim.core.utils.io.IOUtils;
 import org.matsim.examples.ExamplesUtils;
 import org.matsim.vehicles.VehicleType;
@@ -77,12 +81,14 @@ public class RunMatsim {
 
 	public static void main(String[] args) {
 
-		String scenarioExample = "berlin";
+		String scenarioExample = "equil";
 		int lanesPerLink = 2;
+		double marketShareOfBicycles = 1.;
 		boolean useRandomActivityLocations = false;
 
 		Config config = createConfigFromExampleName(scenarioExample);		
-		Scenario scenario = createScenario(config, lanesPerLink, useRandomActivityLocations);
+
+		Scenario scenario = createScenario(config, lanesPerLink, useRandomActivityLocations, marketShareOfBicycles);
 		Controler controler = createControler(scenario);
 
 		controler.run();
@@ -119,7 +125,7 @@ public class RunMatsim {
 		config.planCalcScore().getOrCreateModeParams(TransportMode.access_walk);
 		config.planCalcScore().getOrCreateModeParams(TransportMode.egress_walk);
 
-		
+
 		config.strategy().clearStrategySettings();
 		StrategySettings reRoute = new StrategySettings();
 		reRoute.setStrategyName(DefaultStrategy.ReRoute);
@@ -131,6 +137,8 @@ public class RunMatsim {
 		config.strategy().addStrategySettings(bestScore);
 
 		config.travelTimeCalculator().setAnalyzedModes( TransportMode.car + "," + TransportMode.bike);
+		
+		config.travelTimeCalculator().setSeparateModes(true); //To get separate travel times for different modes on the same link..
 
 		config.qsim().setVehiclesSource( QSimConfigGroup.VehiclesSource.modeVehicleTypesFromVehiclesData );
 
@@ -142,15 +150,19 @@ public class RunMatsim {
 	public static Scenario addCyclistAttributes(Config config){
 		final Scenario scenario = ScenarioUtils.loadScenario( config ) ;
 		final long RANDOM_SEED = config.global().getRandomSeed();
+		final FFFConfigGroup fffConfig = ConfigUtils.addOrGetModule(config, FFFConfigGroup.class);
+		return addCyclistAttributes(scenario, fffConfig, RANDOM_SEED);
+	}
 
-		final Random speedRandom = new Random(RANDOM_SEED);
-		final Random headwayRandom = new Random(RANDOM_SEED + 341);
+	public static Scenario addCyclistAttributes(Scenario scenario, FFFConfigGroup fffConfig, long seed){
+
+		final Random speedRandom = new Random(seed);
+		final Random headwayRandom = new Random(seed + 341);
 		for(int i = 0; i <200; i++){
 			speedRandom.nextDouble();
 			headwayRandom.nextDouble();
 		}
 
-		final FFFConfigGroup fffConfig = ConfigUtils.addOrGetModule(config, FFFConfigGroup.class);
 		final Population population= scenario.getPopulation() ;
 
 		for ( Person person : population.getPersons().values() ) {
@@ -168,9 +180,10 @@ public class RunMatsim {
 		VehicleType type = new VehicleTypeImpl( Id.create( TransportMode.bike, VehicleType.class  ) ) ;
 		scenario.getVehicles().addVehicleType( type );
 		return scenario;
+
 	}
 
-	public static Scenario createScenario(Config config, int lanesPerLink, boolean useRandomActivityLocations){
+	public static Scenario createScenario(Config config, int lanesPerLink, boolean useRandomActivityLocations, double marketShare){
 
 
 		final Scenario scenario = ScenarioUtils.loadScenario( config ) ;
@@ -182,9 +195,12 @@ public class RunMatsim {
 
 		final Random speedRandom = new Random(RANDOM_SEED);
 		final Random headwayRandom = new Random(RANDOM_SEED + 341);
+		final Random modeRandom = new Random(RANDOM_SEED + 513);
+
 		for(int i = 0; i <200; i++){
 			speedRandom.nextDouble();
 			headwayRandom.nextDouble();
+			modeRandom.nextDouble();
 		}
 
 		final FFFConfigGroup fffConfig = ConfigUtils.addOrGetModule(config, FFFConfigGroup.class);
@@ -192,7 +208,7 @@ public class RunMatsim {
 
 		int linkInt = 0;
 		for ( Person person : population.getPersons().values() ) {
-			if ( true ) {  // Forcing all legs in scenario to be made by bicycle...
+			if (modeRandom.nextDouble() < marketShare){
 				{
 					double v_0 = uniformToJohnson(speedRandom.nextDouble(), fffConfig);
 					v_0 = Math.max(v_0, fffConfig.getMinimumAllowedDesiredSpeed());
@@ -311,6 +327,21 @@ public class RunMatsim {
 		return controler;
 	}
 
+	public static Controler createControlerWithRoW(Scenario scenario){
+		Controler controler = new Controler( scenario ) ;
+
+
+		controler.addOverridingQSimModule(new AbstractQSimModule() {
+			@Override
+			protected void configureQSim() {
+				this.bind( QNetworkFactory.class ).to( MadsQNetworkFactoryWithQFFFNodes.class );
+				this.bind( QVehicleFactory.class ).to( MadsQVehicleFactory.class ) ;
+			}
+
+		});
+
+		return controler;
+	}
 
 
 	/**

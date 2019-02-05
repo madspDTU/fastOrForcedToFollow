@@ -26,6 +26,8 @@ import org.matsim.facilities.MatsimFacilitiesReader;
 public class ExtractBicyclePopulation {
 
 	public static void main(String[] args) {
+		
+		boolean firstAdded = false;
 		Config config = ConfigUtils.createConfig();
 		Scenario scenario = ScenarioUtils.createScenario(config);
 		Population population = scenario.getPopulation();
@@ -51,6 +53,7 @@ public class ExtractBicyclePopulation {
 		fr.readFile("C:/workAtHome/Berlin/Data/facilities_CPH.xml.gz");
 		pr.readFile("C:/workAtHome/Berlin/Data/plans_CPH.xml.gz");
 		
+		int totalNumberOfTrips = 0;
 		
 		for(Person person : population.getPersons().values()){
 			Plan plan = person.getSelectedPlan();
@@ -63,6 +66,7 @@ public class ExtractBicyclePopulation {
 						keptElement[i-1] = true;
 						keptElement[i] = true;
 						keptElement[i+1] = true;
+						totalNumberOfTrips++;
 					} 
 				}
 				i++;
@@ -88,7 +92,7 @@ public class ExtractBicyclePopulation {
 				i++;
 			}
 			if(newPlan.getPlanElements().size() == 0){
-				//do nothing
+				//do nothing - the person has no bicycle trips, and thus not qualified for the new population.
 			} else {
 				
 				Person newPerson = pf.createPerson(person.getId());
@@ -96,7 +100,7 @@ public class ExtractBicyclePopulation {
 				newPerson.addPlan(newPlan);
 				newPerson.setSelectedPlan(newPlan);
 				newPopulation.addPerson(newPerson);
-				if(random.nextDouble() < 0.001){
+				if(random.nextDouble() < 0.0001){
 					newSmallPopulation.addPerson(newPerson);
 				}
 			}
@@ -104,6 +108,12 @@ public class ExtractBicyclePopulation {
 		
 		smallPW.write("C:/workAtHome/Berlin/Data/BicyclePlans_CPH_1percent.xml.gz");
 		pw.write("C:/workAtHome/Berlin/Data/BicyclePlans_CPH.xml.gz");
+		
+		//System.out.println("Total number of agents: " + newPopulation.getPersons().size());
+		//System.out.println("Total number of trips: " + totalNumberOfTrips);
+		//Total number of agents: 547085
+		//Total number of trips: 1082958
+		
 		
 	}
 	

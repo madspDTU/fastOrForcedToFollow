@@ -11,8 +11,10 @@ import org.matsim.api.core.v01.network.Network;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ActivityParams;
+import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
+import org.matsim.core.scoring.ScoringFunctionPenalisingCongestedTimeFactory;
 import org.matsim.vehicles.VehicleType;
 import org.matsim.vehicles.VehicleTypeImpl;
 
@@ -22,7 +24,7 @@ public class RunBicycleCopenhagen {
 		Config config = RunMatsim.createConfigFromExampleName("berlin");
 		config.controler().setOutputDirectory("C:/workAtHome/Berlin/Data/BicycleCopenhagen_1pct");
 		config.controler().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists);
-		config.controler().setLastIteration(25);
+		config.controler().setLastIteration(1);
 		final List<String> networkModes = Arrays.asList( new String[]{TransportMode.bike} );
 		config.qsim().setMainModes( networkModes );
 		config.plansCalcRoute().setNetworkModes(networkModes);
@@ -30,6 +32,7 @@ public class RunBicycleCopenhagen {
 		config.controler().setWritePlansInterval(5);
 		config.controler().setWriteEventsInterval(5);
 		config.controler().setCreateGraphs(true);
+		config.controler().setDumpDataAtEnd(true);
 		
 		config.global().setCoordinateSystem("EPSG:32632");   ///EPSG:32632 is WGS84 UTM32N
 
@@ -49,8 +52,7 @@ public class RunBicycleCopenhagen {
 
 
 
-
-
+	
 		config.network().setInputFile("C:/workAtHome/Berlin/Data/MATSimCopenhagenNetwork_BicyclesOnly.xml.gz");
 		config.plans().setInputFile("C:/workAtHome/Berlin/Data/BicyclePlans_CPH_1percent.xml.gz");
 
@@ -63,6 +65,13 @@ public class RunBicycleCopenhagen {
 
 
 		Controler controler = RunMatsim.createControler(scenario);
+		
+		controler.addOverridingModule( new AbstractModule(){
+			@Override public void install() {
+				this.bindScoringFunctionFactory().to( ScoringFunctionPenalisingCongestedTimeFactory.class ) ;
+			}
+		} );
+
 		try {			
 			controler.run();
 		} catch ( Exception ee ) {

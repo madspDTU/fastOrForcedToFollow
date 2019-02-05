@@ -100,6 +100,14 @@ public final class Cyclist {
 	public void resetCurrentLinkIndex(){
 		this.currentSublinkIndex = 0;
 	}
+	
+	/**
+	 * Used when the cyclist for some reason is skipping the queue and enters the link somewhere else than upstream (e.g. downstream)
+	 * @param newIndex The index of sublinks, where the cyclist is being set to.
+	 */
+	public void setCurrentLinkIndex(int newIndex){
+		this.currentSublinkIndex = newIndex;
+	}
 
 	public void incrementCurrentLinkIndex(){
 		this.currentSublinkIndex++;

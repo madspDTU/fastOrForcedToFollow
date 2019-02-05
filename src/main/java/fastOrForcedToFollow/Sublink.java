@@ -60,6 +60,9 @@ public class Sublink{
 	public boolean hasNoLeavingVehicles(){
 		return leavingVehicles.isEmpty();
 	}
+	public LinkedList<QVehicle> getLeavingVehicles(){
+		return this.leavingVehicles;
+	}
 	
 
 	/**

@@ -11,7 +11,7 @@
 
 /.settings/
 .classpath
-
+.project
 
 /net.xml
 /pop.xml

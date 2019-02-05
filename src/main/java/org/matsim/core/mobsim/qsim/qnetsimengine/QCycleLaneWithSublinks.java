@@ -219,10 +219,23 @@ class QCycleLaneWithSublinks implements QLaneI{
 
 		// ensuring that the first provisional earliest link exit cannot be before now.
 		double now = context.getSimTimer().getTimeOfDay() ;
-		((QCycle) veh).getCyclist().setTEarliestExit( now );
+		QCycle qCyc = (QCycle) veh;
+		
+		if(qCyc.getDriver().isWantingToArriveOnCurrentLink()){
+			qLinkImpl.letVehicleArrive(qCyc);
+			return;
+		}
+		Sublink lastSubLink = fffLinkArray[ fffLinkArray.length -1];
+		
+		// Essentially just skipping this first link (in order to be consistent with scorin mechanism)
+		lastSubLink.addVehicleToLeavingVehicles(qCyc );
+		lastSubLink.setLastTimeMoved(now);
+		qCyc.getCyclist().setTEarliestExit( now );
 
-		// just inserting them upstream.  For the time being, but might also be ok in the long run.
-		this.addFromUpstream( veh );
+		final QNodeI toNode = qLinkImpl.getToNode();
+		if ( toNode instanceof QNodeImpl ) {
+			((QNodeImpl) toNode).activateNode();
+		}
 	}
 
 	@Override public boolean isActive() {

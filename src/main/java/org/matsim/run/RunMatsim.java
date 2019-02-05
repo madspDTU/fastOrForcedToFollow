@@ -54,6 +54,7 @@ import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.mobsim.qsim.AbstractQSimModule;
 import org.matsim.core.mobsim.qsim.qnetsimengine.MadsQNetworkFactory;
 import org.matsim.core.mobsim.qsim.qnetsimengine.MadsQNetworkFactoryWithQFFFNodes;
+import org.matsim.core.mobsim.qsim.qnetsimengine.MadsQNetworkFactoryWithoutCongestion;
 import org.matsim.core.mobsim.qsim.qnetsimengine.MadsQVehicleFactory;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QNetworkFactory;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QVehicleFactory;

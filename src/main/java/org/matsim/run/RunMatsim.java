@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
 
@@ -60,6 +61,7 @@ import org.matsim.core.mobsim.qsim.qnetsimengine.MadsQNetworkFactoryWithoutConge
 import org.matsim.core.mobsim.qsim.qnetsimengine.MadsQVehicleFactory;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QNetworkFactory;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QVehicleFactory;
+import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.replanning.strategies.DefaultPlanStrategiesModule.DefaultSelector;
 import org.matsim.core.replanning.strategies.DefaultPlanStrategiesModule.DefaultStrategy;
 import org.matsim.core.scenario.ScenarioUtils;
@@ -138,7 +140,7 @@ public class RunMatsim {
 		bestScore.setWeight(0.8);
 		config.strategy().addStrategySettings(reRoute);
 		config.strategy().addStrategySettings(bestScore);
-	
+
 		config.travelTimeCalculator().setSeparateModes(true); //To get separate travel times for different modes on the same link..
 
 		config.qsim().setVehiclesSource( QSimConfigGroup.VehiclesSource.modeVehicleTypesFromVehiclesData );
@@ -150,6 +152,7 @@ public class RunMatsim {
 
 	public static Scenario addCyclistAttributes(Config config){
 		final Scenario scenario = ScenarioUtils.loadScenario( config ) ;
+		cleanBicycleNetwork(scenario.getNetwork());
 		final long RANDOM_SEED = config.global().getRandomSeed();
 		final FFFConfigGroup fffConfig = ConfigUtils.addOrGetModule(config, FFFConfigGroup.class);
 		return addCyclistAttributes(scenario, fffConfig, RANDOM_SEED);
@@ -157,7 +160,7 @@ public class RunMatsim {
 
 	public static Scenario addCyclistAttributes(Scenario scenario, FFFConfigGroup fffConfig, long seed){
 
-	
+
 		final Random speedRandom = new Random(seed);
 		final Random headwayRandom = new Random(seed + 341);
 		for(int i = 0; i <200; i++){
@@ -173,16 +176,16 @@ public class RunMatsim {
 			double z_c = headwayRandom.nextDouble(); 
 			double theta_0 = fffConfig.getTheta_0() + z_c * fffConfig.getZeta_0();
 			double theta_1 = fffConfig.getTheta_1() + z_c * fffConfig.getZeta_1();
-				
+
 			person.getAttributes().putAttribute(DESIRED_SPEED, v_0);
 			person.getAttributes().putAttribute(HEADWAY_DISTANCE_INTERCEPT, theta_0);
 			person.getAttributes().putAttribute(HEADWAY_DISTANCE_SLOPE, theta_1);
 			person.getAttributes().putAttribute(BICYCLE_LENGTH, fffConfig.getLambda_c());
-			
+
 		}
 
 		VehicleType type = new VehicleTypeImpl( Id.create( TransportMode.bike, VehicleType.class  ) ) ;
-		
+
 		scenario.getVehicles().addVehicleType( type );
 		return scenario;
 
@@ -347,7 +350,7 @@ public class RunMatsim {
 
 		return controler;
 	}
-	
+
 	public static Controler createControlerWithRoW(Scenario scenario){
 		Controler controler = new Controler( scenario ) ;
 
@@ -437,6 +440,179 @@ public class RunMatsim {
 	}
 
 
+	private static void removeDuplicateLinks(Network network){
+
+		for(String mode : Arrays.asList(TransportMode.car, TransportMode.bike)){
+			System.out.print("Starting to remove duplicate links network...");
+			LinkedList<Link> linksToBeRemoved = new LinkedList<Link>();
+			for(Node node : network.getNodes().values()){
+				HashMap<Node, Link> outNodes = new HashMap<Node, Link>();
+				for(Link link : node.getOutLinks().values()){
+					if(link.getAllowedModes().contains(mode)){
+						if(!outNodes.containsKey(link.getToNode())){
+							outNodes.put(link.getToNode(),link);
+						} else {
+							if(link.getNumberOfLanes() > outNodes.get(link.getToNode()).getNumberOfLanes()){
+								linksToBeRemoved.add(outNodes.get(link.getToNode()));
+								outNodes.put(link.getToNode(), link);
+							} else {
+								linksToBeRemoved.add(link);
+								if(mode.equals(TransportMode.car)){
+									System.out.println("Car");
+								}
+							}
+						}
+					}
+				}
+			}
+			int counter = 0;
+			for(Link link : linksToBeRemoved){
+				network.removeLink(link.getId());
+				counter++;
+			}
+			System.out.println(counter + " duplicate " + mode + " links removed from the network");
+		}
+	}
+
+	private static void cleanBicycleNetwork(Network network){
+		removeRedundantNodes(network);
+		removeDuplicateLinks(network);
+	}
+
+	private static void removeRedundantNodes(Network network){
+		System.out.print("Starting to remove redundant nodes...");
+
+		//Unimodal nodes...
+		LinkedList<Node> nodesToBeRemoved = new LinkedList<Node>();
+	
+		for(Node node : network.getNodes().values()){
+			if(node.getInLinks().size() == 1 && node.getOutLinks().size() ==1){
+				Link inLink = null;
+				Link outLink = null;
+				for(Link link : node.getInLinks().values()){
+					inLink = link;
+				}
+				for(Link link : node.getOutLinks().values()){
+					outLink = link;
+				}
+				if(inLink.getFromNode() != outLink.getToNode() &&
+						inLink.getCapacity() == outLink.getCapacity() &&
+						inLink.getFreespeed() == outLink.getFreespeed() &&
+						inLink.getNumberOfLanes() == outLink.getNumberOfLanes() &&
+						inLink.getAllowedModes() == outLink.getAllowedModes()){
+					nodesToBeRemoved.addLast(node);		
+				}
+			}
+		}
+		int counter = 0;
+		for(Node node : nodesToBeRemoved){
+			Link inLink = null;
+			Link outLink = null;
+			for(Link link : node.getInLinks().values()){
+				inLink = link;
+			}
+			for(Link link : node.getOutLinks().values()){
+				outLink = link;
+			}
+			
+			Node outNode = outLink.getToNode();
+			double length = inLink.getLength() + outLink.getLength();
+
+			inLink.setToNode(outNode);
+			inLink.setLength(length);
+			
+			node.removeInLink(inLink.getId());
+			node.removeOutLink(outLink.getId());
+			network.removeNode(node.getId());
+			outNode.addInLink(inLink);
+			outNode.removeInLink(outLink.getId());
+			network.removeLink(outLink.getId());
+			
+			counter++;
+		}
+
+		System.out.println(counter + " unnecessary unimodal nodes removed from the network");
+
+		//Bimodal nodes...
+		nodesToBeRemoved = new LinkedList<Node>();
+	
+
+		for(Node node : network.getNodes().values()){
+			if(node.getInLinks().size() == 2 && node.getOutLinks().size() == 2){
+				Link carInLink = null;
+				Link carOutLink = null;
+				Link bicycleInLink = null;
+				Link bicycleOutLink = null;
+				for(Link link : node.getInLinks().values()){
+					if(link.getAllowedModes().contains(TransportMode.car)){
+						carInLink = link;
+					} else if(link.getAllowedModes().contains(TransportMode.bike)){
+						bicycleInLink = link;
+					}
+				}
+				for(Link link : node.getOutLinks().values()){
+					if(link.getAllowedModes().contains(TransportMode.car)){
+						carOutLink = link;
+					} else if(link.getAllowedModes().contains(TransportMode.bike)){
+						bicycleOutLink = link;
+					}
+				}
+				if(carInLink != null && carOutLink != null && bicycleInLink != null && bicycleOutLink != null){
+					//Check of they have the same attributes per mode!!!;
+
+					if(carInLink.getCapacity() == carOutLink.getCapacity() &&
+							carInLink.getFreespeed() == carOutLink.getFreespeed() &&
+							carInLink.getNumberOfLanes() == carOutLink.getNumberOfLanes() &&
+							bicycleInLink.getCapacity() == bicycleOutLink.getCapacity() &&
+							bicycleInLink.getFreespeed() == bicycleOutLink.getFreespeed() &&
+							bicycleInLink.getNumberOfLanes() == bicycleOutLink.getNumberOfLanes()){
+						nodesToBeRemoved.addLast(node);
+					}
+				}
+			}
+		}
+		counter = 0;
+		for(Node node : nodesToBeRemoved){
+			Link carInLink = null;
+			Link carOutLink = null;
+			Link bicycleInLink = null;
+			Link bicycleOutLink = null;
+			for(Link link : node.getInLinks().values()){
+				if(link.getAllowedModes().contains(TransportMode.car)){
+					carInLink = link;
+				} else if(link.getAllowedModes().contains(TransportMode.bike)){
+					bicycleInLink = link;
+				}
+			}
+			for(Link link : node.getOutLinks().values()){
+				if(link.getAllowedModes().contains(TransportMode.car)){
+					carOutLink = link;
+				} else if(link.getAllowedModes().contains(TransportMode.bike)){
+					bicycleOutLink = link;
+				}
+			}
+			
+			Node outNode = carOutLink.getToNode();
+			double carLength = carInLink.getLength() + carOutLink.getLength();
+			double bicycleLength = bicycleInLink.getLength() + bicycleOutLink.getLength();
+
+			network.removeLink(carOutLink.getId());
+			network.removeLink(bicycleOutLink.getId());
+
+			carInLink.setToNode(outNode);
+			carInLink.setLength(carLength);
+			bicycleInLink.setToNode(outNode);
+			bicycleInLink.setLength(bicycleLength);
+
+			node.removeInLink(carInLink.getId());
+			node.removeInLink(bicycleInLink.getId());
+			outNode.addInLink(carInLink);
+			outNode.addInLink(bicycleInLink);
+			network.removeNode(node.getId());
+			counter++;
+		}
+		System.out.println(counter + " redundant bimodal nodes removed from the network");
+	}
 }
 
 

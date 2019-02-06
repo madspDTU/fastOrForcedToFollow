@@ -278,16 +278,24 @@ final class QFFFNode implements QNodeI {
 		for(Link link : this.getNode().getInLinks().values()){
 			double theta = QFFFNodeUtils.calculateTheta(link);
 			if(link.getAllowedModes().contains(TransportMode.car)){
+				Gbl.assertIf(!carInThetaMap.containsKey(theta));
 				carInThetaMap.put(theta, link);
 			} else if(link.getAllowedModes().contains(TransportMode.bike)){
+				if(bicycleInThetaMap.containsKey(theta)){
+					System.out.println(bicycleInThetaMap.get(theta).getFromNode().getId());
+					System.out.println(link.getFromNode().getId());
+				}
+				Gbl.assertIf(!bicycleInThetaMap.containsKey(theta));
 				bicycleInThetaMap.put(theta, link);
 			}
 		}
 		for(Link link : this.getNode().getOutLinks().values()){
 			double theta = QFFFNodeUtils.calculateInverseTheta(link);
 			if(link.getAllowedModes().contains(TransportMode.car)){
+				Gbl.assertIf(!carOutThetaMap.containsKey(theta));
 				carOutThetaMap.put(theta, link);
 			} else if(link.getAllowedModes().contains(TransportMode.bike)){
+				Gbl.assertIf(!bicycleOutThetaMap.containsKey(theta));
 				bicycleOutThetaMap.put(theta, link);
 			}
 		}

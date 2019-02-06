@@ -46,6 +46,23 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode{
 				while(! lane.isNotOfferingVehicle()){	
 					QVehicle veh = lane.getFirstVehicle();
 					Id<Link> nextLinkId = veh.getDriver().chooseNextLinkId();
+					if(!bicycleOutTransformations.containsKey(nextLinkId)){
+						System.out.println(qNode.getNode().getId() + " N L " + nextLinkId + " " + inLink.getLink().getId() + " From");
+						for(Id<Link> id : bicycleOutTransformations.keySet()){
+							System.out.println(bicycleOutTransformations.get(id) + " is " + id);
+						}
+						for(Link link : this.qNode.getNode().getOutLinks().values()){
+							System.out.println("Outlink: " + link.getId());
+						}
+						for(Link link : this.qNode.getNode().getInLinks().values()){
+							System.out.println("Inlink: " + link.getId());
+						}
+						
+
+						System.out.println("Simulation endds prematurely");
+						System.exit(-1);
+					}
+
 					int outDirection = bicycleOutTransformations.get(nextLinkId);
 					int t = bicycleTurns[inDirection][outDirection];
 					if(t != outDirection){
@@ -195,7 +212,7 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode{
 			this.inPriority = entry.getValue().getFirst();	
 
 			entry = capacities.lastEntry();
-			
+
 			if(entry.getValue().size() == 1){
 				this.outPriority = entry.getValue().getFirst();
 			} else { // size > 1
@@ -213,23 +230,23 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode{
 						this.outPriority = ((this.inPriority + 1) % 4);
 					}
 				} else if(carInLinks.length == 3) {
-		
+
 					//Seems to be the optimal way to do it.
 					int guess = (this.inPriority + 1) % 3;
 					int other = (this.inPriority + 2) % 3;
 					boolean guessInCar = carInLinks[guess] != null;
 					boolean guessInBicycle = bicycleInLinks[guess] != null;
-					
+
 					boolean guessOutCar = carOutTransformations.containsValue(guess);
 					boolean guessOutBicycle = bicycleOutTransformations.containsValue(guess);
-					
+
 					boolean otherInCar = carInLinks[other] != null;
 					boolean otherInBicycle = bicycleInLinks[other] != null;
-					
+
 					boolean otherOutCar = carOutTransformations.containsValue(other);
 					boolean otherOutBicycle = bicycleOutTransformations.containsValue(other);
 
-					
+
 					if(priorityInCar || priorityOutCar){
 						if(priorityInCar  && priorityOutCar){
 							if(guessOutCar){
@@ -278,7 +295,7 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode{
 								this.outPriority = guess;
 							}
 						} 
-					
+
 					} else {
 						System.err.println("Fatal error, large capacity has no valid links...");
 					}
@@ -318,7 +335,7 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode{
 			} else if(carInLinks.length >= 5){
 
 				if(cumCount == 3){
-					
+
 				}
 				System.out.println(carInLinks.length + "   " + cumCount);
 
@@ -329,7 +346,7 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode{
 				for(int i : capacities.pollLastEntry().getValue()){
 					System.out.println("cCap: " + (carInLinks[i] != null) + ", " + carOutTransformations.containsValue(i));
 					System.out.println("bCap: " + (bicycleInLinks[i] != null) + ", " + carOutTransformations.containsValue(i));
-					
+
 				}
 				System.err.println(cumCount + "," + carInLinks.length + ": no priority should be used in this case...");
 

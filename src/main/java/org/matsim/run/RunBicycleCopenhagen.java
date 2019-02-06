@@ -2,6 +2,7 @@ package org.matsim.run;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -9,6 +10,7 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Network;
+import org.matsim.api.core.v01.population.Person;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ActivityParams;
@@ -25,14 +27,17 @@ import org.matsim.vehicles.VehicleTypeImpl;
 
 public class RunBicycleCopenhagen {
 
-	public final int numberOfThreads = 20;
-	public final static String outputBaseDir = "/work1/s103232/ABMTRANS2019/"; //With final /
+	//public final int numberOfThreads = 20;
+	public final int numberOfThreads = 2;
+	
+	//public final static String outputBaseDir = "/work1/s103232/ABMTRANS2019/"; //With final /
 	//public final static String outputBaseDir = "./output/ABMTRANS2019/"; //With final / 
+	public final static String outputBaseDir = "C:/Users/madsp/git/fastOrForcedToFollowMaven/output/Copenhagen/";
 	
 	//public final static String inputBaseDir = "./input/";  //With final /
-	public final static String inputBaseDir = "/zhome/81/e/64390/MATSim/ABMTRANS2019/input/"; //With final /
+	//public final static String inputBaseDir = "/zhome/81/e/64390/MATSim/ABMTRANS2019/input/"; //With final /
+	public final static String inputBaseDir = "C:/Users/madsp/git/fastOrForcedToFollowMaven/input/";	
 		
-	
 	public static void main(String[] args) throws IOException{
 		boolean congestion = true;
 		String size = "small";
@@ -70,7 +75,6 @@ public class RunBicycleCopenhagen {
 		final List<String> networkModes = Arrays.asList( new String[]{TransportMode.bike} );
 		config.qsim().setMainModes( networkModes );
 		config.plansCalcRoute().setNetworkModes(networkModes);
-		config.travelTimeCalculator().setAnalyzedModes( TransportMode.bike);
 		config.controler().setWritePlansInterval(config.controler().getLastIteration()+1);
 		config.controler().setWriteEventsInterval(config.controler().getLastIteration()+1);
 		config.controler().setCreateGraphs(true);
@@ -147,14 +151,21 @@ public class RunBicycleCopenhagen {
 		//Possible changes to config
 		FFFConfigGroup fffConfig = ConfigUtils.addOrGetModule(config, FFFConfigGroup.class);
 		fffConfig.setLMax(60.);
-
+		
 		Scenario scenario = RunMatsim.addCyclistAttributes(config);
-
+		
+		LinkedList<Id<Person>> persons = new LinkedList<Id<Person>>();
+		for(Id<Person> personId : scenario.getPopulation().getPersons().keySet()){
+			persons.add(personId);
+		}
+		for(Id<Person> personId : persons){
+			scenario.getPopulation().removePerson(personId);
+		}
 
 		Controler controler;
 		if(congestion){
-			controler = RunMatsim.createControler(scenario);
-			// controler = RunMatsim.createControlerWithRoW(scenario);	
+			// controler = RunMatsim.createControler(scenario);
+			 controler = RunMatsim.createControlerWithRoW(scenario);	
 		} else {
 			controler = RunMatsim.createControlerWithoutCongestion(scenario);
 		}

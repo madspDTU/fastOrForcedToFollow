@@ -49,6 +49,7 @@ import org.matsim.core.mobsim.qsim.qnetsimengine.QNodeI;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QVehicle;
 import org.matsim.core.mobsim.qsim.qnetsimengine.TurnAcceptanceLogic;
 import org.matsim.core.mobsim.qsim.qnetsimengine.TurnAcceptanceLogic.AcceptTurn;
+import org.matsim.run.RunBicycleCopenhagen;
 
 /**
  * Represents a node in the QSimulation.
@@ -122,7 +123,7 @@ final class QFFFNode implements QNodeI {
 		 * We expect the value to be false, i.e. the node is de-activated. If this is
 		 * true, the value is changed to true and the activator is informed.
 		 */
-		
+
 		if (this.active.compareAndSet(false, true)) {
 			this.activator.registerNodeAsActive(this);
 		}
@@ -294,7 +295,6 @@ final class QFFFNode implements QNodeI {
 		TreeMap<Double, LinkedList<Link>> bundleMap = createBundleMap(bicycleOutThetaMap, carOutThetaMap, carInThetaMap,
 				bicycleInThetaMap);
 
-		//if(bundleMap.size() == 3 || bundleMap.size() == 4){ // Determine if capacities are different
 		if(bundleMap.size() >= 3){ // Determine if capacities are different: We now allow larger intersection types.
 
 			TreeMap<Double, LinkedList<Integer>> carCapacities = new TreeMap<Double, LinkedList<Integer>>();
@@ -302,8 +302,13 @@ final class QFFFNode implements QNodeI {
 			calculateCapacities(bundleMap, carCapacities, bicycleCapacities);
 
 
-			boolean areCarCapacitiesEqual = carCapacities.tailMap(Double.MIN_VALUE).size() == 1;
-			boolean areBicycleCapacitiesEqual =	 bicycleCapacities.tailMap(Double.MIN_VALUE).size() == 1;
+			boolean areCarCapacitiesEqual = carCapacities.tailMap(Double.MIN_VALUE).size() <= 1 &&
+					!(carCapacities.tailMap(Double.MIN_VALUE).size() == 1 &&  
+					carCapacities.ceilingEntry(Double.MIN_VALUE).getValue().size() <= 1);
+			boolean areBicycleCapacitiesEqual =	 bicycleCapacities.tailMap(Double.MIN_VALUE).size() <= 1 &&
+					!(bicycleCapacities.tailMap(Double.MIN_VALUE).size() == 1 &&  
+					bicycleCapacities.ceilingEntry(Double.MIN_VALUE).getValue().size() <= 1);
+			
 
 
 			if(areBicycleCapacitiesEqual && areCarCapacitiesEqual){
@@ -315,20 +320,15 @@ final class QFFFNode implements QNodeI {
 					this.nodeType = new QFFFRightPriorityNode(this, bundleMap, network);
 				} 
 			} else {
-				if(areCarCapacitiesEqual && !areBicycleCapacitiesEqual){
-					if(bicycleCapacities.lastEntry().getValue().size() >= 4){
-						this.nodeType = new QFFFAntiPriorityNode(this, bundleMap, network, bicycleCapacities);
-					} else {
-						this.nodeType = new QFFFNodeDirectedPriorityNode(this, bundleMap, network, bicycleCapacities);
-						//	this.nodeType = new QNodeRightPriorityIntersection(this, bundleMap, network);
-					}
-				} else if(!areCarCapacitiesEqual && areBicycleCapacitiesEqual) {
-					if(carCapacities.lastEntry().getValue().size() >= 4){
-						this.nodeType = new QFFFAntiPriorityNode(this, bundleMap, network, carCapacities);
-					} else {
-						this.nodeType = new QFFFNodeDirectedPriorityNode(this, bundleMap, network, carCapacities);
-						//	this.nodeType = new QNodeRightPriorityIntersection(this, bundleMap, network);
-					}
+				TreeMap<Double, LinkedList<Integer>> capacities = carCapacities;
+				if(areCarCapacitiesEqual){
+					capacities = bicycleCapacities;
+				}
+				if(capacities.lastEntry().getValue().size() >= 4 ||
+						(capacities.lastEntry().getValue().size() >= 3 && bundleMap.size() > 4) ){
+					this.nodeType = new QFFFAntiPriorityNode(this, bundleMap, network, capacities);
+				} else {
+					this.nodeType = new QFFFNodeDirectedPriorityNode(this, bundleMap, network, capacities);
 				}
 			}
 		} else {
@@ -397,14 +397,14 @@ final class QFFFNode implements QNodeI {
 		// -->
 		//		network.simEngine.getMobsim().getEventsManager().processEvent(new LaneLeaveEvent(now, veh.getId(), currentLinkId, fromLane.getId()));
 
-			this.context.getEventsManager().processEvent(new LinkLeaveEvent(now, veh.getId(), currentLinkId));
+		this.context.getEventsManager().processEvent(new LinkLeaveEvent(now, veh.getId(), currentLinkId));
 		// <--
 
 		veh.getDriver().notifyMoveOverNode( nextLinkId );
 
 		// -->
-			this.context.getEventsManager().processEvent(new LinkEnterEvent(now, veh.getId(), nextLinkId ));
-		
+		this.context.getEventsManager().processEvent(new LinkEnterEvent(now, veh.getId(), nextLinkId ));
+
 		// <--
 		nextQueueLane.addFromUpstream(veh);
 	}

@@ -21,6 +21,7 @@ package org.matsim.run;
 import java.math.BigInteger;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -39,6 +40,7 @@ import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.Activity;
 import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.Person;
+import org.matsim.api.core.v01.population.Plan;
 import org.matsim.api.core.v01.population.PlanElement;
 import org.matsim.api.core.v01.population.Population;
 import org.matsim.core.config.Config;
@@ -136,9 +138,7 @@ public class RunMatsim {
 		bestScore.setWeight(0.8);
 		config.strategy().addStrategySettings(reRoute);
 		config.strategy().addStrategySettings(bestScore);
-
-		config.travelTimeCalculator().setAnalyzedModes( TransportMode.car + "," + TransportMode.bike);
-		
+	
 		config.travelTimeCalculator().setSeparateModes(true); //To get separate travel times for different modes on the same link..
 
 		config.qsim().setVehiclesSource( QSimConfigGroup.VehiclesSource.modeVehicleTypesFromVehiclesData );
@@ -157,6 +157,7 @@ public class RunMatsim {
 
 	public static Scenario addCyclistAttributes(Scenario scenario, FFFConfigGroup fffConfig, long seed){
 
+	
 		final Random speedRandom = new Random(seed);
 		final Random headwayRandom = new Random(seed + 341);
 		for(int i = 0; i <200; i++){
@@ -172,13 +173,16 @@ public class RunMatsim {
 			double z_c = headwayRandom.nextDouble(); 
 			double theta_0 = fffConfig.getTheta_0() + z_c * fffConfig.getZeta_0();
 			double theta_1 = fffConfig.getTheta_1() + z_c * fffConfig.getZeta_1();
+				
 			person.getAttributes().putAttribute(DESIRED_SPEED, v_0);
 			person.getAttributes().putAttribute(HEADWAY_DISTANCE_INTERCEPT, theta_0);
 			person.getAttributes().putAttribute(HEADWAY_DISTANCE_SLOPE, theta_1);
 			person.getAttributes().putAttribute(BICYCLE_LENGTH, fffConfig.getLambda_c());
+			
 		}
 
 		VehicleType type = new VehicleTypeImpl( Id.create( TransportMode.bike, VehicleType.class  ) ) ;
+		
 		scenario.getVehicles().addVehicleType( type );
 		return scenario;
 

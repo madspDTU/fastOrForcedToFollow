@@ -68,7 +68,7 @@ import javax.inject.Inject;
  * 
  * @see ConfigurableQNetworkFactory
  */
-public class MadsQNetworkFactory extends QNetworkFactory {
+public class MadsQNetworkFactory implements QNetworkFactory {
 	private static final Logger log = Logger.getLogger( MadsQNetworkFactory.class ) ;
 
 	private EventsManager events ;
@@ -83,8 +83,9 @@ public class MadsQNetworkFactory extends QNetworkFactory {
 		this.scenario = scenario;
 		this.fffConfig = ConfigUtils.addOrGetModule(scenario.getConfig(), FFFConfigGroup.class);
 	}
+
 	@Override
-	void initializeFactory( AgentCounter agentCounter, MobsimTimer mobsimTimer, NetsimInternalInterface netsimEngine1 ) {	
+	public void initializeFactory( AgentCounter agentCounter, MobsimTimer mobsimTimer, NetsimInternalInterface netsimEngine1 ) {	
 		this.netsimEngine = netsimEngine1;
 		double effectiveCellSize = scenario.getNetwork().getEffectiveCellSize() ;
 
@@ -98,7 +99,7 @@ public class MadsQNetworkFactory extends QNetworkFactory {
 				mobsimTimer, linkWidthCalculator );
 	}
 	@Override
-	QLinkI createNetsimLink(final Link link, final QNodeI toQueueNode) {
+	public QLinkI createNetsimLink(final Link link, final QNodeI toQueueNode) {
 		if ( link.getAllowedModes().contains( TransportMode.bike ) ) {
 			
 			Gbl.assertIf( link.getAllowedModes().size()==1 ); // not possible with multi-modal links! kai, oct'18
@@ -119,9 +120,8 @@ public class MadsQNetworkFactory extends QNetworkFactory {
 
 	}
 
-
 	@Override
-	QNodeI createNetsimNode(final Node node) {
+	public QNodeI createNetsimNode(final Node node) {
 		QNodeImpl.Builder builder = new QNodeImpl.Builder( netsimEngine, context ) ;
 		return builder.build( node ) ;
 	}

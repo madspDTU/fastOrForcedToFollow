@@ -67,7 +67,7 @@ import javax.inject.Inject;
  * 
  * @see ConfigurableQNetworkFactory
  */
-public final class MadsQNetworkFactoryWithoutCongestion extends QNetworkFactory {
+public final class MadsQNetworkFactoryWithoutCongestion implements QNetworkFactory {
 	private static final Logger log = Logger.getLogger( MadsQNetworkFactoryWithoutCongestion.class ) ;
 
 	private EventsManager events ;
@@ -83,6 +83,7 @@ public final class MadsQNetworkFactoryWithoutCongestion extends QNetworkFactory 
 		this.fffConfig = ConfigUtils.addOrGetModule(scenario.getConfig(), FFFConfigGroup.class);
 	}
 	@Override
+	public
 	void initializeFactory( AgentCounter agentCounter, MobsimTimer mobsimTimer, NetsimInternalInterface netsimEngine1 ) {	
 		this.netsimEngine = netsimEngine1;
 		double effectiveCellSize = scenario.getNetwork().getEffectiveCellSize() ;
@@ -97,6 +98,7 @@ public final class MadsQNetworkFactoryWithoutCongestion extends QNetworkFactory 
 				mobsimTimer, linkWidthCalculator );
 	}
 	@Override
+	public
 	QLinkI createNetsimLink(final Link link, final QNodeI toQueueNode) {
 		if ( link.getAllowedModes().contains( TransportMode.bike ) ) {
 			
@@ -118,6 +120,7 @@ public final class MadsQNetworkFactoryWithoutCongestion extends QNetworkFactory 
 
 
 	@Override
+	public
 	QNodeI createNetsimNode(final Node node) {
 		QNodeImpl.Builder builder = new QNodeImpl.Builder( netsimEngine, context ) ;
 		return builder.build( node ) ;

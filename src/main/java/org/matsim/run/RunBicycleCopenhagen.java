@@ -8,6 +8,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
@@ -33,7 +34,7 @@ import org.matsim.vehicles.VehicleTypeImpl;
 public class RunBicycleCopenhagen {
 
 	//public final int numberOfThreads = 20;
-	public final static int numberOfThreads = 2;
+	public final static int numberOfThreads = 4;
 
 	//public final static String outputBaseDir = "/work1/s103232/ABMTRANS2019/"; //With final /
 	//public final static String outputBaseDir = "./output/ABMTRANS2019/"; //With final / 
@@ -46,7 +47,7 @@ public class RunBicycleCopenhagen {
 	public static void main(String[] args) throws IOException{
 		boolean congestion = true;
 		String size = "small";
-		int lastIteration = 200;
+		int lastIteration = 1;
 		boolean oneLane = false;
 		if(args.length > 0){
 			size = args[0];
@@ -158,7 +159,8 @@ public class RunBicycleCopenhagen {
 		fffConfig.setLMax(60.);
 
 		Scenario scenario = RunMatsim.addCyclistAttributes(config);
-
+		removeSouthWesternPart(scenario.getNetwork());
+		RunMatsim.reducePopulationToN(500, scenario.getPopulation());
 
 
 		Controler controler;
@@ -179,7 +181,7 @@ public class RunBicycleCopenhagen {
 		} catch ( Exception ee ) {
 			ee.printStackTrace();
 		}
-
+/*
 
 		if(oneLane){
 			size += "OneLane";
@@ -191,8 +193,99 @@ public class RunBicycleCopenhagen {
 		if(lastIteration != 0){
 			ConstructSpeedFlowsFromCopenhagen.main(new String[]{size, "0"});	//PostProcessing first iteration
 		}
+		*/
 
 	}
 
 
+	
+
+	private static void removeDuplicateLinks(Network network){
+
+		for(String mode : Arrays.asList(TransportMode.car, TransportMode.bike)){
+			System.out.print("Starting to remove duplicate links network...");
+			LinkedList<Link> linksToBeRemoved = new LinkedList<Link>();
+			for(Node node : network.getNodes().values()){
+				HashMap<Node, Link> outNodes = new HashMap<Node, Link>();
+				for(Link link : node.getOutLinks().values()){
+					if(link.getAllowedModes().contains(mode)){
+						if(!outNodes.containsKey(link.getToNode())){
+							outNodes.put(link.getToNode(),link);
+						} else {
+							if(link.getNumberOfLanes() > outNodes.get(link.getToNode()).getNumberOfLanes()){
+								linksToBeRemoved.add(outNodes.get(link.getToNode()));
+								outNodes.put(link.getToNode(), link);
+							} else {
+								linksToBeRemoved.add(link);
+								if(mode.equals(TransportMode.car)){
+									System.out.println("Car");
+								}
+							}
+						}
+					}
+				}
+			}
+			int counter = 0;
+			for(Link link : linksToBeRemoved){
+				network.removeLink(link.getId());
+				counter++;
+			}
+			System.out.println(counter + " duplicate " + mode + " links removed from the network");
+		}
+	}
+
+
+
+	private static void removeSouthWesternPart(Network network) {
+		// Based on http://www.ytechie.com/2009/08/determine-if-a-point-is-contained-within-a-polygon/  
+		Coord[] vertices = getVertices();
+		int linksBefore = network.getLinks().size();
+		LinkedList<Node> nodesToBeRemoved = new LinkedList<Node>();
+		for(Node node : network.getNodes().values()){
+			if(!isCoordInsidePolygon(node.getCoord(), vertices)){
+				nodesToBeRemoved.add(node);
+			}
+		}
+		for(Node node : nodesToBeRemoved){
+			network.removeNode(node.getId());
+		}
+		System.out.println(nodesToBeRemoved.size() + " nodes and " + (linksBefore - network.getLinks().size())
+				+ " links removed from South-Western part...");
+	}
+
+	private static boolean isCoordInsidePolygon(Coord c, Coord[] v){
+		int j  = v.length -1;
+		boolean oddNodes = false;
+		for(int i = 0; i< v.length; i++){
+			if((v[i].getY() < c.getY() && v[j].getY() >= c.getY()) ||
+					v[j].getY() < c.getY() && v[i].getY() >= c.getY() ){
+				if(v[i].getX() + (c.getY() - v[i].getY()) / (v[j].getY() - v[i].getY()) * (v[j].getX() - v[i].getX()) < c.getX() ){
+					oddNodes = !oddNodes;
+				}
+			}
+			j = i;
+		}
+		return oddNodes;
+	}
+
+
+
+	private static Coord[] getVertices() {
+		LinkedList<Coord> coords = new LinkedList<Coord>();
+		coords.addLast(new Coord(705928.346681,	6125917.168974)); // Vemmetofte Strand
+		coords.addLast(new Coord(680313.490601,	6147920.287373)); // Adamshøj
+		coords.addLast(new Coord(672214.258594,	6172492.227007)); // Vipperød
+		coords.addLast(new Coord(675429.669649,	6259160.285312)); // Mellem Anholt og Tisvilde
+		coords.addLast(new Coord(728256.015736,	6216505.994517)); // Mellem Helsingør og Helsingborg
+		coords.addLast(new Coord(740100.750946,	6118474.660517)); // Mellem Møn og Trelleborg
+		
+		Coord[] output = new Coord[coords.size()];
+		for(int i = 0; i < output.length; i++){
+			output[i] = coords.pollFirst();
+		}
+		return output;
+	}
+
+
+	
 }

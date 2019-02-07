@@ -31,6 +31,7 @@ import java.util.Random;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
@@ -479,12 +480,15 @@ public class RunMatsim {
 		removeDuplicateLinks(network);
 	}
 
+
+
+
 	private static void removeRedundantNodes(Network network){
 		System.out.print("Starting to remove redundant nodes...");
 
 		//Unimodal nodes...
 		LinkedList<Node> nodesToBeRemoved = new LinkedList<Node>();
-	
+
 		for(Node node : network.getNodes().values()){
 			if(node.getInLinks().size() == 1 && node.getOutLinks().size() ==1){
 				Link inLink = null;
@@ -514,20 +518,20 @@ public class RunMatsim {
 			for(Link link : node.getOutLinks().values()){
 				outLink = link;
 			}
-			
+
 			Node outNode = outLink.getToNode();
 			double length = inLink.getLength() + outLink.getLength();
 
 			inLink.setToNode(outNode);
 			inLink.setLength(length);
-			
+
 			node.removeInLink(inLink.getId());
 			node.removeOutLink(outLink.getId());
 			network.removeNode(node.getId());
 			outNode.addInLink(inLink);
 			outNode.removeInLink(outLink.getId());
 			network.removeLink(outLink.getId());
-			
+
 			counter++;
 		}
 
@@ -535,7 +539,7 @@ public class RunMatsim {
 
 		//Bimodal nodes...
 		nodesToBeRemoved = new LinkedList<Node>();
-	
+
 
 		for(Node node : network.getNodes().values()){
 			if(node.getInLinks().size() == 2 && node.getOutLinks().size() == 2){
@@ -591,7 +595,7 @@ public class RunMatsim {
 					bicycleOutLink = link;
 				}
 			}
-			
+
 			Node outNode = carOutLink.getToNode();
 			double carLength = carInLink.getLength() + carOutLink.getLength();
 			double bicycleLength = bicycleInLink.getLength() + bicycleOutLink.getLength();
@@ -612,6 +616,20 @@ public class RunMatsim {
 			counter++;
 		}
 		System.out.println(counter + " redundant bimodal nodes removed from the network");
+	}
+	
+	public static void reducePopulationToN(int n, Population population){
+		LinkedList<Person> personsToRemove = new LinkedList<Person>();
+		for(Person person : population.getPersons().values()){
+			if(n >0){
+				n--;
+			} else {
+				personsToRemove.add(person);
+			}
+		}
+		for(Person person : personsToRemove){
+			population.removePerson(person.getId());
+		}
 	}
 }
 

@@ -10,6 +10,9 @@ import org.matsim.core.mobsim.framework.MobsimDriverAgent;
 import org.matsim.core.mobsim.framework.PassengerAgent;
 import org.matsim.run.RunMatsim;
 import org.matsim.vehicles.Vehicle;
+import org.matsim.vehicles.VehicleType;
+import org.matsim.vehicles.VehicleTypeImpl;
+import org.matsim.vehicles.VehicleUtils;
 
 import java.util.Collection;
 
@@ -31,7 +34,11 @@ public class QCycle implements QVehicle
 	 * @param basicVehicle
 	 */
 	public QCycle( Vehicle basicVehicle ) {
-		this.qVehicle = new QVehicleImpl( basicVehicle ) ;
+		VehicleType vehicleType = VehicleUtils.getFactory().createVehicleType(Id.create(basicVehicle.getId().toString(), VehicleType.class));
+		Vehicle vehicle = VehicleUtils.getFactory().createVehicle(Id.createVehicleId(basicVehicle.getId().toString()), vehicleType);
+		this.qVehicle = new QVehicleImpl(vehicle);
+		
+//		this.qVehicle = new QVehicleImpl( basicVehicle ) ;
 	}
 	
 	
@@ -48,6 +55,8 @@ public class QCycle implements QVehicle
 			final double theta_1 = (double) person.getAttributes().getAttribute( RunMatsim.HEADWAY_DISTANCE_SLOPE );
 			final double lambda_c = (double) person.getAttributes().getAttribute( RunMatsim.BICYCLE_LENGTH );
 			this.cyclist = Cyclist.createIndividualisedCyclistWithSqrtLTM(v_0, theta_0, theta_1, lambda_c);
+			((VehicleTypeImpl) this.qVehicle.getVehicle().getType()).setMaximumVelocity(v_0);
+	         
 		}
 
 	}

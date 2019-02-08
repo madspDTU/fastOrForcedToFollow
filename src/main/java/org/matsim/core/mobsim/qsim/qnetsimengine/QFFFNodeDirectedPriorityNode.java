@@ -46,6 +46,8 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode{
 				while(! lane.isNotOfferingVehicle()){	
 					QVehicle veh = lane.getFirstVehicle();
 					Id<Link> nextLinkId = veh.getDriver().chooseNextLinkId();
+
+					//debugging
 					if(!bicycleOutTransformations.containsKey(nextLinkId)){
 						System.out.println(qNode.getNode().getId() + " N L " + nextLinkId + " " + inLink.getLink().getId() + " From");
 						for(Id<Link> id : bicycleOutTransformations.keySet()){
@@ -57,7 +59,7 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode{
 						for(Link link : this.qNode.getNode().getInLinks().values()){
 							System.out.println("Inlink: " + link.getId());
 						}
-						
+
 
 						System.out.println("Simulation endds prematurely");
 						System.exit(-1);
@@ -68,6 +70,7 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode{
 					if(t != outDirection){
 						t = increaseInt(t); // It corresponds to going to the next link.
 					}
+
 					if(bicycleTimeouts[inDirection][t] <= now){
 						if(t == outDirection){ // Not a partial turn
 							if (! this.qNode.moveVehicleOverNode(veh, inLink, lane, now )) {
@@ -204,159 +207,139 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode{
 	protected void determinePriority(TreeMap<Double, LinkedList<Integer>> capacities){
 
 		Entry<Double,LinkedList<Integer>> entry = capacities.pollLastEntry(); //highest entry
-		int cumCount = entry.getValue().size();
-		if(cumCount == 2){
+		int numberOfBundlesInLargestCapacity = entry.getValue().size();
+		if(numberOfBundlesInLargestCapacity == 2){
 			this.inPriority = entry.getValue().getFirst();
 			this.outPriority = entry.getValue().getLast();
-		} else if (cumCount == 1){
+		} else if (numberOfBundlesInLargestCapacity == 1){
 			this.inPriority = entry.getValue().getFirst();	
 
 			entry = capacities.lastEntry();
 
 			if(entry.getValue().size() == 1){
 				this.outPriority = entry.getValue().getFirst();
-			} else { // size > 1
-				boolean priorityInCar = carInLinks[this.inPriority] != null;
-				boolean priorityOutCar = carOutTransformations.containsValue(this.inPriority);
-				boolean priorityInBicycle = bicycleInLinks[this.inPriority] != null;
-				boolean priorityOutBicycle = bicycleOutTransformations.containsValue(this.inPriority);
+			} else { // This is now carInLinks == 4 and 2 bundles in second largest capacity.
 
+				Gbl.assertIf(entry.getValue().size() == 2 && carInLinks.length == 4);
 
-				if(carInLinks.length == 4){
-					int guess = ((this.inPriority + 2) % 4);
-					if(entry.getValue().contains(guess)){
-						this.outPriority = guess;
-					} else {
-						this.outPriority = ((this.inPriority + 1) % 4);
-					}
-				} else if(carInLinks.length == 3) {
-
-					//Seems to be the optimal way to do it.
-					int guess = (this.inPriority + 1) % 3;
-					int other = (this.inPriority + 2) % 3;
-					boolean guessInCar = carInLinks[guess] != null;
-					boolean guessInBicycle = bicycleInLinks[guess] != null;
-
-					boolean guessOutCar = carOutTransformations.containsValue(guess);
-					boolean guessOutBicycle = bicycleOutTransformations.containsValue(guess);
-
-					boolean otherInCar = carInLinks[other] != null;
-					boolean otherInBicycle = bicycleInLinks[other] != null;
-
-					boolean otherOutCar = carOutTransformations.containsValue(other);
-					boolean otherOutBicycle = bicycleOutTransformations.containsValue(other);
-
-
-					if(priorityInCar || priorityOutCar){
-						if(priorityInCar  && priorityOutCar){
-							if(guessOutCar){
-								if(!guessInCar && otherOutCar && otherInCar){
-									this.outPriority = other;
-								} else {
-									this.outPriority = guess;
-								}
-							} else {
-								this.outPriority = other;
-							}
-						} else if(!priorityInCar  && priorityOutCar){
-							if(guessOutCar){
-								this.outPriority = guess;
-							} else {
-								this.outPriority = other;
-							}
-						} else if (priorityInCar  && !priorityOutCar){
-							if(otherInCar){
-								this.outPriority = other;
-							} else {
-								this.outPriority = guess;
-							}
-						} 
-					} else if(priorityInBicycle || priorityOutBicycle) {
-						if(priorityInBicycle  && priorityOutBicycle){
-							if(guessOutBicycle){
-								if(!guessInBicycle && otherOutBicycle && otherInBicycle){
-									this.outPriority = other;
-								} else {
-									this.outPriority = guess;
-								}
-							} else {
-								this.outPriority = other;
-							}
-						} else if(!priorityInBicycle  && priorityOutBicycle){
-							if(guessOutCar){
-								this.outPriority = guess;
-							} else {
-								this.outPriority = other;
-							}
-						} else if (priorityInBicycle  && !priorityOutBicycle){
-							if(otherInCar){
-								this.outPriority = other;
-							} else {
-								this.outPriority = guess;
-							}
-						} 
-
-					} else {
-						System.err.println("Fatal error, large capacity has no valid links...");
-					}
-
-				} else if(carInLinks.length == 6){
-					System.out.println("6: Not an optimal way to do it.");
-					int guess = (this.inPriority + 3) % 6;
-					if(entry.getValue().contains(guess)){
-						this.outPriority = guess;
-					} else {
-						System.out.println("Rethink this 6");
-						System.exit(-1);
-					}
-				} else if(carInLinks.length == 5){
-					int guess = (this.inPriority + 2) % 5;
-					if(entry.getValue().contains(guess)){
-						//5: Not an optimal way to do it...
-						this.outPriority = guess;
-					} else {
-						guess = (this.inPriority + 3) % 5;
-						if(entry.getValue().contains(guess)){
-							//"5: Even less optimal way to do it.
-							this.outPriority = guess;
-						} else {
-							System.out.println("Rethink this 5");
-							System.exit(-1);
-						}
-					}
+				int guess = ((this.inPriority + 2) % 4);
+				if(entry.getValue().contains(guess)){
+					this.outPriority = guess;
+				} else {
+					//mads: May not be obvious, but seems as better than ((this.inPriority + 3) % 4),
+					//   since secondary to tertiary violates more with this implementation;
+					this.outPriority = ((this.inPriority + 1) % 4);
 				}
+				//					
+				//					//Seems to be the optimal way to do it.
+				//					int guess = (this.inPriority + 1) % 3;
+				//					int other = (this.inPriority + 2) % 3;
+				//					boolean guessInCar = carInLinks[guess] != null;
+				//					boolean guessInBicycle = bicycleInLinks[guess] != null;
+				//
+				//					boolean guessOutCar = carOutTransformations.containsValue(guess);
+				//					boolean guessOutBicycle = bicycleOutTransformations.containsValue(guess);
+				//
+				//					boolean otherInCar = carInLinks[other] != null;
+				//					boolean otherInBicycle = bicycleInLinks[other] != null;
+				//
+				//					boolean otherOutCar = carOutTransformations.containsValue(other);
+				//					boolean otherOutBicycle = bicycleOutTransformations.containsValue(other);
+				//
+				//					if(!(guessInCar || guessOutCar || otherInCar || otherOutCar) || 
+				//							(guessInCar && guessOutCar && otherInCar && otherOutCar) ){
+				//						if(!(guessInBicycle || guessOutBicycle || otherInBicycle || otherOutBicycle) || 
+				//								(guessInBicycle && guessOutBicycle && otherInBicycle && otherOutBicycle) ){
+				//							System.err.println("Probably an anti-priority node");
+				//						}
+				//					}
+				//					
+				//					if(priorityInCar || priorityOutCar){
+				//						if(priorityInCar  && priorityOutCar){
+				//							if(guessOutCar){
+				//								if(!guessInCar && otherOutCar && otherInCar){
+				//									this.outPriority = other;
+				//								} else {
+				//									this.outPriority = guess;
+				//								}
+				//							} else {
+				//								this.outPriority = other;
+				//							}
+				//						} else if(!priorityInCar  && priorityOutCar){
+				//							if(guessOutCar){
+				//								this.outPriority = guess;
+				//							} else {
+				//								this.outPriority = other;
+				//							}
+				//						} else if (priorityInCar  && !priorityOutCar){
+				//							if(otherInCar){
+				//								this.outPriority = other;
+				//							} else {
+				//								this.outPriority = guess;
+				//							}
+				//						} 
+				//					} else if(priorityInBicycle || priorityOutBicycle) {
+				//						if(priorityInBicycle  && priorityOutBicycle){
+				//							if(guessOutBicycle){
+				//								if(!guessInBicycle && otherOutBicycle && otherInBicycle){
+				//									this.outPriority = other;
+				//								} else {
+				//									this.outPriority = guess;
+				//								}
+				//							} else {
+				//								this.outPriority = other;
+				//							}
+				//						} else if(!priorityInBicycle  && priorityOutBicycle){
+				//							if(guessOutCar){
+				//								this.outPriority = guess;
+				//							} else {
+				//								this.outPriority = other;
+				//							}
+				//						} else if (priorityInBicycle  && !priorityOutBicycle){
+				//							if(otherInCar){
+				//								this.outPriority = other;
+				//							} else {
+				//								this.outPriority = guess;
+				//							}
+				//						} 
+				//
+				//					} else {
+				//						System.err.println("Fatal error, large capacity has no valid links...");
+				//					}
+				//
+				//				} else if(carInLinks.length == 6){
+				//					System.out.println("6: Not an optimal way to do it.");
+				//					int guess = (this.inPriority + 3) % 6;
+				//					if(entry.getValue().contains(guess)){
+				//						this.outPriority = guess;
+				//					} else {
+				//						System.out.println("Rethink this 6");
+				//						System.exit(-1);
+				//					}
+				//				} else if(carInLinks.length == 5){
+				//					int guess = (this.inPriority + 2) % 5;
+				//					if(entry.getValue().contains(guess)){
+				//						//5: Not an optimal way to do it...
+				//						this.outPriority = guess;
+				//					} else {
+				//						guess = (this.inPriority + 3) % 5;
+				//						if(entry.getValue().contains(guess)){
+				//							//"5: Even less optimal way to do it.
+				//							this.outPriority = guess;
+				//						} else {
+				//							System.out.println("Rethink this 5");
+				//							System.exit(-1);
+				//						}
+				//					}
 			}
 		} else { //cumCount > 2
 			if(carInLinks.length == 4){ //cumCount must be 3 then - we thus determine capacity based on the lowest
-				Gbl.assertIf(cumCount == 3);
+				Gbl.assertIf(numberOfBundlesInLargestCapacity == 3);
 				int lowestDirection = capacities.pollFirstEntry().getValue().getFirst();
 				this.inPriority = (lowestDirection + 3) % 4;
 				this.outPriority = (lowestDirection + 1) % 4;
 			} else if(carInLinks.length >= 5){
-
-				if(cumCount == 3){
-
-				}
-				System.out.println(carInLinks.length + "   " + cumCount);
-
-				for(int i : entry.getValue()){
-					System.out.println("cEnt: " + (carInLinks[i] != null) + ", " + carOutTransformations.containsValue(i));
-					System.out.println("bEnt: " + (bicycleInLinks[i] != null) + ", " + bicycleOutTransformations.containsValue(i));					
-				}
-				for(int i : capacities.pollLastEntry().getValue()){
-					System.out.println("cCap: " + (carInLinks[i] != null) + ", " + carOutTransformations.containsValue(i));
-					System.out.println("bCap: " + (bicycleInLinks[i] != null) + ", " + carOutTransformations.containsValue(i));
-
-				}
-				System.err.println(cumCount + "," + carInLinks.length + ": no priority should be used in this case...");
-
-				System.out.println("Rethink this...");
-			} else if(carInLinks.length == 3){
-				System.err.println("This really shouldn't be possible: " + cumCount + " v " + carInLinks.length +
-						"  @" + qNode.getNode().getId());
-				if(cumCount == carInLinks.length){
-					System.err.println(" All capacities ARE equal in this case... See in QFFFNode why this happens");
-				}
+				System.err.println("This should not be possible (At least 5 bundles, but more than 2 with maximum capacity");
 				System.exit(-1);
 			}
 		}
@@ -368,7 +351,7 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode{
 		}
 		if(this.inPriority < 0 ||  this.outPriority < 0 || this.inPriority == this.outPriority  ){
 			System.out.println("Debug: (" + this.inPriority + "," + this.outPriority + ")  ");
-			System.out.println(carInLinks.length + " " + cumCount);
+			System.out.println(carInLinks.length + " " + numberOfBundlesInLargestCapacity);
 			System.out.println("Interesting... seems as if links with only 1 capacity have errors.");
 			System.exit(-1);
 		}

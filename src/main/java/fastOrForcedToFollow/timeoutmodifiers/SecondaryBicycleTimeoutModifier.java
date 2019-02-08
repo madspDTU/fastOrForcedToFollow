@@ -9,8 +9,8 @@ public class SecondaryBicycleTimeoutModifier implements TimeoutModifierI {
 			boolean[] isSecondary, double nowish) {
 
 		int n = bicycleTimeouts[0].length;
-		for(int i = 0; i < n; i++){ // All bicycle movements to out direction except from priorities
-			if(isSecondary[i]){
+		for(int i = 0; i < n; i++){ // All bicycle movements to out direction except from priorities and inDirection
+			if(isSecondary[i] && i != inDirection){
 				bicycleTimeouts[i][outDirection] = nowish;
 			}
 		}

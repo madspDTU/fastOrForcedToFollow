@@ -27,6 +27,7 @@ import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.replanning.strategies.DefaultPlanStrategiesModule.DefaultSelector;
 import org.matsim.core.replanning.strategies.DefaultPlanStrategiesModule.DefaultStrategy;
+import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.scoring.ScoringFunctionPenalisingCongestedTimeFactory;
 import org.matsim.vehicles.VehicleType;
 import org.matsim.vehicles.VehicleTypeImpl;
@@ -158,8 +159,10 @@ public class RunBicycleCopenhagen {
 		FFFConfigGroup fffConfig = ConfigUtils.addOrGetModule(config, FFFConfigGroup.class);
 		fffConfig.setLMax(60.);
 
-		Scenario scenario = RunMatsim.addCyclistAttributes(config);
+		Scenario scenario = ScenarioUtils.loadScenario( config ) ;
+		RunMatsim.cleanBicycleNetwork(scenario.getNetwork());
 		removeSouthWesternPart(scenario.getNetwork());
+		scenario = RunMatsim.addCyclistAttributes(config, scenario);
 		RunMatsim.reducePopulationToN(500, scenario.getPopulation());
 
 
@@ -199,42 +202,6 @@ public class RunBicycleCopenhagen {
 
 
 	
-
-	private static void removeDuplicateLinks(Network network){
-
-		for(String mode : Arrays.asList(TransportMode.car, TransportMode.bike)){
-			System.out.print("Starting to remove duplicate links network...");
-			LinkedList<Link> linksToBeRemoved = new LinkedList<Link>();
-			for(Node node : network.getNodes().values()){
-				HashMap<Node, Link> outNodes = new HashMap<Node, Link>();
-				for(Link link : node.getOutLinks().values()){
-					if(link.getAllowedModes().contains(mode)){
-						if(!outNodes.containsKey(link.getToNode())){
-							outNodes.put(link.getToNode(),link);
-						} else {
-							if(link.getNumberOfLanes() > outNodes.get(link.getToNode()).getNumberOfLanes()){
-								linksToBeRemoved.add(outNodes.get(link.getToNode()));
-								outNodes.put(link.getToNode(), link);
-							} else {
-								linksToBeRemoved.add(link);
-								if(mode.equals(TransportMode.car)){
-									System.out.println("Car");
-								}
-							}
-						}
-					}
-				}
-			}
-			int counter = 0;
-			for(Link link : linksToBeRemoved){
-				network.removeLink(link.getId());
-				counter++;
-			}
-			System.out.println(counter + " duplicate " + mode + " links removed from the network");
-		}
-	}
-
-
 
 	private static void removeSouthWesternPart(Network network) {
 		// Based on http://www.ytechie.com/2009/08/determine-if-a-point-is-contained-within-a-polygon/  

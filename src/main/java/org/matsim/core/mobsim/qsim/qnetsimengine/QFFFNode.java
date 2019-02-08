@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -318,6 +319,8 @@ final class QFFFNode implements QNodeI {
 					bicycleCapacities.ceilingEntry(Double.MIN_VALUE).getValue().size() <= 1);
 			
 
+			
+			
 
 			if(areBicycleCapacitiesEqual && areCarCapacitiesEqual){
 				if(carCapacities.lastEntry().getValue().size() == 1 ){
@@ -332,11 +335,15 @@ final class QFFFNode implements QNodeI {
 				if(areCarCapacitiesEqual){
 					capacities = bicycleCapacities;
 				}
-				if(capacities.lastEntry().getValue().size() >= 4 ||
-						(capacities.lastEntry().getValue().size() >= 3 && bundleMap.size() > 4) ){
-					this.nodeType = new QFFFAntiPriorityNode(this, bundleMap, network, capacities);
-				} else {
+				int largestCapacities = capacities.lastEntry().getValue().size();
+				if(largestCapacities == 1){
+					SortedMap<Double, LinkedList<Integer>> headMap = capacities.headMap(capacities.lastKey());
+					largestCapacities += headMap.get(headMap.lastKey()).size();
+				}
+				if(largestCapacities == 2 || (largestCapacities == 3 && bundleMap.size() == 4) ){
 					this.nodeType = new QFFFNodeDirectedPriorityNode(this, bundleMap, network, capacities);
+				} else {
+					this.nodeType = new QFFFAntiPriorityNode(this, bundleMap, network, capacities);		
 				}
 			}
 		} else {

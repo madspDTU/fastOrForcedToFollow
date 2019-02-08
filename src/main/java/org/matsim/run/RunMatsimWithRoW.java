@@ -92,7 +92,7 @@ public class RunMatsimWithRoW {
 			createNetwork(scenario);
 
 			createPopulation(scenario);
-			scenario = RunMatsim.addCyclistAttributes(scenario, ConfigUtils.addOrGetModule(config, FFFConfigGroup.class), RunMatsim.RANDOM_SEED);
+			scenario = RunMatsim.addCyclistAttributes(config, scenario);
 			scenario.getVehicles().addVehicleType(  new VehicleTypeImpl( Id.create( TransportMode.car, VehicleType.class  ) ) );
 
 		} else {

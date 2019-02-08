@@ -151,15 +151,13 @@ public class RunMatsim {
 		return config;		
 	}
 
-	public static Scenario addCyclistAttributes(Config config){
-		final Scenario scenario = ScenarioUtils.loadScenario( config ) ;
-		cleanBicycleNetwork(scenario.getNetwork());
-		final long RANDOM_SEED = config.global().getRandomSeed();
+	public static Scenario addCyclistAttributes(Config config, Scenario scenario){
+	final long RANDOM_SEED = config.global().getRandomSeed();
 		final FFFConfigGroup fffConfig = ConfigUtils.addOrGetModule(config, FFFConfigGroup.class);
 		return addCyclistAttributes(scenario, fffConfig, RANDOM_SEED);
 	}
 
-	public static Scenario addCyclistAttributes(Scenario scenario, FFFConfigGroup fffConfig, long seed){
+	private static Scenario addCyclistAttributes(Scenario scenario, FFFConfigGroup fffConfig, long seed){
 
 
 		final Random speedRandom = new Random(seed);
@@ -475,8 +473,8 @@ public class RunMatsim {
 		}
 	}
 
-	private static void cleanBicycleNetwork(Network network){
-		removeRedundantNodes(network);
+	static void cleanBicycleNetwork(Network network){
+	//	removeRedundantNodes(network);
 		removeDuplicateLinks(network);
 	}
 

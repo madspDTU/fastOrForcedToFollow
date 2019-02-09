@@ -28,9 +28,9 @@ public class FFFConfigGroup extends ReflectiveConfigGroup {
 	private double lambda_c = 1.73;
 	
 	/**
-	 * Maximum length [m] of link. Default is no upper bound.
+	 * Maximum length [m] of link. Default is 60 metres.
 	 */
-	private double lMax = Double.MAX_VALUE;
+	private double lMax = 60.;
 	
 	/**
 	 * Constant term in the square root model for headway distance.

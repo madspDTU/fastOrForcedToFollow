@@ -34,8 +34,8 @@ import org.matsim.vehicles.VehicleTypeImpl;
 
 public class RunBicycleCopenhagen {
 
-	//public final int numberOfThreads = 20;
-	public final static int numberOfThreads = 4;
+	public final static int numberOfThreads = 1;
+	//public final static int numberOfThreads = 4;
 
 	//public final static String outputBaseDir = "/work1/s103232/ABMTRANS2019/"; //With final /
 	//public final static String outputBaseDir = "./output/ABMTRANS2019/"; //With final / 
@@ -48,7 +48,7 @@ public class RunBicycleCopenhagen {
 	public static void main(String[] args) throws IOException{
 		boolean congestion = true;
 		String size = "small";
-		int lastIteration = 1;
+		int lastIteration = 0;
 		boolean oneLane = false;
 		if(args.length > 0){
 			size = args[0];
@@ -109,11 +109,11 @@ public class RunBicycleCopenhagen {
 			config.planCalcScore().getActivityParams("edu").setActivityType("school");
 		}
 		for(ActivityParams ap : config.planCalcScore().getActivityParams()){
-			ap.setClosingTime(30*3600);
+			ap.setClosingTime(98*3600);
 			ap.setOpeningTime(-1.);
 			ap.setMinimalDuration(-1);
 			ap.setEarliestEndTime(-0.5);
-			ap.setLatestStartTime(29.5*3600);
+			ap.setLatestStartTime(99*3600);
 
 		}
 
@@ -157,13 +157,13 @@ public class RunBicycleCopenhagen {
 
 		//Possible changes to config
 		FFFConfigGroup fffConfig = ConfigUtils.addOrGetModule(config, FFFConfigGroup.class);
-		fffConfig.setLMax(60.);
+		// fffConfig.setLMax(Double.MAX_VALUE); // To disable sublinks (faster computation, but lower realism)
 
 		Scenario scenario = ScenarioUtils.loadScenario( config ) ;
 		RunMatsim.cleanBicycleNetwork(scenario.getNetwork());
 		removeSouthWesternPart(scenario.getNetwork());
 		scenario = RunMatsim.addCyclistAttributes(config, scenario);
-		RunMatsim.reducePopulationToN(500, scenario.getPopulation());
+		RunMatsim.reducePopulationToN(0, scenario.getPopulation());
 
 
 		Controler controler;
@@ -216,6 +216,7 @@ public class RunBicycleCopenhagen {
 		for(Node node : nodesToBeRemoved){
 			network.removeNode(node.getId());
 		}
+	//	System.out.println(isCoordInsidePolygon(new Coord(671092.33, 6177550.04), vertices));
 		System.out.println(nodesToBeRemoved.size() + " nodes and " + (linksBefore - network.getLinks().size())
 				+ " links removed from South-Western part...");
 	}
@@ -239,12 +240,14 @@ public class RunBicycleCopenhagen {
 
 	private static Coord[] getVertices() {
 		LinkedList<Coord> coords = new LinkedList<Coord>();
+		// All sites from https://epsg.io/map#srs=32632
 		coords.addLast(new Coord(705928.346681,	6125917.168974)); // Vemmetofte Strand
 		coords.addLast(new Coord(680313.490601,	6147920.287373)); // Adamshøj
-		coords.addLast(new Coord(672214.258594,	6172492.227007)); // Vipperød
-		coords.addLast(new Coord(675429.669649,	6259160.285312)); // Mellem Anholt og Tisvilde
-		coords.addLast(new Coord(728256.015736,	6216505.994517)); // Mellem Helsingør og Helsingborg
-		coords.addLast(new Coord(740100.750946,	6118474.660517)); // Mellem Møn og Trelleborg
+		coords.addLast(new Coord(669263.733097, 6172981.752523)); // Hellestrup
+		coords.addLast(new Coord(666336.561495,	6384536.656468)); // Vrångö
+		coords.addLast(new Coord(732555.631618,	6201557.084542)); // Bäckviken
+		coords.addLast(new Coord(748457.912623,	6146312.994732)); // Ljunghusen
+		coords.addLast(new Coord(702262.206001, 6111994.192165)); // Bønsvig 
 		
 		Coord[] output = new Coord[coords.size()];
 		for(int i = 0; i < output.length; i++){

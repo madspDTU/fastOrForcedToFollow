@@ -52,12 +52,13 @@ import org.matsim.vehicles.VehicleTypeImpl;
  */
 public class RunMatsimWithRoW {
 	
-	public static boolean omitEastLinks = true;
-	public static boolean useEqualCapacities = true;
+	public static boolean omitEastLinks = false;
+	public static boolean useEqualCapacities = false;
 
-	private static double bicycleMarketShare = 0.5;
+	private static double bicycleMarketShare = 1.0;
+	private static int numberOfAgents = 50;
 
-	private static boolean useToyNetwork = false;
+	private static boolean useToyNetwork = true;
 
 	public static void main(String[] args) {
 		String scenarioExample;
@@ -71,11 +72,10 @@ public class RunMatsimWithRoW {
 
 		Config config = RunMatsim.createConfigFromExampleName(scenarioExample);	
 		
-		
-		config.qsim().setUsingThreadpool(false);
-
-
-
+		//Possible changes to config
+		FFFConfigGroup fffConfig = ConfigUtils.addOrGetModule(config, FFFConfigGroup.class);
+		// fffConfig.setLMax(Double.MAX_VALUE); // To disable sublinks (faster computation, but lower realism)
+	
 		config.controler().setLastIteration(0);
 
 		config.controler().setOutputDirectory("./output/RoW/");
@@ -91,7 +91,7 @@ public class RunMatsimWithRoW {
 
 			createNetwork(scenario);
 
-			createPopulation(scenario);
+			createPopulation(scenario, numberOfAgents);
 			scenario = RunMatsim.addCyclistAttributes(config, scenario);
 			scenario.getVehicles().addVehicleType(  new VehicleTypeImpl( Id.create( TransportMode.car, VehicleType.class  ) ) );
 
@@ -107,6 +107,8 @@ public class RunMatsimWithRoW {
 		
 		
 
+
+
 		try{
 			controler.run();
 		}
@@ -119,7 +121,7 @@ public class RunMatsimWithRoW {
 	}
 
 
-	private static void createPopulation(Scenario scenario){
+	private static void createPopulation(Scenario scenario, int numberOfAgents){
 		Population population = scenario.getPopulation();
 		PopulationFactory pf = population.getFactory();
 
@@ -133,14 +135,13 @@ public class RunMatsimWithRoW {
 			random.nextDouble();
 		}
 
-		int N = 500;
-		for(int i = 0; i < N; i++){
+		for(int i = 0; i < numberOfAgents; i++){
 			double startTime1 = timeA + (timeB-timeA) * random.nextDouble();
 			double startTime2 = timeC + (timeD-timeC) * random.nextDouble();
 			Link startLink;
 			Link endLink;
 			double d = random.nextDouble();
-			if(i < N/4){
+			if(i < numberOfAgents/4){
 				startLink = scenario.getNetwork().getLinks().get(Id.createLinkId("SS_S"));
 				if(d < 0.3){
 					endLink = scenario.getNetwork().getLinks().get(Id.createLinkId("W_WW"));
@@ -149,7 +150,7 @@ public class RunMatsimWithRoW {
 				} else {
 					endLink = scenario.getNetwork().getLinks().get(Id.createLinkId("E_EE"));
 				}
-			} else if (i < N/2){
+			} else if (i < numberOfAgents/2){
 				startLink = scenario.getNetwork().getLinks().get(Id.createLinkId("EE_E"));
 				if(d < 0.3){
 					endLink = scenario.getNetwork().getLinks().get(Id.createLinkId("W_WW"));
@@ -158,7 +159,7 @@ public class RunMatsimWithRoW {
 				} else {
 					endLink = scenario.getNetwork().getLinks().get(Id.createLinkId("S_SS"));
 				}
-			} else if (i < N/3*4){
+			} else if (i < numberOfAgents/3*4){
 				startLink = scenario.getNetwork().getLinks().get(Id.createLinkId("NN_N"));
 				if(d < 0.3){
 					endLink = scenario.getNetwork().getLinks().get(Id.createLinkId("W_WW"));

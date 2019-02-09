@@ -87,6 +87,11 @@ public class RunMatsimSpeedHeterogeneity {
 		config.strategy().addStrategySettings(stratSets);
 		config.strategy().setFractionOfIterationsToDisableInnovation(0.8);
 
+		//Possible changes to config
+		FFFConfigGroup fffConfig = ConfigUtils.addOrGetModule(config, FFFConfigGroup.class);
+		// fffConfig.setLMax(Double.MAX_VALUE); // To disable sublinks (faster computation, but lower realism)
+
+		
 		Scenario scenario = ScenarioUtils.createScenario(config);
 
 		createNetwork(scenario);
@@ -94,6 +99,7 @@ public class RunMatsimSpeedHeterogeneity {
 		createPopulation(scenario);
 		scenario = RunMatsim.addCyclistAttributes(config, scenario);			
 	
+		
 		Controler controler = RunMatsim.createControlerWithRoW(scenario); 
 
 

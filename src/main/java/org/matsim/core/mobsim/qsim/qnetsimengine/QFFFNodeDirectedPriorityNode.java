@@ -46,29 +46,15 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode{
 				while(! lane.isNotOfferingVehicle()){	
 					QVehicle veh = lane.getFirstVehicle();
 					Id<Link> nextLinkId = veh.getDriver().chooseNextLinkId();
-
-					//debugging
-					if(!bicycleOutTransformations.containsKey(nextLinkId)){
-						System.out.println(qNode.getNode().getId() + " N L " + nextLinkId + " " + inLink.getLink().getId() + " From");
-						for(Id<Link> id : bicycleOutTransformations.keySet()){
-							System.out.println(bicycleOutTransformations.get(id) + " is " + id);
-						}
-						for(Link link : this.qNode.getNode().getOutLinks().values()){
-							System.out.println("Outlink: " + link.getId());
-						}
-						for(Link link : this.qNode.getNode().getInLinks().values()){
-							System.out.println("Inlink: " + link.getId());
-						}
-
-
-						System.out.println("Simulation endds prematurely");
-						System.exit(-1);
-					}
-
+					
 					int outDirection = bicycleOutTransformations.get(nextLinkId);
 					int t = bicycleTurns[inDirection][outDirection];
 					if(t != outDirection){
 						t = increaseInt(t); // It corresponds to going to the next link.
+						if(t == inDirection){
+							System.err.println("@" + qNode.getNode().getId() + " Returns to inlink");
+							System.exit(-1);
+						}
 					}
 
 					if(bicycleTimeouts[inDirection][t] <= now){
@@ -481,11 +467,10 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode{
 
 
 	private void moveLeftTurningBicyclePartiallyOverNode( final QVehicle veh, final QLaneI fromLane, final double now, final int tempBundle ) {
-		QLinkImpl qLink =  (QLinkImpl) bicycleInLinks[tempBundle];
+		QLinkI qLink =  (QLinkI) bicycleInLinks[tempBundle];
 		QCycleLaneWithSublinks qCycleLink = (QCycleLaneWithSublinks) qLink.getAcceptingQLane();
-		qCycleLink.placeVehicleAtFront(veh); // Place vehicle in front of temporary queue
 		fromLane.popFirstVehicle(); // Remove veh from previous queue
-		qCycleLink.activateLink();  // Activate the temporary link
+		qCycleLink.placeVehicleAtFront(veh); // Place vehicle in front of temporary queue
 	}
 
 

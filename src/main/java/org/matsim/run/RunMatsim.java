@@ -147,6 +147,11 @@ public class RunMatsim {
 		config.qsim().setVehiclesSource( QSimConfigGroup.VehiclesSource.modeVehicleTypesFromVehiclesData );
 
 		config.global().setRandomSeed(RANDOM_SEED);
+		
+		//Possible changes to config
+		FFFConfigGroup fffConfig = ConfigUtils.addOrGetModule(config, FFFConfigGroup.class);
+		// fffConfig.setLMax(Double.MAX_VALUE); // To disable sublinks (faster computation, but lower realism)
+
 
 		return config;		
 	}

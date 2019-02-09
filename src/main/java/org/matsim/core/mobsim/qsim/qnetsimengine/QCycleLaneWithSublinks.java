@@ -13,6 +13,7 @@ import org.matsim.vehicles.Vehicle;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.PriorityQueue;
 
 class QCycleLaneWithSublinks implements QLaneI{
@@ -118,31 +119,40 @@ class QCycleLaneWithSublinks implements QLaneI{
 	//    }
 
 	@Override public boolean doSimStep() {
-		QCycle cqo;
-
-		while((cqo = globalQ.peek()) != null){
-
-			double tEarliestExit = cqo.getEarliestLinkExitTime();
+	
+		LinkedList<QCycle> qCycsWhereNextSublinkIsFull = new LinkedList<QCycle>();
+		
+		QCycle qCyc;
+		while((qCyc = globalQ.peek()) != null){
+	
+			double tEarliestExit = qCyc.getEarliestLinkExitTime();
 			if( tEarliestExit > context.getSimTimer().getTimeOfDay()){
 				break;
 			}
-
-
-			Sublink fffLink = fffLinkArray[cqo.getCyclist().getCurrentLinkIndex()];
-
-			//	fffLink.getOutQ().remove();
+			
+			Cyclist cyclist = qCyc.getCyclist();
+			Sublink currentFFFLink = fffLinkArray[cyclist.getCurrentLinkIndex()];
+			
 			globalQ.remove();
-			fffLink.reduceOccupiedSpace(cqo.getCyclist(), cqo.getCyclist().getSpeed() );
 			
 			//Anything but the last subLink
-			if(cqo.getCyclist().getCurrentLinkIndex() < fffLinkArray.length -1){
-
-				Cyclist cyclist = cqo.getCyclist();
+			if(qCyc.getCyclist().getCurrentLinkIndex() < fffLinkArray.length -1){
+				
 				// internal fff logic:
 
 				// Selecting the appropriate pseudoLane:
 				//Make sure that this cannot happen for cet currentLinkIdex = maxIndex.
-				Sublink receivingFFFLink = fffLinkArray[cqo.getCyclist().getCurrentLinkIndex() + 1];
+				Sublink receivingFFFLink = fffLinkArray[cyclist.getCurrentLinkIndex() + 1];
+				
+				if(receivingFFFLink.isLinkFull()){
+					qCycsWhereNextSublinkIsFull.add(qCyc);
+					continue;
+				}
+				
+				// qCyc can in fact leave current sublink
+				currentFFFLink.reduceOccupiedSpace(cyclist, cyclist.getSpeed() );
+				
+				// Selecting a pseudolane
 				PseudoLane pseudoLane = cyclist.selectPseudoLane( receivingFFFLink );
 
 				// Assigning a provisional, maximum speed for this link:
@@ -168,21 +178,24 @@ class QCycleLaneWithSublinks implements QLaneI{
 			
 				// Add qCycle to the downstream queue of the next link.
 				//	receivingFFFLink.getOutQ().add(cqo ); 
-				cqo.getCyclist().incrementCurrentLinkIndex();
-				globalQ.add(cqo);
+				qCyc.getCyclist().incrementCurrentLinkIndex();
+				globalQ.add(qCyc);
 
 
 			} else { ///fffLink is last subLink
 
-				if(cqo.getDriver().isWantingToArriveOnCurrentLink()){
-					qLinkImpl.letVehicleArrive(cqo );
+				currentFFFLink.reduceOccupiedSpace(cyclist, cyclist.getSpeed() );
+				
+				
+				if(qCyc.getDriver().isWantingToArriveOnCurrentLink()){
+					qLinkImpl.letVehicleArrive(qCyc );
 					continue;
 				}
 
 
 				//Auxiliary buffer created to fit the piece into MATSim.
-				fffLink.addVehicleToLeavingVehicles(cqo );
-				fffLink.setLastTimeMoved(tEarliestExit);
+				currentFFFLink.addVehicleToLeavingVehicles(qCyc );
+				currentFFFLink.setLastTimeMoved(tEarliestExit);
 
 
 				final QNodeI toNode = qLinkImpl.getToNode();
@@ -192,6 +205,10 @@ class QCycleLaneWithSublinks implements QLaneI{
 					((QFFFNode) toNode).activateNode();
 				}
 			}
+		}
+		//Reinserting potentially stuck cyclists...
+		for(QCycle stuckQCyc : qCycsWhereNextSublinkIsFull){
+			globalQ.add(stuckQCyc);
 		}
 		return true;
 	}
@@ -318,11 +335,15 @@ class QCycleLaneWithSublinks implements QLaneI{
 	
 	
 	/**
-	 * Used by left turning cyclists who will be skipping the queue when making a two-phase left turn.
+	 * Used by left turning cyclists who will be skipping the queue when making a stepwise left turn.
 	 */
 	public void placeVehicleAtFront(QVehicle veh){
-		QCycle qCyc = (QCycle) veh;
-		qCyc.getCyclist().setCurrentLinkIndex(fffLinkArray.length -1);
-		globalQ.add(qCyc);
+		activateLink(); // Activates the new link
+		veh.setCurrentLink(qLinkImpl.getLink()); // Sets the new link as currentLink
+		QCycle qCyc = (QCycle) veh; // Upcast
+		Cyclist cyclist = qCyc.getCyclist(); // Extract cyclist
+		cyclist.setCurrentLinkIndex(fffLinkArray.length -1); //Places cyclist at last sublink
+		this.fffLinkArray[fffLinkArray.length-1].increaseOccupiedSpace(cyclist, cyclist.getSpeed()); // Take up space
+		globalQ.add(qCyc); // Add to queue
 	}
 }

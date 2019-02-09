@@ -163,7 +163,7 @@ public class RunBicycleCopenhagen {
 		RunMatsim.cleanBicycleNetwork(scenario.getNetwork());
 		removeSouthWesternPart(scenario.getNetwork());
 		scenario = RunMatsim.addCyclistAttributes(config, scenario);
-		RunMatsim.reducePopulationToN(0, scenario.getPopulation());
+		//RunMatsim.reducePopulationToN(0, scenario.getPopulation());
 
 
 		Controler controler;

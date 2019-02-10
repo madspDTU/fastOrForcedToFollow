@@ -34,8 +34,8 @@ import org.matsim.vehicles.VehicleTypeImpl;
 
 public class RunBicycleCopenhagen {
 
-	//public final static int numberOfThreads = 20;
-	public final static int numberOfThreads = 1;
+	public final static int numberOfThreads = 20;
+	public final static int numberOfQSimThreads = 1;
 
 	//public final static String outputBaseDir = "/work1/s103232/ABMTRANS2019/"; //With final /
 	//public final static String outputBaseDir = "./output/ABMTRANS2019/"; //With final / 
@@ -90,7 +90,7 @@ public class RunBicycleCopenhagen {
 		config.controler().setDumpDataAtEnd(true);
 
 		config.global().setNumberOfThreads(numberOfThreads);
-		config.qsim().setNumberOfThreads(numberOfThreads);
+		config.qsim().setNumberOfThreads(numberOfQSimThreads);
 		config.parallelEventHandling().setNumberOfThreads(numberOfThreads);
 		
 		config.global().setCoordinateSystem("EPSG:32632");   ///EPSG:32632 is WGS84 UTM32N

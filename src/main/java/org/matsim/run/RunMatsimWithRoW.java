@@ -56,7 +56,7 @@ public class RunMatsimWithRoW {
 	public static boolean useEqualCapacities = false;
 
 	private static double bicycleMarketShare = 1.0;
-	private static int numberOfAgents = 50;
+	private static int numberOfAgents = 1;
 
 	private static boolean useToyNetwork = true;
 
@@ -188,6 +188,10 @@ public class RunMatsimWithRoW {
 				startLink =  scenario.getNetwork().getLinks().get(Id.createLinkId("WW_W"));
 			}
 
+			
+			startLink = scenario.getNetwork().getLinks().get(Id.createLinkId("SS_S"));
+			endLink =  scenario.getNetwork().getLinks().get(Id.createLinkId("WW_W"));
+		
 
 			String mode;
 			if( random.nextDouble() < bicycleMarketShare ){

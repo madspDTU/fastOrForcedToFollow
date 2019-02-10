@@ -133,10 +133,24 @@ public class Sublink{
 
 	
 	/**
+	 * Configured such that the pseudoLane tReadys are automatically updated.
+	 * 
 	 * @return <code>true</code> iff the link is full, i.e. the occupied space is at least as large as the total lane length.
 	 */
 	public boolean isLinkFull(){
-		return occupiedSpace >= totalLaneLength;
+		if(occupiedSpace >= totalLaneLength){
+			updateTReadysWhenFull();
+			return true;
+		} else {
+			return false;
+		}
+	}
+	private void updateTReadysWhenFull() {
+		double minTEnd = getMinimumNextMoveTime();
+		for(int i = 0; i < psi.length; i++){
+			PseudoLane pseudoLane = psi[i];
+			pseudoLane.setTReady(Math.max(pseudoLane.getTReady(), minTEnd));
+		}
 	}
 
 	/**
@@ -190,5 +204,16 @@ public class Sublink{
 			linkArray[i] = new Sublink(id + "_part_" + (i+1) , Psi, length/N);
 		}
 		return linkArray;
+	}
+	
+	public double getMinimumNextMoveTime(){
+		double minTime = psi[0].getTEnd();
+		for(int i = 1; i < psi.length; i++){
+			PseudoLane pseudoLane = psi[i];
+			if( pseudoLane.getTEnd() < minTime){
+				minTime = pseudoLane.getTEnd();
+			}
+		}
+		return minTime;
 	}
 }

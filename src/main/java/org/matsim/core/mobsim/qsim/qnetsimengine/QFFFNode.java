@@ -432,7 +432,8 @@ final class QFFFNode implements QNodeI {
 	 */
 	protected boolean moveVehicleOverNode( final QVehicle veh, QLinkI fromLink, final QLaneI fromLane, final double now ) {
 		Id<Link> nextLinkId = veh.getDriver().chooseNextLinkId();
-		Link currentLink = fromLink.getLink() ;
+		Link currentLink = veh.getCurrentLink();   // Takes it from QVehicle, so temporary link does not enter here...
+		
 		AcceptTurn turn = turnAcceptanceLogic.isAcceptingTurn(currentLink, fromLane, nextLinkId, veh, this.netsimEngine.getNetsimNetwork(), now);
 		if ( turn.equals(AcceptTurn.ABORT) ) {
 			moveVehicleFromInlinkToAbort( veh, fromLane, now, currentLink.getId() ) ;
@@ -440,7 +441,7 @@ final class QFFFNode implements QNodeI {
 		} else if ( turn.equals(AcceptTurn.WAIT) ) {
 			return false;
 		}
-
+		
 		QLinkI nextQueueLink = this.netsimEngine.getNetsimNetwork().getNetsimLinks().get(nextLinkId);
 		QLaneI nextQueueLane = nextQueueLink.getAcceptingQLane() ;
 		if (nextQueueLane.isAcceptingFromUpstream()) {

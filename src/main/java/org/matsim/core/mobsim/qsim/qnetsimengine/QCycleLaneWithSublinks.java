@@ -347,7 +347,6 @@ class QCycleLaneWithSublinks implements QLaneI{
 		activateLink(); // Activates the new link
 	//	veh.setCurrentLink(qLinkImpl.getLink()); // Sets the new link as currentLink
 		QCycle qCyc = (QCycle) veh; // Upcast
-		qCyc.setEarliestLinkExitTime(qCyc.getEarliestLinkExitTime() + context.qsimConfig.getTimeStepSize());
 		Cyclist cyclist = qCyc.getCyclist(); // Extract cyclist
 		cyclist.setCurrentLinkIndex(fffLinkArray.length -1); //Places cyclist at last sublink
 		this.fffLinkArray[fffLinkArray.length-1].increaseOccupiedSpace(cyclist, cyclist.getSpeed()); // Take up space

@@ -46,24 +46,16 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode{
 				while(! lane.isNotOfferingVehicle()){	
 					QVehicle veh = lane.getFirstVehicle();
 					Id<Link> nextLinkId = veh.getDriver().chooseNextLinkId();
-					
 					int outDirection = bicycleOutTransformations.get(nextLinkId);
 					int t = bicycleTurns[inDirection][outDirection];
-					if(t != outDirection){
-						t = increaseInt(t); // It corresponds to going to the next link.
-						if(t == inDirection){
-							System.err.println("@" + qNode.getNode().getId() + " Returns to inlink");
-							System.exit(-1);
-						}
-					}
-
 					if(bicycleTimeouts[inDirection][t] <= now){
 						if(t == outDirection){ // Not a partial turn
 							if (! this.qNode.moveVehicleOverNode(veh, inLink, lane, now )) {
 								break;
 							}
 						} else { // a partial turn
-							moveLeftTurningBicyclePartiallyOverNode(veh, lane, nowish, decreaseInt(t));
+							t = decreaseInt(t);
+							moveLeftTurningBicyclePartiallyOverNode(veh, lane, nowish, t);
 						}
 						timeoutModifier.updateTimeouts(bicycleTimeouts, carTimeouts, 
 								inDirection, t, isSecondary, nowish);
@@ -83,7 +75,10 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode{
 		// Still something about the left turns from non-priority links that does not work.
 		// (Currently, straightahead is considered a left turn, which it should not). 
 
-
+		// The outputs either the outdirection, or the bundle FOLLOWING the bundle with the appropriate inlink
+			// The FOLLOWING bundle is used, because the conflicts have to be based on this bundle.
+				// One link is "subtracted" before using it in a stepwise left turn move. 
+		
 		int[][] turns = new int[carInLinks.length][carInLinks.length];
 		for(int inDirection = 0; inDirection < carInLinks.length; inDirection++){
 			for(int outDirection = 0; outDirection < carInLinks.length; outDirection++){
@@ -101,7 +96,7 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode{
 							t = decreaseInt(t);
 						}
 						if(t == inDirection){
-							t = increaseInt(otherPriority);
+							t = otherPriority;
 							while(bicycleInLinks[t] == null && t != outDirection ){
 								t = increaseInt(t);
 							}
@@ -113,6 +108,12 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode{
 						}
 					}
 				}
+				
+				//Choose the following bundle based on inlink..
+				if(t != outDirection){
+					t = increaseInt(t);
+				}
+				
 				turns[inDirection][outDirection] = t;
 			}
 		}
@@ -413,7 +414,6 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode{
 			//4 ) secondary MovesForBicycles 
 			for(int i : secondaryInLinkOrder){
 				bicycleMove(i, now, nowish, new SecondaryBicycleTimeoutModifier()); // includes step-wise left turns
-
 			}
 			//5 ) straight or right moves from secondary for cars
 			for(int i : secondaryInLinkOrder){

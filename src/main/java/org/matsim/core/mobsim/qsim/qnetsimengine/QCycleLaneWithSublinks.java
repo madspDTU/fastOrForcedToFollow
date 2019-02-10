@@ -258,10 +258,10 @@ class QCycleLaneWithSublinks implements QLaneI{
 	}
 
 	@Override public boolean isActive() {
-		if(!globalQ.isEmpty()){
-			return true;
-		} else {
+		if(globalQ.isEmpty() && isNotOfferingVehicle()){
 			return false;
+		} else {
+			return true;
 		}
 	}
 

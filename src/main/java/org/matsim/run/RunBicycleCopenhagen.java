@@ -34,8 +34,8 @@ import org.matsim.vehicles.VehicleTypeImpl;
 
 public class RunBicycleCopenhagen {
 
-	public final static int numberOfThreads = 1;
-	//public final static int numberOfThreads = 4;
+	//public final static int numberOfThreads = 20;
+	public final static int numberOfThreads = 3;
 
 	//public final static String outputBaseDir = "/work1/s103232/ABMTRANS2019/"; //With final /
 	//public final static String outputBaseDir = "./output/ABMTRANS2019/"; //With final / 
@@ -48,7 +48,7 @@ public class RunBicycleCopenhagen {
 	public static void main(String[] args) throws IOException{
 		boolean congestion = true;
 		String size = "small";
-		int lastIteration = 0;
+		int lastIteration = 50;
 		boolean oneLane = false;
 		if(args.length > 0){
 			size = args[0];

@@ -83,7 +83,7 @@ class QNetsimEngineRunner extends NetElementActivationRegistry implements Runnab
 		if (QSim.analyzeRunTimes) runTimes = new long[QNetsimEngine.numObservedTimeSteps];
 		else runTimes = null;
 	}
-	
+
 	/*package*/ QNetsimEngineRunner(Phaser startBarrier, Phaser separationBarrier, Phaser endBarrier) {
 		this.startBarrier = startBarrier;
 		this.separationBarrier = separationBarrier;
@@ -130,7 +130,7 @@ class QNetsimEngineRunner extends NetElementActivationRegistry implements Runnab
 
 		// The method is ended when the simulationRunning flag is set to false.
 		while(true) {
-			
+
 			/*
 			 * The threads wait at the startBarrier until they are triggered in the next 
 			 * time step by the run() method in the QNetsimEngine.
@@ -138,7 +138,7 @@ class QNetsimEngineRunner extends NetElementActivationRegistry implements Runnab
 			startBarrier.arriveAndAwaitAdvance();
 
 			if (QSim.analyzeRunTimes) this.startTime = System.nanoTime();
-			
+
 			// Check if Simulation is still running. Otherwise print CPU usage and end thread.
 			if (!this.simulationRunning) {
 				Gbl.printCurrentThreadCpuTime();
@@ -151,13 +151,13 @@ class QNetsimEngineRunner extends NetElementActivationRegistry implements Runnab
 			this.separationBarrier.arriveAndAwaitAdvance();
 
 			moveLinks();
-	
+
 			if (QSim.analyzeRunTimes) {
 				long end = System.nanoTime();
 				int bin = (int) this.time;
 				if (bin < this.runTimes.length) this.runTimes[bin] = end - this.startTime;
 			}
-			
+
 			/*
 			 * The end of moving is synchronized with the endBarrier. If all threads 
 			 * reach this barrier the main thread can go on.
@@ -183,10 +183,11 @@ class QNetsimEngineRunner extends NetElementActivationRegistry implements Runnab
 		QLinkI link;
 		ListIterator<QLinkI> simLinks = this.linksList.listIterator();
 		while (simLinks.hasNext()) {
+	
 			link = simLinks.next();
-			
-			remainsActive = link.doSimStep();
 
+			remainsActive = link.doSimStep();
+	
 			if (!remainsActive) simLinks.remove();
 		}
 		lockLinks = false;

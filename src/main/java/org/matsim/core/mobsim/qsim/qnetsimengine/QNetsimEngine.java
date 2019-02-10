@@ -330,7 +330,7 @@ public class QNetsimEngine implements MobsimEngine, NetsimEngine {
 				}
 			} catch (InterruptedException e) {
 				throw new RuntimeException(e) ;
-			} catch (ExecutionException e) {
+			} catch (ExecutionException e) {	
 				throw new RuntimeException(e.getCause());
 			}
 		} else {

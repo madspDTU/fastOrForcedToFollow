@@ -39,7 +39,7 @@ public class RunBicycleCopenhagen {
 
 	//public final static String outputBaseDir = "/work1/s103232/ABMTRANS2019/"; //With final /
 	//public final static String outputBaseDir = "./output/ABMTRANS2019/"; //With final / 
-	public final static String outputBaseDir = "C:/Users/madsp/git/fastOrForcedToFollowMaven/output/Copenhagen/";
+	public static String outputBaseDir = "C:/Users/madsp/git/fastOrForcedToFollowMaven/output/Copenhagen/";
 
 	//public final static String inputBaseDir = "./input/";  //With final /
 	//public final static String inputBaseDir = "/zhome/81/e/64390/MATSim/ABMTRANS2019/input/"; //With final /
@@ -47,32 +47,38 @@ public class RunBicycleCopenhagen {
 
 	public static void main(String[] args) throws IOException{
 		boolean congestion = true;
-		String size = "small";
-		int lastIteration = 20;
+		String scenarioType = "small";
+		int lastIteration = 200;
 		boolean oneLane = false;
+		boolean roW = false;
 		if(args.length > 0){
-			size = args[0];
-			if(size.contains("NoCongestion")){
+			scenarioType = args[0];
+			if(scenarioType.contains("NoCongestion")){
 				congestion = false;
 			}
 			if(args.length > 1){
 				lastIteration = Integer.valueOf(args[1]);
 			}
-			if(size.contains("OneLane")){
+			if(scenarioType.contains("OneLane")){
 				oneLane = true;
 			}
+			if(scenarioType.contains("RoW")){
+				roW = true;
+				outputBaseDir += "withNodeModelling/";
+			}
 		}
-		System.out.println("Running " + size);
+		
+		System.out.println("Running " + scenarioType);
 
 		Config config = RunMatsim.createConfigFromExampleName("berlin");
-		config.controler().setOutputDirectory(outputBaseDir + size);
+		config.controler().setOutputDirectory(outputBaseDir + scenarioType);
 
 
 
-		if(size.substring(0,4).equals("full")){
-			size = "full";
-		} else if(size.substring(0,5).equals("small")){
-			size = "small";
+		if(scenarioType.substring(0,4).equals("full")){
+			scenarioType = "full";
+		} else if(scenarioType.substring(0,5).equals("small")){
+			scenarioType = "small";
 		}
 		config.controler().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists);
 		config.controler().setLastIteration(lastIteration);
@@ -92,7 +98,7 @@ public class RunBicycleCopenhagen {
 		config.global().setNumberOfThreads(numberOfThreads);
 		config.qsim().setNumberOfThreads(numberOfQSimThreads);
 		config.parallelEventHandling().setNumberOfThreads(numberOfThreads);
-		
+
 		config.global().setCoordinateSystem("EPSG:32632");   ///EPSG:32632 is WGS84 UTM32N
 
 		{
@@ -153,7 +159,7 @@ public class RunBicycleCopenhagen {
 			config.network().setInputFile(
 					inputBaseDir + "MATSimCopenhagenNetwork_BicyclesOnly.xml.gz");
 		}
-		config.plans().setInputFile(inputBaseDir + "BicyclePlans_CPH_" + size + ".xml.gz");
+		config.plans().setInputFile(inputBaseDir + "BicyclePlans_CPH_" + scenarioType + ".xml.gz");
 
 		//Possible changes to config
 		FFFConfigGroup fffConfig = ConfigUtils.addOrGetModule(config, FFFConfigGroup.class);
@@ -168,8 +174,11 @@ public class RunBicycleCopenhagen {
 
 		Controler controler;
 		if(congestion){
-			// controler = RunMatsim.createControler(scenario);
-			controler = RunMatsim.createControlerWithRoW(scenario);	
+			if(!roW){
+				controler = RunMatsim.createControler(scenario);
+			} else {
+				controler = RunMatsim.createControlerWithRoW(scenario);	
+			}
 		} else {
 			controler = RunMatsim.createControlerWithoutCongestion(scenario);
 		}
@@ -184,7 +193,7 @@ public class RunBicycleCopenhagen {
 		} catch ( Exception ee ) {
 			ee.printStackTrace();
 		}
-/*
+		/*
 
 		if(oneLane){
 			size += "OneLane";
@@ -196,12 +205,12 @@ public class RunBicycleCopenhagen {
 		if(lastIteration != 0){
 			ConstructSpeedFlowsFromCopenhagen.main(new String[]{size, "0"});	//PostProcessing first iteration
 		}
-		*/
+		 */
 
 	}
 
 
-	
+
 
 	private static void removeSouthWesternPart(Network network) {
 		// Based on http://www.ytechie.com/2009/08/determine-if-a-point-is-contained-within-a-polygon/  
@@ -216,7 +225,7 @@ public class RunBicycleCopenhagen {
 		for(Node node : nodesToBeRemoved){
 			network.removeNode(node.getId());
 		}
-	//	System.out.println(isCoordInsidePolygon(new Coord(671092.33, 6177550.04), vertices));
+		//	System.out.println(isCoordInsidePolygon(new Coord(671092.33, 6177550.04), vertices));
 		System.out.println(nodesToBeRemoved.size() + " nodes and " + (linksBefore - network.getLinks().size())
 				+ " links removed from South-Western part...");
 	}
@@ -248,7 +257,7 @@ public class RunBicycleCopenhagen {
 		coords.addLast(new Coord(732555.631618,	6201557.084542)); // Bäckviken
 		coords.addLast(new Coord(748457.912623,	6146312.994732)); // Ljunghusen
 		coords.addLast(new Coord(702262.206001, 6111994.192165)); // Bønsvig 
-		
+
 		Coord[] output = new Coord[coords.size()];
 		for(int i = 0; i < output.length; i++){
 			output[i] = coords.pollFirst();
@@ -257,5 +266,5 @@ public class RunBicycleCopenhagen {
 	}
 
 
-	
+
 }

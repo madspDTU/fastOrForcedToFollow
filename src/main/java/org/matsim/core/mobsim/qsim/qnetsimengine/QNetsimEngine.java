@@ -121,11 +121,11 @@ public class QNetsimEngine implements MobsimEngine, NetsimEngine {
 	private ExecutorService pool;
 
 	private final boolean usingThreadpool;
-	
+
 	// for detailed run time analysis - used in combination with QSim.analyzeRunTimes
 	public static int numObservedTimeSteps = 24*3600;
 	public static boolean printRunTimesPerTimeStep = false;
-	
+
 	@Override
 	public void setInternalInterface( InternalInterface internalInterface) {
 		this.internalInterface = internalInterface;
@@ -157,14 +157,14 @@ public class QNetsimEngine implements MobsimEngine, NetsimEngine {
 			throw new RuntimeException("Unknown vehicle behavior option.");			
 		}
 		dpHandler = new VehicularDepartureHandler(this, vehicleBehavior, qSimConfigGroup);
-		
+
 		if(qSimConfigGroup.getLinkDynamics().equals(LinkDynamics.SeepageQ)) {
 			log.info("Seepage is allowed. Seep mode(s) is(are) " + qSimConfigGroup.getSeepModes() + ".");
 			if(qSimConfigGroup.isSeepModeStorageFree()) {
 				log.warn("Seep mode(s) " + qSimConfigGroup.getSeepModes() + " does not take storage space thus only considered for flow capacities.");
 			}
 		}
-		
+
 		if (netsimNetworkFactory != null){
 			network = new QNetwork( sim.getScenario().getNetwork(), netsimNetworkFactory ) ;
 		} else {
@@ -269,6 +269,13 @@ public class QNetsimEngine implements MobsimEngine, NetsimEngine {
 	 */
 	@Override
 	public void doSimStep(final double time) {
+
+		if(time > 60*3600){
+
+			System.out.println("Time was over 60:00:00...");
+			System.exit(-1);
+		}
+
 		run(time);
 
 		this.printSimLog(time);
@@ -346,8 +353,8 @@ public class QNetsimEngine implements MobsimEngine, NetsimEngine {
 			int nofActiveLinks = this.getNumberOfSimulatedLinks();
 			int nofActiveNodes = this.getNumberOfSimulatedNodes();
 			log.info("SIMULATION (QNetsimEngine) AT " + Time.writeTime(time)
-					+ " : #links=" + nofActiveLinks
-					+ " #nodes=" + nofActiveNodes);
+			+ " : #links=" + nofActiveLinks
+			+ " #nodes=" + nofActiveNodes);
 		}
 	}
 
@@ -373,9 +380,9 @@ public class QNetsimEngine implements MobsimEngine, NetsimEngine {
 		return numNodes;
 	}
 
-//	QSim getMobsim() {
-//		return this.qsim;
-//	}
+	//	QSim getMobsim() {
+	//		return this.qsim;
+	//	}
 	// do not hand out back pointers! kai, mar'16
 
 	public NetsimNetwork getNetsimNetwork() {
@@ -431,7 +438,7 @@ public class QNetsimEngine implements MobsimEngine, NetsimEngine {
 		if (this.usingThreadpool) {
 			// The number of runners should be larger than the number of threads, yes,
 			// but see MATSIM-404 - Simulation result still depends on the number of runners.
-//			numOfRunners *= 10 ;
+			//			numOfRunners *= 10 ;
 			this.pool = Executors.newFixedThreadPool(
 					this.numOfThreads,
 					new NamedThreadFactory());
@@ -515,7 +522,7 @@ public class QNetsimEngine implements MobsimEngine, NetsimEngine {
 
 	public void printEngineRunTimes() {
 		if (!QSim.analyzeRunTimes) return;
-		
+
 		if (printRunTimesPerTimeStep) log.info("detailed QNetsimEngineRunner run times per time step:");
 		{
 			StringBuffer sb = new StringBuffer();
@@ -560,7 +567,7 @@ public class QNetsimEngine implements MobsimEngine, NetsimEngine {
 		log.info("sum max run times: " + sumMax);
 		log.info("sum all run times / num threads: " + sum / this.numOfThreads);
 	}
-	
+
 	private static class NamedThreadFactory implements ThreadFactory {
 		private int count = 0;
 

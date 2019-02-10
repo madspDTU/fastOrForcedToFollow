@@ -82,8 +82,9 @@ class QCycleLaneWithSublinks implements QLaneI{
 		
 		// Delays might occur at intersections... These are not captured otherwise (e.g. by tReady).
 		double now = context.getSimTimer().getTimeOfDay() ;
-		if(now > cyclist.getTEarliestExit() + 2 * context.getSimTimer().getSimTimestepSize()){
-			cyclist.setTEarliestExit(now - context.getSimTimer().getSimTimestepSize());
+		double stepSize = context.getSimTimer().getSimTimestepSize();
+		if(now > cyclist.getTEarliestExit() + 2 * stepSize){
+			cyclist.setTEarliestExit(now - stepSize);
 		}
 		// The time at which the tip of the cyclist enters the beginning of the link:
 		double tStart = Double.max(pseudoLane.getTReady(), cyclist.getTEarliestExit()) ;

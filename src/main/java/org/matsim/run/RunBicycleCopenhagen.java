@@ -2,23 +2,17 @@ package org.matsim.run;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import org.matsim.api.core.v01.Coord;
-import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
-import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
-import org.matsim.api.core.v01.population.Person;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
-import org.matsim.core.config.groups.ControlerConfigGroup.RoutingAlgorithmType;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ActivityParams;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ModeParams;
 import org.matsim.core.config.groups.StrategyConfigGroup.StrategySettings;
@@ -29,16 +23,14 @@ import org.matsim.core.replanning.strategies.DefaultPlanStrategiesModule.Default
 import org.matsim.core.replanning.strategies.DefaultPlanStrategiesModule.DefaultStrategy;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.scoring.ScoringFunctionPenalisingCongestedTimeFactory;
-import org.matsim.vehicles.VehicleType;
-import org.matsim.vehicles.VehicleTypeImpl;
 
 public class RunBicycleCopenhagen {
 
 	public final static int numberOfThreads = 20;
 	public final static int numberOfQSimThreads = 1;
 
-	//public final static String outputBaseDir = "/work1/s103232/ABMTRANS2019/"; //With final /
-	//public final static String outputBaseDir = "./output/ABMTRANS2019/"; //With final / 
+	//public static String outputBaseDir = "/work1/s103232/ABMTRANS2019/"; //With final /
+	//public static String outputBaseDir = "./output/ABMTRANS2019/"; //With final / 
 	public static String outputBaseDir = "C:/Users/madsp/git/fastOrForcedToFollowMaven/output/Copenhagen/";
 
 	//public final static String inputBaseDir = "./input/";  //With final /

@@ -89,6 +89,7 @@ public class RunBicycleCopenhagen {
 
 		config.global().setNumberOfThreads(numberOfThreads);
 		config.qsim().setNumberOfThreads(numberOfQSimThreads);
+		config.qsim().setUsingThreadpool(false);
 		config.parallelEventHandling().setNumberOfThreads(numberOfThreads);
 
 		config.global().setCoordinateSystem("EPSG:32632");   ///EPSG:32632 is WGS84 UTM32N

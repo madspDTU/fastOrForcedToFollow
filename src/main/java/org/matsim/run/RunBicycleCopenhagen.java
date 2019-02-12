@@ -27,7 +27,7 @@ import org.matsim.core.scoring.ScoringFunctionPenalisingCongestedTimeFactory;
 public class RunBicycleCopenhagen {
 
 	public final static int numberOfThreads = 20;
-	public final static int numberOfQSimThreads = 1;
+	public final static int numberOfQSimThreads = 20;
 
 	public static String outputBaseDir = "/work1/s103232/ABMTRANS2019/"; //With final /
 	//public static String outputBaseDir = "./output/ABMTRANS2019/"; //With final / 

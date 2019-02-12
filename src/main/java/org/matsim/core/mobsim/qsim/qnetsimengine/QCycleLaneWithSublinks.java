@@ -184,9 +184,13 @@ class QCycleLaneWithSublinks implements QLaneI{
 
 				// Updating tReady and tExit of the link:
 				double tOneBicycleLength = cyclist.getBicycleLength() / vTilde;
-				double surplus = pseudoLane.getLength() / vTilde * (correctionFactor-1);
-				pseudoLane.setTReady(tStart + tOneBicycleLength + surplus);
-				pseudoLane.setTEnd(cyclist.getTEarliestExit() + tOneBicycleLength + surplus);
+				
+				pseudoLane.setTReady(tStart + tOneBicycleLength);
+				pseudoLane.setTEnd(cyclist.getTEarliestExit() + tOneBicycleLength);
+			
+				//double surplus = pseudoLane.getLength() / vTilde * (correctionFactor-1);
+				//pseudoLane.setTReady(tStart + tOneBicycleLength + surplus);
+				//pseudoLane.setTEnd(cyclist.getTEarliestExit() + tOneBicycleLength + surplus);
 			
 				// Add qCycle to the downstream queue of the next link.
 				//	receivingFFFLink.getOutQ().add(cqo ); 

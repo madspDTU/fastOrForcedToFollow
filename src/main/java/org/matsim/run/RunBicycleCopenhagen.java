@@ -29,20 +29,19 @@ public class RunBicycleCopenhagen {
 	public final static int numberOfThreads = 20;
 	public final static int numberOfQSimThreads = 1;
 
-	//public static String outputBaseDir = "/work1/s103232/ABMTRANS2019/"; //With final /
+	public static String outputBaseDir = "/work1/s103232/ABMTRANS2019/"; //With final /
 	//public static String outputBaseDir = "./output/ABMTRANS2019/"; //With final / 
-	public static String outputBaseDir = "C:/Users/madsp/git/fastOrForcedToFollowMaven/output/Copenhagen/";
+	//public static String outputBaseDir = "C:/Users/madsp/git/fastOrForcedToFollowMaven/output/Copenhagen/";
 
 	//public final static String inputBaseDir = "./input/";  //With final /
-	//public final static String inputBaseDir = "/zhome/81/e/64390/MATSim/ABMTRANS2019/input/"; //With final /
-	public final static String inputBaseDir = "C:/Users/madsp/git/fastOrForcedToFollowMaven/input/";	
+	public final static String inputBaseDir = "/zhome/81/e/64390/MATSim/ABMTRANS2019/input/"; //With final /
+	//public final static String inputBaseDir = "C:/Users/madsp/git/fastOrForcedToFollowMaven/input/";	
 
 	public static void main(String[] args) throws IOException{
 		boolean congestion = true;
 		String scenarioType = "small";
-		int lastIteration = 200;
+		int lastIteration = 50;
 		boolean oneLane = false;
-		boolean roW = false;
 		if(args.length > 0){
 			scenarioType = args[0];
 			if(scenarioType.contains("NoCongestion")){
@@ -55,8 +54,8 @@ public class RunBicycleCopenhagen {
 				oneLane = true;
 			}
 			if(scenarioType.contains("RoW")){
-				roW = true;
-				outputBaseDir += "withNodeModelling/";
+				System.err.println("This version does not support RoW. Use hEART2019 instead...");
+				System.exit(-1);
 			}
 		}
 		
@@ -182,19 +181,19 @@ public class RunBicycleCopenhagen {
 		} catch ( Exception ee ) {
 			ee.printStackTrace();
 		}
-		/*
+		
 
 		if(oneLane){
-			size += "OneLane";
+			scenarioType += "OneLane";
 		}
 		if(!congestion){
-			size += "NoCongestion";
+			scenarioType += "NoCongestion";
 		}
-		ConstructSpeedFlowsFromCopenhagen.main(new String[]{size, "-1"}); //PostProcessing final iteration
+		ConstructSpeedFlowsFromCopenhagen.main(new String[]{scenarioType, "-1"}); //PostProcessing final iteration
 		if(lastIteration != 0){
-			ConstructSpeedFlowsFromCopenhagen.main(new String[]{size, "0"});	//PostProcessing first iteration
+			ConstructSpeedFlowsFromCopenhagen.main(new String[]{scenarioType, "0"});	//PostProcessing first iteration
 		}
-		 */
+		
 
 	}
 

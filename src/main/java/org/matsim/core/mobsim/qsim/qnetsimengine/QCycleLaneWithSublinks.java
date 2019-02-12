@@ -80,14 +80,18 @@ class QCycleLaneWithSublinks implements QLaneI{
 		//					 printDelay(cyclist);
 
 		
-		// Delays might occur at intersections... These are not captured otherwise (e.g. by tReady).
-		double now = context.getSimTimer().getTimeOfDay() ;
-		double stepSize = context.getSimTimer().getSimTimestepSize();
 		double tEarliestExit = cyclist.getTEarliestExit();
+		
+		/* ONLY RELEVANT FOR 	RoW
+		 * // Delays might occur at intersections... These are not captured otherwise (e.g. by tReady).
+		 * double now = context.getSimTimer().getTimeOfDay() ;
+		double stepSize = context.getSimTimer().getSimTimestepSize();
 		if(now > tEarliestExit + 2 * stepSize){
 			double delayInStepSizes = now - (Math.ceil(tEarliestExit/stepSize) + 1) * stepSize;
 			cyclist.setTEarliestExit(tEarliestExit + delayInStepSizes);
 		}
+		*/
+		
 		// The time at which the tip of the cyclist enters the beginning of the link:
 		double tStart = Double.max(pseudoLane.getTReady(), cyclist.getTEarliestExit()) ;
 
@@ -341,6 +345,7 @@ class QCycleLaneWithSublinks implements QLaneI{
 	/**
 	 * Used by left turning cyclists who will be skipping the queue when making a stepwise left turn.
 	 */
+	/* ONLY RELEVANT FOR RoW
 	public void placeVehicleAtFront(QVehicle veh){
 		activateLink(); // Activates the new link
 	//	veh.setCurrentLink(qLinkImpl.getLink()); // Sets the new link as currentLink
@@ -350,4 +355,5 @@ class QCycleLaneWithSublinks implements QLaneI{
 		this.fffLinkArray[fffLinkArray.length-1].increaseOccupiedSpace(cyclist, cyclist.getSpeed()); // Take up space
 		globalQ.add(qCyc); // Add to queue
 	}
+	*/
 }

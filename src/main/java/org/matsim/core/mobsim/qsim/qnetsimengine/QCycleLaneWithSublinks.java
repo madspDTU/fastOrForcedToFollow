@@ -209,9 +209,7 @@ class QCycleLaneWithSublinks implements QLaneI{
 				final QNodeI toNode = qLinkImpl.getToNode();
 				if ( toNode instanceof QNodeImpl ) {
 					((QNodeImpl) toNode).activateNode();
-				} else if ( toNode instanceof QFFFNode){ //mads: Added QFFFNode here...
-					((QFFFNode) toNode).activateNode();
-				}
+				} 
 			}
 		}
 		//Reinserting potentially stuck cyclists...
@@ -260,9 +258,7 @@ class QCycleLaneWithSublinks implements QLaneI{
 		final QNodeI toNode = qLinkImpl.getToNode();
 		if ( toNode instanceof QNodeImpl ) {
 			((QNodeImpl) toNode).activateNode();
-		} else if ( toNode instanceof QFFFNode){ //mads: Added QFFFNode here...			
-			((QFFFNode) toNode).activateNode();		
-		}
+		} 
 	}
 
 	@Override public boolean isActive() {

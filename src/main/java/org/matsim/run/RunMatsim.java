@@ -57,7 +57,6 @@ import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.mobsim.qsim.AbstractQSimModule;
 import org.matsim.core.mobsim.qsim.qnetsimengine.MadsQNetworkFactory;
-import org.matsim.core.mobsim.qsim.qnetsimengine.MadsQNetworkFactoryWithQFFFNodes;
 import org.matsim.core.mobsim.qsim.qnetsimengine.MadsQNetworkFactoryWithoutCongestion;
 import org.matsim.core.mobsim.qsim.qnetsimengine.MadsQVehicleFactory;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QNetworkFactory;
@@ -354,23 +353,6 @@ public class RunMatsim {
 
 		return controler;
 	}
-
-	public static Controler createControlerWithRoW(Scenario scenario){
-		Controler controler = new Controler( scenario ) ;
-
-
-		controler.addOverridingQSimModule(new AbstractQSimModule() {
-			@Override
-			protected void configureQSim() {
-				this.bind( QNetworkFactory.class ).to( MadsQNetworkFactoryWithQFFFNodes.class );
-				this.bind( QVehicleFactory.class ).to( MadsQVehicleFactory.class ) ;
-			}
-
-		});
-
-		return controler;
-	}
-
 
 	/**
 	 * Method for computing the inverse cumulative distribution function of the standard normal distribution.

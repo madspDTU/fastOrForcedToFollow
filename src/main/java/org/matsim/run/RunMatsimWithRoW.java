@@ -99,8 +99,8 @@ public class RunMatsimWithRoW {
 			scenario = RunMatsim.createScenario(config, 2, false, bicycleMarketShare);
 		}
 		
-		Controler controler = RunMatsim.createControlerWithRoW(scenario); 
-		//Controler controler = RunMatsim.createControler(scenario); 
+		//Controler controler = RunMatsim.createControlerWithRoW(scenario); 
+		Controler controler = RunMatsim.createControler(scenario); 
 
 		config.planCalcScore().addModeParams( new PlanCalcScoreConfigGroup.ModeParams(TransportMode.ride) );
 		config.planCalcScore().addModeParams( new PlanCalcScoreConfigGroup.ModeParams(TransportMode.walk) );

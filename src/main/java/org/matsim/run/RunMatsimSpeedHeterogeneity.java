@@ -100,7 +100,8 @@ public class RunMatsimSpeedHeterogeneity {
 		scenario = RunMatsim.addCyclistAttributes(config, scenario);			
 	
 		
-		Controler controler = RunMatsim.createControlerWithRoW(scenario); 
+		//Controler controler = RunMatsim.createControlerWithRoW(scenario);
+		Controler controler = RunMatsim.createControler(scenario); 
 
 
 	

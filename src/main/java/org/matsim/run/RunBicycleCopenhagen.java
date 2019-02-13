@@ -187,9 +187,11 @@ public class RunBicycleCopenhagen {
 		if(!congestion){
 			scenarioType += "NoCongestion";
 		}
-		ConstructSpeedFlowsFromCopenhagen.main(new String[]{scenarioType, "-1"}); //PostProcessing final iteration
+		
+		String outDir = config.controler().getOutputDirectory();
+		ConstructSpeedFlowsFromCopenhagen.main(new String[]{outDir, scenarioType, "-1"}); //PostProcessing final iteration
 		if(lastIteration != 0){
-			ConstructSpeedFlowsFromCopenhagen.main(new String[]{scenarioType, "0"});	//PostProcessing first iteration
+			ConstructSpeedFlowsFromCopenhagen.main(new String[]{outDir, scenarioType, "0"});	//PostProcessing first iteration
 		}
 		
 

@@ -52,6 +52,8 @@ import org.matsim.core.mobsim.qsim.qnetsimengine.TurnAcceptanceLogic;
 import org.matsim.core.mobsim.qsim.qnetsimengine.TurnAcceptanceLogic.AcceptTurn;
 import org.matsim.run.RunBicycleCopenhagen;
 
+import fastOrForcedToFollow.Cyclist;
+
 /**
  * Represents a node in the QSimulation.
  */
@@ -406,8 +408,18 @@ final class QFFFNode implements QNodeI {
 
 	private void moveVehicleFromInlinkToOutlink(final QVehicle veh, Id<Link> currentLinkId, final QLaneI fromLane, Id<Link> nextLinkId, QLaneI nextQueueLane) {
 
-		double now = this.context.getSimTimer().getTimeOfDay() ;
-
+		double now = this.context.getSimTimer().getTimeOfDay();
+		
+		Cyclist cyclist = ((QCycle) veh).getCyclist();
+		double tEarliestExit = cyclist.getTEarliestExit();
+		
+		// Delays might occur at intersections... These are not captured otherwise (e.g. by tReady).
+		double stepSize = context.getSimTimer().getSimTimestepSize();
+		if(now > tEarliestExit + 2 * stepSize){
+			double delayInStepSizes = now - (Math.ceil(tEarliestExit/stepSize) + 1) * stepSize;
+			cyclist.setTEarliestExit(tEarliestExit + delayInStepSizes);
+		}
+		
 		fromLane.popFirstVehicle();
 		// -->
 		//		network.simEngine.getMobsim().getEventsManager().processEvent(new LaneLeaveEvent(now, veh.getId(), currentLinkId, fromLane.getId()));

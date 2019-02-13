@@ -27,7 +27,7 @@ import org.matsim.core.scoring.ScoringFunctionPenalisingCongestedTimeFactory;
 public class RunBicycleCopenhagen {
 
 	public final static int numberOfThreads = 20;
-	public final static int numberOfQSimThreads = 1;
+	public final static int numberOfQSimThreads = 20;
 
 	//public static String outputBaseDir = "/work1/s103232/ABMTRANS2019/"; //With final /
 	//public static String outputBaseDir = "./output/ABMTRANS2019/"; //With final / 
@@ -40,7 +40,7 @@ public class RunBicycleCopenhagen {
 	public static void main(String[] args) throws IOException{
 		boolean congestion = true;
 		String scenarioType = "small";
-		int lastIteration = 200;
+		int lastIteration = 50;
 		boolean oneLane = false;
 		boolean roW = false;
 		if(args.length > 0){
@@ -186,19 +186,19 @@ public class RunBicycleCopenhagen {
 		} catch ( Exception ee ) {
 			ee.printStackTrace();
 		}
-		/*
+		
 
 		if(oneLane){
-			size += "OneLane";
+			scenarioType += "OneLane";
 		}
 		if(!congestion){
-			size += "NoCongestion";
+			scenarioType += "NoCongestion";
 		}
-		ConstructSpeedFlowsFromCopenhagen.main(new String[]{size, "-1"}); //PostProcessing final iteration
+		ConstructSpeedFlowsFromCopenhagen.main(new String[]{scenarioType, "-1"}); //PostProcessing final iteration
 		if(lastIteration != 0){
-			ConstructSpeedFlowsFromCopenhagen.main(new String[]{size, "0"});	//PostProcessing first iteration
+			ConstructSpeedFlowsFromCopenhagen.main(new String[]{scenarioType, "0"});	//PostProcessing first iteration
 		}
-		 */
+		
 
 	}
 

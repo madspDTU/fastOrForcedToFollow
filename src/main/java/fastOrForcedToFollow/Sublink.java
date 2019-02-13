@@ -139,19 +139,12 @@ public class Sublink{
 	 */
 	public boolean isLinkFull(){
 		if(occupiedSpace >= totalLaneLength){
-			updateTReadysWhenFull();
 			return true;
 		} else {
 			return false;
 		}
 	}
-	private void updateTReadysWhenFull() {
-		double minTEnd = getMinimumNextMoveTime();
-		for(int i = 0; i < psi.length; i++){
-			PseudoLane pseudoLane = psi[i];
-			pseudoLane.setTReady(Math.max(pseudoLane.getTReady(), minTEnd));
-		}
-	}
+	
 
 	/**
 	 * Reduces the occupied space of link by the safety distance corresponding to <code>speed</code> of <code>cyclist</code>.

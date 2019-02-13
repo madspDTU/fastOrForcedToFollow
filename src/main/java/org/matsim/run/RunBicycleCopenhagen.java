@@ -44,7 +44,7 @@ public class RunBicycleCopenhagen {
 		boolean oneLane = false;
 		boolean roW = false;
 		if(args.length > 0){
-			scenarioType = args[0]; 
+			scenarioType = args[0];
 			if(scenarioType.contains("NoCongestion")){
 				congestion = false;
 			}

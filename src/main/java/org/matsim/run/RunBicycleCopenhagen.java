@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
@@ -27,7 +26,7 @@ import org.matsim.core.scoring.ScoringFunctionPenalisingCongestedTimeFactory;
 public class RunBicycleCopenhagen {
 
 	public final static int numberOfThreads = 20;
-	public final static int numberOfQSimThreads = 20;
+	public final static int numberOfQSimThreads = 4;
 
 	public static String outputBaseDir = "/work1/s103232/ABMTRANS2019/"; //With final /
 	//public static String outputBaseDir = "./output/ABMTRANS2019/"; //With final / 
@@ -63,8 +62,7 @@ public class RunBicycleCopenhagen {
 
 		Config config = RunMatsim.createConfigFromExampleName("berlin");
 		config.controler().setOutputDirectory(outputBaseDir + scenarioType);
-
-
+		
 
 		if(scenarioType.substring(0,4).equals("full")){
 			scenarioType = "full";

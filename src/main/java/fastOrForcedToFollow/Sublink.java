@@ -12,19 +12,19 @@ import java.util.LinkedList;
  */
 public class Sublink{
 
-	
+
 	/**
 	 * The id of the link.
 	 */
 	private final String id;
 
-	
+
 	/**
 	 * The total pseudolane distance (buffer distance) occupied of the cyclists currently on the link.
 	 */
 	private double occupiedSpace = 0;
 
-	
+
 	/**
 	 * The array containing all pseudolanes of the link.
 	 */
@@ -40,14 +40,14 @@ public class Sublink{
 	 * The last time a vehicle was moved through the downstream end of the link.
 	 */
 	private double lastTimeMoved;
-	
-	
+
+
+
 	/**
 	 * A LinkedList containing the vehicles which will be leaving the link. 
 	 */
 	private final LinkedList<QVehicle> leavingVehicles;
-	
-	
+
 	public void addVehicleToLeavingVehicles(final QVehicle veh){
 		this.leavingVehicles.addLast(veh);
 	}
@@ -63,7 +63,7 @@ public class Sublink{
 	public LinkedList<QVehicle> getLeavingVehicles(){
 		return this.leavingVehicles;
 	}
-	
+
 
 	/**
 	 * Static factory method creating a link based on the width of the link. See also the {@link #Link(String, int, double) constructor}.
@@ -71,14 +71,14 @@ public class Sublink{
 	public static Sublink createLinkFromWidth(final String id, final double width, final double length, final FFFConfigGroup fffConfig){
 		return new Sublink(id, 1 + (int) Math.floor((width-fffConfig.getUnusedWidth())/fffConfig.getEfficientLaneWidth()), length );
 	}
-	
+
 	/**
 	 * Static factory method creating a link based directly on the number of pseudolanes of the link. See also the {@link #Link(String, int, double) constructor}.
 	 */
 	public static Sublink createLinkFromNumberOfPseudoLanes(final String id, final int Psi, final double length){
 		return new Sublink(id, Psi, length);
 	}
-	
+
 	/**
 	 * @param id The id of the link.
 	 * @param Psi The number of pseudolanes that the link has.
@@ -87,7 +87,7 @@ public class Sublink{
 	private Sublink(final String id, final int Psi, final double length){
 		this.id = id;
 		this.psi = createPseudoLanes(Psi, length);
-	
+
 		this.leavingVehicles = new LinkedList<QVehicle>();
 
 		double totalLaneLength = 0.;
@@ -95,7 +95,7 @@ public class Sublink{
 			totalLaneLength += pseudoLane.getLength();
 		}
 		this.totalLaneLength = totalLaneLength;
-		
+
 	}
 
 	/**
@@ -109,7 +109,7 @@ public class Sublink{
 		return psi;
 	}
 
-	
+
 	public String getId(){
 		return id;
 	}
@@ -131,7 +131,7 @@ public class Sublink{
 		return psi[i];
 	}
 
-	
+
 	/**
 	 * Configured such that the pseudoLane tReadys are automatically updated.
 	 * 
@@ -139,20 +139,13 @@ public class Sublink{
 	 */
 	public boolean isLinkFull(){
 		if(occupiedSpace >= totalLaneLength){
-			updateTReadysWhenFull();
 			return true;
 		} else {
 			return false;
 		}
 	}
-	private void updateTReadysWhenFull() {
-		double minTEnd = getMinimumNextMoveTime();
-		for(int i = 0; i < psi.length; i++){
-			PseudoLane pseudoLane = psi[i];
-			pseudoLane.setTReady(Math.max(pseudoLane.getTReady(), minTEnd));
-		}
-	}
-
+	
+	
 	/**
 	 * Reduces the occupied space of link by the safety distance corresponding to <code>speed</code> of <code>cyclist</code>.
 	 * 
@@ -182,17 +175,17 @@ public class Sublink{
 		occupiedSpace += length;
 	}
 
-	
-	
+
+
 	public double getLastTimeMoved(){
 		return this.lastTimeMoved;
 	}
-	
+
 	public void setLastTimeMoved(final double lastTimeMoved){
 		this.lastTimeMoved = lastTimeMoved;
 	}
 
-	
+
 	/**
 	 * Static factory method creating a link based directly on the number of pseudolanes of the link. See also the {@link #Link(String, int, double) constructor}.
 	 */
@@ -205,15 +198,5 @@ public class Sublink{
 		}
 		return linkArray;
 	}
-	
-	public double getMinimumNextMoveTime(){
-		double minTime = psi[0].getTEnd();
-		for(int i = 1; i < psi.length; i++){
-			PseudoLane pseudoLane = psi[i];
-			if( pseudoLane.getTEnd() < minTime){
-				minTime = pseudoLane.getTEnd();
-			}
-		}
-		return minTime;
-	}
+
 }

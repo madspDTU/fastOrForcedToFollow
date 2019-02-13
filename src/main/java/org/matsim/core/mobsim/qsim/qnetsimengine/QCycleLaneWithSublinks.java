@@ -149,10 +149,12 @@ class QCycleLaneWithSublinks implements QLaneI{
 			globalQ.remove();
 			
 			//Anything but the last subLink
-			if(qCyc.getCyclist().getCurrentLinkIndex() < fffLinkArray.length -1){
+			if(cyclist.getCurrentLinkIndex() < fffLinkArray.length -1){
 				
 				// internal fff logic:
 
+
+				
 				// Selecting the appropriate pseudoLane:
 				Sublink receivingFFFLink = fffLinkArray[cyclist.getCurrentLinkIndex() + 1];
 				
@@ -161,9 +163,11 @@ class QCycleLaneWithSublinks implements QLaneI{
 					continue;
 				}
 				
-				// qCyc can in fact leave current sublink
-				currentFFFLink.reduceOccupiedSpace(cyclist, cyclist.getSpeed() );
 				
+				// qCyc can in fact leave current sublink
+				currentFFFLink.reduceOccupiedSpace(cyclist, cyclist.getSpeed() );			
+				cyclist.incrementCurrentLinkIndex();
+	
 				// Selecting a pseudolane
 				PseudoLane pseudoLane = cyclist.selectPseudoLane( receivingFFFLink );
 
@@ -188,13 +192,11 @@ class QCycleLaneWithSublinks implements QLaneI{
 				pseudoLane.setTReady(tStart + tOneBicycleLength);
 				pseudoLane.setTEnd(cyclist.getTEarliestExit() + tOneBicycleLength);
 			
+				// ONLY RELEVANT WHEN USING DOWNSCALED POPULATION
 				//double surplus = pseudoLane.getLength() / vTilde * (correctionFactor-1);
 				//pseudoLane.setTReady(tStart + tOneBicycleLength + surplus);
 				//pseudoLane.setTEnd(cyclist.getTEarliestExit() + tOneBicycleLength + surplus);
 			
-				// Add qCycle to the downstream queue of the next link.
-				//	receivingFFFLink.getOutQ().add(cqo ); 
-				qCyc.getCyclist().incrementCurrentLinkIndex();
 				globalQ.add(qCyc);
 
 

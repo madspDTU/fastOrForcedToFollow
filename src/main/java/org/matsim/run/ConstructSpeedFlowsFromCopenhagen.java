@@ -19,7 +19,6 @@ import org.matsim.core.events.FlowHandler;
 import org.matsim.core.events.MatsimEventsReader;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.population.io.PopulationReader;
-import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.core.scenario.ScenarioUtils;
 
 public class ConstructSpeedFlowsFromCopenhagen {

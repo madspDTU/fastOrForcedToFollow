@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 
+import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.events.Event;
 import org.matsim.api.core.v01.events.LinkEnterEvent;
@@ -89,7 +90,7 @@ public class FlowHandler implements BasicEventHandler {
 			String personId = e.getVehicleId().toString();
 			if(entryTimes.containsKey(linkId) && entryTimes.get(linkId).containsKey(personId)){
 				flows.get(linkId)[slot]++;
-				double speed = network.getLinks().get(linkId).getLength() / (now - entryTimes.get(linkId).get(personId));
+				double speed = network.getLinks().get(Id.createLinkId(linkId)).getLength() / (now - entryTimes.get(linkId).get(personId));
 				speeds.get(linkId)[slot].add(speed);
 
 				//To safe memory

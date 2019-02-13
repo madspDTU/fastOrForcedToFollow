@@ -29,13 +29,13 @@ public class RunBicycleCopenhagen {
 	public final static int numberOfThreads = 20;
 	public final static int numberOfQSimThreads = 20;
 
-	public static String outputBaseDir = "/work1/s103232/ABMTRANS2019/"; //With final /
+	//public static String outputBaseDir = "/work1/s103232/ABMTRANS2019/"; //With final /
 	//public static String outputBaseDir = "./output/ABMTRANS2019/"; //With final / 
-	//public static String outputBaseDir = "C:/Users/madsp/git/fastOrForcedToFollowMaven/output/Copenhagen/";
+	public static String outputBaseDir = "C:/Users/madsp/git/fastOrForcedToFollowMaven/output/Copenhagen/";
 
-	public final static String inputBaseDir = "/zhome/81/e/64390/MATSim/ABMTRANS2019/input/"; //With final /
+	//public final static String inputBaseDir = "/zhome/81/e/64390/MATSim/ABMTRANS2019/input/"; //With final /
 	//public final static String inputBaseDir = "./input/";  //With final /
-	//public final static String inputBaseDir = "C:/Users/madsp/git/fastOrForcedToFollowMaven/input/";	
+	public final static String inputBaseDir = "C:/Users/madsp/git/fastOrForcedToFollowMaven/input/";	
 
 	public static void main(String[] args) throws IOException{
 		boolean congestion = true;
@@ -65,8 +65,7 @@ public class RunBicycleCopenhagen {
 		Config config = RunMatsim.createConfigFromExampleName("berlin");
 		config.controler().setOutputDirectory(outputBaseDir + scenarioType);
 
-
-
+		
 		if(scenarioType.substring(0,4).equals("full")){
 			scenarioType = "full";
 		} else if(scenarioType.substring(0,5).equals("small")){
@@ -164,7 +163,6 @@ public class RunBicycleCopenhagen {
 		scenario = RunMatsim.addCyclistAttributes(config, scenario);
 		//RunMatsim.reducePopulationToN(0, scenario.getPopulation());
 
-
 		Controler controler;
 		if(congestion){
 			if(!roW){
@@ -187,16 +185,17 @@ public class RunBicycleCopenhagen {
 			ee.printStackTrace();
 		}
 		
-
 		if(oneLane){
 			scenarioType += "OneLane";
 		}
 		if(!congestion){
 			scenarioType += "NoCongestion";
 		}
-		ConstructSpeedFlowsFromCopenhagen.main(new String[]{scenarioType, "-1"}); //PostProcessing final iteration
+		
+		String outDir = config.controler().getOutputDirectory();
+		ConstructSpeedFlowsFromCopenhagen.main(new String[]{outDir, scenarioType, "-1"}); //PostProcessing final iteration
 		if(lastIteration != 0){
-			ConstructSpeedFlowsFromCopenhagen.main(new String[]{scenarioType, "0"});	//PostProcessing first iteration
+			ConstructSpeedFlowsFromCopenhagen.main(new String[]{outDir, scenarioType, "0"});	//PostProcessing first iteration
 		}
 		
 

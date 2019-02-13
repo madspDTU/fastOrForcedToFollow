@@ -30,24 +30,28 @@ public class ConstructSpeedFlowsFromCopenhagen {
 	public static void main(String[] args) throws IOException {
 		String inputBaseDir = RunBicycleCopenhagen.inputBaseDir;
 		String outputBaseDir = RunBicycleCopenhagen.outputBaseDir;
-		
+		String outDir = null;
 
-		System.out.println(args);
+		for(String s : args){
+			System.out.print(s + " ");
+		} System.out.print("\n");
 
 		if(args.length > 0){
-			type = args[0];	
-			if(args.length > 1){
-				it = Integer.valueOf(args[1]);
-			}
+			outDir = args[0];
+			type = args[1];	
+			it = Integer.valueOf(args[2]);
+		} else {
+			outDir = outputBaseDir + type;
 		}
-
+	
 
 		Config config = ConfigUtils.createConfig();
 		Scenario scenario = ScenarioUtils.createScenario(config);
 		PopulationReader pr = new PopulationReader(scenario);
 
-		String networkString = outputBaseDir + type +"output_network.xml.gz";
+		String networkString = outDir +"/output_network.xml.gz";
 		if(!new File(networkString).exists() ){
+			System.out.println(networkString + " does not exist.");
 			if(type.contains("OneLane")){
 				networkString =
 						inputBaseDir + "MATSimCopenhagenNetwork_BicyclesOnly_1Lane.xml.gz";
@@ -69,16 +73,16 @@ public class ConstructSpeedFlowsFromCopenhagen {
 
 			MatsimEventsReader eventsReader = new MatsimEventsReader(eventsManager);
 			if(it >= 0){
-				eventsReader.readFile(outputBaseDir + type + "/ITERS/it." + it + "/" + it + ".events.xml.gz");
+				eventsReader.readFile(outDir + "/ITERS/it." + it + "/" + it + ".events.xml.gz");
 			} else {
-				eventsReader.readFile(outputBaseDir + type + "/output_events.xml.gz");
+				eventsReader.readFile(outDir + "/output_events.xml.gz");
 			}
 			if(it <0){
-				eventsHandler.writeFlowSpeeds(outputBaseDir + type + "/speedFlows.csv");
-				eventsHandler.writeFlows(outputBaseDir + type + "/", 8);
+				eventsHandler.writeFlowSpeeds(outDir + "/speedFlows.csv");
+				eventsHandler.writeFlows(outDir + "/", 8);
 			} else {
-				eventsHandler.writeFlowSpeeds(outputBaseDir + type + "/ITERS/it." + it + "/speedFlows.csv");
-				eventsHandler.writeFlows(outputBaseDir + type + "/ITERS/it." + it + "/", 8);
+				eventsHandler.writeFlowSpeeds(outDir + "/ITERS/it." + it + "/speedFlows.csv");
+				eventsHandler.writeFlows(outDir + "/ITERS/it." + it + "/", 8);
 			}
 
 			totalTravelTime = eventsHandler.totalTravelTime;
@@ -86,9 +90,9 @@ public class ConstructSpeedFlowsFromCopenhagen {
 			eventsHandler = null;
 			eventsManager = null;
 			if(it < 0){
-				pr.readFile(outputBaseDir + type + "/output_plans.xml.gz");
+				pr.readFile(outDir + "/output_plans.xml.gz");
 			} else {
-				pr.readFile(outputBaseDir + type + "/ITERS/it." + it + "/" + it + ".plans.xml.gz");	
+				pr.readFile(outDir + "/ITERS/it." + it + "/" + it + ".plans.xml.gz");	
 			}
 
 			double[] measures = calculateCongestedTravelTimeAndTotalDistance(scenario.getPopulation(), network,
@@ -104,9 +108,9 @@ public class ConstructSpeedFlowsFromCopenhagen {
 			System.out.println(s);
 			FileWriter writer;
 			if(it <0){
-				writer = new FileWriter(outputBaseDir + type + "/variousMeasures.txt");
+				writer = new FileWriter(outDir + "/variousMeasures.txt");
 			} else {
-				writer = new FileWriter(outputBaseDir + type + "/ITERS/it." + it + "/variousMeasures.txt");
+				writer = new FileWriter(outDir + "/ITERS/it." + it + "/variousMeasures.txt");
 			}
 			writer.append(s);
 			writer.flush();

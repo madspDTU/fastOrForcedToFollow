@@ -82,15 +82,14 @@ class QCycleLaneWithSublinks implements QLaneI{
 
 		double tEarliestExit = cyclist.getTEarliestExit();
 
-		/* ONLY RELEVANT FOR 	RoW
-		 * // Delays might occur at intersections... These are not captured otherwise (e.g. by tReady).
-		 * double now = context.getSimTimer().getTimeOfDay() ;
+		// Delays might occur at intersections... These are not captured otherwise (e.g. by tReady).
+		double now = context.getSimTimer().getTimeOfDay();
 		double stepSize = context.getSimTimer().getSimTimestepSize();
 		if(now > tEarliestExit + 2 * stepSize){
 			double delayInStepSizes = now - (Math.ceil(tEarliestExit/stepSize) + 1) * stepSize;
 			cyclist.setTEarliestExit(tEarliestExit + delayInStepSizes);
 		}
-		 */
+		
 
 		// The time at which the tip of the cyclist enters the beginning of the link:
 		double tStart = Double.max(pseudoLane.getTReady(), cyclist.getTEarliestExit()) ;
@@ -139,9 +138,8 @@ class QCycleLaneWithSublinks implements QLaneI{
 		while((qCyc = globalQ.peek()) != null){
 
 			double tEarliestExit = qCyc.getEarliestLinkExitTime();
-			double now = context.getSimTimer().getTimeOfDay() ;
 			
-			if( tEarliestExit > now){
+			if( tEarliestExit > context.getSimTimer().getTimeOfDay()){
 				break;
 			}
 
@@ -154,8 +152,6 @@ class QCycleLaneWithSublinks implements QLaneI{
 			if(cyclist.getCurrentLinkIndex() < fffLinkArray.length -1){
 
 				// internal fff logic:
-
-
 
 				// Selecting the appropriate pseudoLane:
 				Sublink receivingFFFLink = fffLinkArray[cyclist.getCurrentLinkIndex() + 1];
@@ -178,12 +174,6 @@ class QCycleLaneWithSublinks implements QLaneI{
 				vTilde = Math.min(cyclist.getDesiredSpeed(), vTilde);
 				cyclist.setSpeed(vTilde);
 
-				// Delays might occur at intersections... These are not captured otherwise.
-				double stepSize = context.getSimTimer().getSimTimestepSize();
-				if(now > tEarliestExit + 2 * stepSize){
-					double delayInStepSizes = now - (Math.ceil(tEarliestExit/stepSize) + 1) * stepSize;
-					cyclist.setTEarliestExit(tEarliestExit + delayInStepSizes);
-				}
 
 				// The time at which the tip of the cyclist enters the beginning of the link:
 				double tStart = Double.max(pseudoLane.getTReady(), cyclist.getTEarliestExit()) ;

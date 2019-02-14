@@ -27,15 +27,15 @@ import org.matsim.core.scoring.ScoringFunctionPenalisingCongestedTimeFactory;
 public class RunBicycleCopenhagen {
 
 	public final static int numberOfThreads = 20;
-	public final static int numberOfQSimThreads = 20;
+	public static int numberOfQSimThreads = 20;
 
-	//public static String outputBaseDir = "/work1/s103232/ABMTRANS2019/"; //With final /
+	public static String outputBaseDir = "/work1/s103232/ABMTRANS2019/"; //With final /
 	//public static String outputBaseDir = "./output/ABMTRANS2019/"; //With final / 
-	public static String outputBaseDir = "C:/Users/madsp/git/fastOrForcedToFollowMaven/output/Copenhagen/";
+	//public static String outputBaseDir = "C:/Users/madsp/git/fastOrForcedToFollowMaven/output/Copenhagen/";
 
-	//public final static String inputBaseDir = "/zhome/81/e/64390/MATSim/ABMTRANS2019/input/"; //With final /
+	public final static String inputBaseDir = "/zhome/81/e/64390/MATSim/ABMTRANS2019/input/"; //With final /
 	//public final static String inputBaseDir = "./input/";  //With final /
-	public final static String inputBaseDir = "C:/Users/madsp/git/fastOrForcedToFollowMaven/input/";	
+	//public final static String inputBaseDir = "C:/Users/madsp/git/fastOrForcedToFollowMaven/input/";	
 
 	public static void main(String[] args) throws IOException{
 		boolean congestion = true;
@@ -57,6 +57,7 @@ public class RunBicycleCopenhagen {
 			}
 			if(scenarioType.contains("RoW")){
 				roW = true;
+				numberOfQSimThreads = 1; // Initially, it is easier when potential threading  problems can be disregarded.
 				outputBaseDir += "withNodeModelling/";
 			}
 			if(scenarioType.contains("Mixed")){

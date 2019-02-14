@@ -479,7 +479,7 @@ public class RunMatsim {
 	}
 
 	static void cleanBicycleNetwork(Network network){
-		removeRedundantNodes(network);
+		//removeRedundantNodes(network);
 		removeDuplicateLinks(network);
 	}
 

@@ -2,6 +2,7 @@ package org.matsim.run;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -82,7 +83,12 @@ public class RunBicycleCopenhagen {
 		if(!congestion){
 			config.controler().setLastIteration(0);
 		}
-		final List<String> networkModes = Arrays.asList( new String[]{TransportMode.bike} );
+		List<String> networkModes = null;
+		if(mixed){
+			networkModes = Arrays.asList( new String[]{TransportMode.car, TransportMode.bike} );
+		} else {
+			networkModes = Arrays.asList( new String[]{TransportMode.bike} );
+		}
 		config.qsim().setMainModes( networkModes );
 		config.plansCalcRoute().setNetworkModes(networkModes);
 		config.controler().setWritePlansInterval(config.controler().getLastIteration()+1);
@@ -206,10 +212,16 @@ public class RunBicycleCopenhagen {
 			scenarioType += "NoCongestion";
 		}
 
+		List<String> ignoredModes = new LinkedList<String>();
+		if(mixed){
+			ignoredModes.add(TransportMode.bike);
+		}
 		String outDir = config.controler().getOutputDirectory();
-		ConstructSpeedFlowsFromCopenhagen.main(new String[]{outDir, scenarioType, "-1"}); //PostProcessing final iteration
+		ConstructSpeedFlowsFromCopenhagen.run(outDir, scenarioType, -1,	ignoredModes); 
+		//PostProcessing final iteration
 		if(lastIteration != 0){
-			ConstructSpeedFlowsFromCopenhagen.main(new String[]{outDir, scenarioType, "0"});	//PostProcessing first iteration
+			ConstructSpeedFlowsFromCopenhagen.run(outDir, scenarioType, 0,ignoredModes);
+			//PostProcessing first iteration
 		}
 
 

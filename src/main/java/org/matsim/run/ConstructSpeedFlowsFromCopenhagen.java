@@ -3,6 +3,8 @@ package org.matsim.run;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.List;
 
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
@@ -15,33 +17,19 @@ import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.events.EventsUtils;
-import org.matsim.core.events.FlowHandler;
 import org.matsim.core.events.MatsimEventsReader;
+import org.matsim.core.events.MultiModalBicycleDoorToDoorHandler;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.population.io.PopulationReader;
 import org.matsim.core.scenario.ScenarioUtils;
 
 public class ConstructSpeedFlowsFromCopenhagen {
 
-	public static String type = "small";
-	public static int it = -1; //Use a negative number to use the final events file.
 
-	public static void main(String[] args) throws IOException {
+	public static void run(String outDir, String type, int it, 
+			List<String> ignoredModes) throws IOException {
 		String inputBaseDir = RunBicycleCopenhagen.inputBaseDir;
-		String outputBaseDir = RunBicycleCopenhagen.outputBaseDir;
-		String outDir = null;
-
-		for(String s : args){
-			System.out.print(s + " ");
-		} System.out.print("\n");
-
-		if(args.length > 0){
-			outDir = args[0];
-			type = args[1];	
-			it = Integer.valueOf(args[2]);
-		} else {
-			outDir = outputBaseDir + type;
-		}
+	
 	
 
 		Config config = ConfigUtils.createConfig();
@@ -52,8 +40,7 @@ public class ConstructSpeedFlowsFromCopenhagen {
 		if(!new File(networkString).exists() ){
 			System.out.println(networkString + " does not exist.");
 			if(type.contains("OneLane")){
-				networkString =
-						inputBaseDir + "MATSimCopenhagenNetwork_BicyclesOnly_1Lane.xml.gz";
+				networkString =	inputBaseDir + "MATSimCopenhagenNetwork_BicyclesOnly_1Lane.xml.gz";
 
 			} else {
 				networkString = inputBaseDir + "MATSimCopenhagenNetwork_BicyclesOnly.xml.gz";
@@ -64,8 +51,10 @@ public class ConstructSpeedFlowsFromCopenhagen {
 		double totalTravelTime = 0;
 		
 		
-			FlowHandler eventsHandler = new FlowHandler();
+			MultiModalBicycleDoorToDoorHandler eventsHandler = new 
+					MultiModalBicycleDoorToDoorHandler();
 			eventsHandler.setNetwork(network);
+			eventsHandler.setAnalysedModes(ignoredModes);
 
 			EventsManager eventsManager = EventsUtils.createEventsManager();
 			eventsManager.addHandler(eventsHandler);

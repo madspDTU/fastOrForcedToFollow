@@ -43,6 +43,7 @@ public class RunBicycleCopenhagen {
 		int lastIteration = 50;
 		boolean oneLane = false;
 		boolean roW = false;
+		boolean mixed = false;
 		if(args.length > 0){
 			scenarioType = args[0];
 			if(scenarioType.contains("NoCongestion")){
@@ -58,14 +59,18 @@ public class RunBicycleCopenhagen {
 				roW = true;
 				outputBaseDir += "withNodeModelling/";
 			}
+			if(scenarioType.contains("Mixed")){
+				mixed = true;
+				oneLane = false;
+			}
 		}
-		
+
 		System.out.println("Running " + scenarioType);
 
 		Config config = RunMatsim.createConfigFromExampleName("berlin");
 		config.controler().setOutputDirectory(outputBaseDir + scenarioType);
 
-		
+
 		if(scenarioType.substring(0,4).equals("full")){
 			scenarioType = "full";
 		} else if(scenarioType.substring(0,5).equals("small")){
@@ -143,15 +148,21 @@ public class RunBicycleCopenhagen {
 
 
 
-
-		if(oneLane){
+		if(mixed){
+			config.network().setInputFile(
+					inputBaseDir + "MATSimCopenhagenNetwork_WithBicycleInfrastructure.xml.gz");
+		} else if(oneLane){
 			config.network().setInputFile(
 					inputBaseDir + "MATSimCopenhagenNetwork_BicyclesOnly_1Lane.xml.gz");
 		} else {
 			config.network().setInputFile(
 					inputBaseDir + "MATSimCopenhagenNetwork_BicyclesOnly.xml.gz");
 		}
-		config.plans().setInputFile(inputBaseDir + "BicyclePlans_CPH_" + scenarioType + ".xml.gz");
+		if(mixed){
+			config.plans().setInputFile(inputBaseDir + "AllPlans_CPH_" + scenarioType + ".xml.gz");
+		} else {
+			config.plans().setInputFile(inputBaseDir + "Plans_CPH_" + scenarioType + ".xml.gz");
+		}
 
 		//Possible changes to config
 		FFFConfigGroup fffConfig = ConfigUtils.addOrGetModule(config, FFFConfigGroup.class);
@@ -159,7 +170,9 @@ public class RunBicycleCopenhagen {
 
 		Scenario scenario = ScenarioUtils.loadScenario( config ) ;
 		RunMatsim.cleanBicycleNetwork(scenario.getNetwork());
-		removeSouthWesternPart(scenario.getNetwork());
+		if(!mixed){
+			removeSouthWesternPart(scenario.getNetwork());
+		}
 		scenario = RunMatsim.addCyclistAttributes(config, scenario);
 		//RunMatsim.reducePopulationToN(0, scenario.getPopulation());
 
@@ -184,20 +197,20 @@ public class RunBicycleCopenhagen {
 		} catch ( Exception ee ) {
 			ee.printStackTrace();
 		}
-		
+
 		if(oneLane){
 			scenarioType += "OneLane";
 		}
 		if(!congestion){
 			scenarioType += "NoCongestion";
 		}
-		
+
 		String outDir = config.controler().getOutputDirectory();
 		ConstructSpeedFlowsFromCopenhagen.main(new String[]{outDir, scenarioType, "-1"}); //PostProcessing final iteration
 		if(lastIteration != 0){
 			ConstructSpeedFlowsFromCopenhagen.main(new String[]{outDir, scenarioType, "0"});	//PostProcessing first iteration
 		}
-		
+
 
 	}
 

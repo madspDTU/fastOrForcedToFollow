@@ -56,7 +56,7 @@ public class RunBicycleCopenhagen {
 				oneLane = true;
 			}
 			if(scenarioType.contains("RoW")){
-				roW = true;
+				roW = true; 
 				numberOfQSimThreads = 1; // Initially, it is easier when potential threading  problems can be disregarded.
 				outputBaseDir += "withNodeModelling/";
 			}

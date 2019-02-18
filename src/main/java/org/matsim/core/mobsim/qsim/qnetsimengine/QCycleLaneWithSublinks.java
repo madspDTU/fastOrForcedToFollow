@@ -172,10 +172,6 @@ class QCycleLaneWithSublinks implements QLaneI{
 
 				// Calculating earliest possible exit of the link:
 				tEarliestExit = tStart + pseudoLane.getLength() / vTilde;
-				if(tEarliestExit > 60 * 3600){
-					log.info("Crazy tEarliest: " + cyclist.getDesiredSpeed() + 
-							" " +  vTilde + " " + cyclist.getSafetyBufferDistance(vTilde));
-				}
 				cyclist.setTEarliestExit( tEarliestExit );
 
 				// Increasing the occupied space on link:

@@ -319,10 +319,10 @@ final class QFFFNode implements QNodeI {
 			boolean areBicycleCapacitiesEqual =	 bicycleCapacities.tailMap(Double.MIN_VALUE).size() <= 1 &&
 					!(bicycleCapacities.tailMap(Double.MIN_VALUE).size() == 1 &&  
 					bicycleCapacities.ceilingEntry(Double.MIN_VALUE).getValue().size() <= 1);
-			
 
-			
-			
+
+
+
 
 			if(areBicycleCapacitiesEqual && areCarCapacitiesEqual){
 				if(carCapacities.lastEntry().getValue().size() == 1 ){
@@ -409,17 +409,19 @@ final class QFFFNode implements QNodeI {
 	private void moveVehicleFromInlinkToOutlink(final QVehicle veh, Id<Link> currentLinkId, final QLaneI fromLane, Id<Link> nextLinkId, QLaneI nextQueueLane) {
 
 		double now = this.context.getSimTimer().getTimeOfDay();
-		
-		Cyclist cyclist = ((QCycle) veh).getCyclist();
-		double tEarliestExit = cyclist.getTEarliestExit();
-		
-		// Delays might occur at intersections... These are not captured otherwise (e.g. by tReady).
-		double stepSize = context.getSimTimer().getSimTimestepSize();
-		if(now > tEarliestExit + 2 * stepSize){
-			double delayInStepSizes = now - (Math.ceil(tEarliestExit/stepSize) + 1) * stepSize;
-			cyclist.setTEarliestExit(tEarliestExit + delayInStepSizes);
+
+		if(veh instanceof QCycle){
+			Cyclist cyclist = ((QCycle) veh).getCyclist();
+			double tEarliestExit = cyclist.getTEarliestExit();
+
+			// Delays might occur at intersections... These are not captured otherwise (e.g. by tReady).
+			double stepSize = context.getSimTimer().getSimTimestepSize();
+			if(now > tEarliestExit + 2 * stepSize){
+				double delayInStepSizes = now - (Math.ceil(tEarliestExit/stepSize) + 1) * stepSize;
+				cyclist.setTEarliestExit(tEarliestExit + delayInStepSizes);
+			}
 		}
-		
+
 		fromLane.popFirstVehicle();
 		// -->
 		//		network.simEngine.getMobsim().getEventsManager().processEvent(new LaneLeaveEvent(now, veh.getId(), currentLinkId, fromLane.getId()));
@@ -445,7 +447,7 @@ final class QFFFNode implements QNodeI {
 	protected boolean moveVehicleOverNode( final QVehicle veh, QLinkI fromLink, final QLaneI fromLane, final double now ) {
 		Id<Link> nextLinkId = veh.getDriver().chooseNextLinkId();
 		Link currentLink = veh.getCurrentLink();   // Takes it from QVehicle, so temporary link does not enter here...
-		
+
 		AcceptTurn turn = turnAcceptanceLogic.isAcceptingTurn(currentLink, fromLane, nextLinkId, veh, this.netsimEngine.getNetsimNetwork(), now);
 		if ( turn.equals(AcceptTurn.ABORT) ) {
 			moveVehicleFromInlinkToAbort( veh, fromLane, now, currentLink.getId() ) ;
@@ -453,7 +455,7 @@ final class QFFFNode implements QNodeI {
 		} else if ( turn.equals(AcceptTurn.WAIT) ) {
 			return false;
 		}
-		
+
 		QLinkI nextQueueLink = this.netsimEngine.getNetsimNetwork().getNetsimLinks().get(nextLinkId);
 		QLaneI nextQueueLane = nextQueueLink.getAcceptingQLane() ;
 		if (nextQueueLane.isAcceptingFromUpstream()) {

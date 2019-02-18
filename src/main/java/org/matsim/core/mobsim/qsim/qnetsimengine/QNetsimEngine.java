@@ -269,13 +269,6 @@ public class QNetsimEngine implements MobsimEngine, NetsimEngine {
 	 */
 	@Override
 	public void doSimStep(final double time) {
-
-		if(time > 60*3600){
-
-			System.out.println("Time was over 60:00:00...");
-			System.exit(-1);
-		}
-
 		run(time);
 
 		this.printSimLog(time);

@@ -461,9 +461,6 @@ public class RunMatsim {
 								outNodes.put(link.getToNode(), link);
 							} else {
 								linksToBeRemoved.add(link);
-								if(mode.equals(TransportMode.car)){
-									System.out.println("Car");
-								}
 							}
 						}
 					}

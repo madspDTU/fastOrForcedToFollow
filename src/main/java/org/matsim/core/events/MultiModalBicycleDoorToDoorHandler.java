@@ -59,6 +59,9 @@ public class MultiModalBicycleDoorToDoorHandler implements BasicEventHandler {
 	HashMap<String, Double> personLegStarts = new HashMap<String, Double>();
 
 	HashSet<String> ignoredModes;
+	List<String> analysedModes;
+	HashMap<String,String> vehicleToPerson = new HashMap<String,String>();
+
 
 
 	public void reset(final int iteration) {
@@ -69,20 +72,32 @@ public class MultiModalBicycleDoorToDoorHandler implements BasicEventHandler {
 		this.network = network;
 	}
 
-	public void setAnalysedModes(List<String> ignoredModes){
+	public void setIgnoredModes(List<String> ignoredModes){
 		this.ignoredModes = new HashSet<String>();
 		for(String s : ignoredModes){
 			this.ignoredModes.add(s + " interaction");
 		}
+	}
+	public void setAnalysedModes(List<String> analysedModes){
+		this.analysedModes = analysedModes;
+	}
+
+	private String bestGuessVehicleId(String vehicleId){
+		if(personLegStarts.containsKey(vehicleId)){
+			return vehicleId;
+		} else if(personLegStarts.containsKey(vehicleToPerson.get(vehicleId))){
+			return vehicleToPerson.get(vehicleId);
+		}
+		return ":(";
 	}
 
 	@Override
 	public void handleEvent(Event event) {
 		if(event instanceof LinkEnterEvent){
 			LinkEnterEvent e = (LinkEnterEvent) event;
-			String vehicleId = e.getVehicleId().toString();
+			String vehicleId = bestGuessVehicleId(e.getVehicleId().toString());
 			if(personLegStarts.containsKey(vehicleId)){
-				double now = event.getTime();
+				double now = e.getTime();
 				String linkId = e.getLinkId().toString();
 				if(!flows.containsKey(linkId)){
 					flows.put(linkId, new int[numberOfSlots]);
@@ -95,12 +110,12 @@ public class MultiModalBicycleDoorToDoorHandler implements BasicEventHandler {
 				}
 				entryTimes.get(linkId).put(vehicleId, now);
 				print(now);
-			}
+			} 
 		} else if(event instanceof LinkLeaveEvent){
 			LinkLeaveEvent e = (LinkLeaveEvent) event;
-			String vehicleId = e.getVehicleId().toString();
+			String vehicleId = bestGuessVehicleId(e.getVehicleId().toString());
 			if(personLegStarts.containsKey(vehicleId)){
-				double now = event.getTime();
+				double now = e.getTime();
 				int slot = timeToSlot(now);
 				String linkId = e.getLinkId().toString();
 				if(entryTimes.containsKey(linkId) && entryTimes.get(linkId).containsKey(vehicleId)){
@@ -112,29 +127,23 @@ public class MultiModalBicycleDoorToDoorHandler implements BasicEventHandler {
 					//To safe memory
 					entryTimes.get(linkId).remove(vehicleId);
 				}
-			}
+			} 
 		} else if(event instanceof PersonDepartureEvent){
 			PersonDepartureEvent e = (PersonDepartureEvent) event;
 			if(e.getLegMode().equals(TransportMode.access_walk)){
-				double now = event.getTime();
-				personLegStarts.put(e.getPersonId().toString() + "_" + TransportMode.bike, now);
+				double now = e.getTime();
+				personLegStarts.put(e.getPersonId().toString(), now);
+				createVehicleKeys(e.getPersonId().toString());
 			}
 		} else if(event instanceof ActivityStartEvent){
 			ActivityStartEvent e = (ActivityStartEvent) event;
-			String vehicleId = e.getPersonId().toString() + "_" + TransportMode.bike;
+			String vehicleId = bestGuessVehicleId(e.getPersonId().toString());
 			if(personLegStarts.containsKey(vehicleId) && ignoredModes.contains(e.getActType())){
-				double now = e.getTime();
-				double then = personLegStarts.get(vehicleId);
-				if(now > then){
-					//redo travel time
-					totalTravelTime -= now - then -1;
-				}
-				//redo personleg
 				personLegStarts.remove(vehicleId);
 			}
 		}	else if(event instanceof PersonArrivalEvent){
 			PersonArrivalEvent e = (PersonArrivalEvent) event;
-			String vehicleId = e.getPersonId().toString() + "_" + TransportMode.bike;
+			String vehicleId = bestGuessVehicleId(e.getPersonId().toString());
 			if(personLegStarts.containsKey(vehicleId)){
 				if(e.getLegMode().equals(TransportMode.egress_walk)){
 					double now = e.getTime();
@@ -144,6 +153,12 @@ public class MultiModalBicycleDoorToDoorHandler implements BasicEventHandler {
 					}
 				}
 			}
+		}
+	}
+
+	private void createVehicleKeys(String personId) {
+		for(String mode : analysedModes){
+			vehicleToPerson.put(personId + "_" + mode, personId);
 		}
 	}
 

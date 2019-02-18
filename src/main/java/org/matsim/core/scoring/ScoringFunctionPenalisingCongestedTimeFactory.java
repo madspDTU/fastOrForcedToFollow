@@ -5,6 +5,7 @@ import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.population.Activity;
 import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.Person;
+import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.core.router.MainModeIdentifier;
 import org.matsim.core.scoring.SumScoringFunction.ActivityScoring;
 import org.matsim.core.scoring.SumScoringFunction.LegScoring;
@@ -43,17 +44,21 @@ public class ScoringFunctionPenalisingCongestedTimeFactory implements ScoringFun
 			public void handleLeg(Leg leg) {
 				ModeUtilityParameters modeParams = params.modeParams.get(leg.getMode());
 
+				
 				double travelTime = leg.getTravelTime();
 				double distance = leg.getRoute().getDistance(); 
-				double freeSpeed = (double) person.getAttributes().getAttribute("v_0");	
 				double congestedTravelTime = 0;
 				if( leg.getMode().equals(TransportMode.bike) ){
 					if(distance == 0){
 						travelTime = 0;
 					} else {
 						travelTime -= 1;
+						double freeSpeed = (double) person.getAttributes().getAttribute("v_0");	
 						congestedTravelTime = travelTime - Math.ceil(distance / freeSpeed);
 					}
+				} else if( leg.getMode().equals(TransportMode.car)){
+					// Currently there is no congested time included for cars...
+						// Difficult to do because the network is needed (and not provided). 
 				}
 
 

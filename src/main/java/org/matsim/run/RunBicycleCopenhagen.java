@@ -1,17 +1,23 @@
 package org.matsim.run;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.matsim.api.core.v01.Coord;
+import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
+import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
+import org.matsim.api.core.v01.population.Leg;
+import org.matsim.api.core.v01.population.Person;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ActivityParams;
@@ -19,16 +25,38 @@ import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ModeParams;
 import org.matsim.core.config.groups.StrategyConfigGroup.StrategySettings;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
+import org.matsim.core.controler.ControlerUtils;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
+import org.matsim.core.network.NetworkUtils;
+import org.matsim.core.network.algorithms.TransportModeNetworkFilter;
+import org.matsim.core.network.io.NetworkWriter;
 import org.matsim.core.replanning.strategies.DefaultPlanStrategiesModule.DefaultSelector;
 import org.matsim.core.replanning.strategies.DefaultPlanStrategiesModule.DefaultStrategy;
+import org.matsim.core.router.DijkstraFactory;
+import org.matsim.core.router.TripStructureUtils;
+import org.matsim.core.router.costcalculators.FreespeedTravelTimeAndDisutility;
+import org.matsim.core.router.util.LeastCostPathCalculator;
+import org.matsim.core.router.util.LeastCostPathCalculator.Path;
+import org.matsim.core.router.util.LeastCostPathCalculatorFactory;
+import org.matsim.core.router.util.PreProcessDijkstra;
+import org.matsim.core.router.util.TravelDisutility;
+import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.scoring.ScoringFunctionPenalisingCongestedTimeFactory;
+import org.matsim.core.trafficmonitoring.FreeSpeedTravelTime;
+import org.matsim.vehicles.Vehicle;
+import org.matsim.vehicles.VehicleType;
+import org.matsim.vehicles.VehicleTypeImpl;
+
+import fastOrForcedToFollow.NetworkRoutingProviderWithCleaning;
+import fastOrForcedToFollow.leastcostpathcalculators.DesiredSpeedBicycleDijkstra;
+import fastOrForcedToFollow.leastcostpathcalculators.DesiredSpeedBicycleDijkstraFactory;
 
 public class RunBicycleCopenhagen {
 
 	public final static int numberOfThreads = 20;
 	public static int numberOfQSimThreads = 20;
+	public static List<String> networkModes = null;
 
 	public static String outputBaseDir = "/work1/s103232/ABMTRANS2019/"; //With final /
 	//public static String outputBaseDir = "./output/ABMTRANS2019/"; //With final / 
@@ -63,7 +91,7 @@ public class RunBicycleCopenhagen {
 			}
 			if(scenarioType.contains("Mixed")){
 				mixed = true;
-				oneLane = false;
+				oneLane = false; // We don't have a one-lane mixed network yet...
 			}
 		}
 
@@ -72,18 +100,18 @@ public class RunBicycleCopenhagen {
 		Config config = RunMatsim.createConfigFromExampleName("berlin");
 		config.controler().setOutputDirectory(outputBaseDir + scenarioType);
 
-
+		String size = null;
 		if(scenarioType.substring(0,4).equals("full")){
-			scenarioType = "full";
+			size = "full";
 		} else if(scenarioType.substring(0,5).equals("small")){
-			scenarioType = "small";
+			size = "small";
 		}
 		config.controler().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists);
 		config.controler().setLastIteration(lastIteration);
 		if(!congestion){
 			config.controler().setLastIteration(0);
 		}
-		List<String> networkModes = null;
+
 		if(mixed){
 			networkModes = Arrays.asList( new String[]{TransportMode.car, TransportMode.bike} );
 		} else {
@@ -100,7 +128,6 @@ public class RunBicycleCopenhagen {
 
 		config.global().setNumberOfThreads(numberOfThreads);
 		config.qsim().setNumberOfThreads(numberOfQSimThreads);
-		config.qsim().setUsingThreadpool(false);
 		config.parallelEventHandling().setNumberOfThreads(numberOfThreads);
 
 		config.global().setCoordinateSystem("EPSG:32632");   ///EPSG:32632 is WGS84 UTM32N
@@ -124,10 +151,15 @@ public class RunBicycleCopenhagen {
 			ap.setMinimalDuration(-1);
 			ap.setEarliestEndTime(-0.5);
 			ap.setLatestStartTime(99*3600);
+			ap.setScoringThisActivityAtAll(false);
 
 		}
 
-		for(String mode : Arrays.asList(TransportMode.bike, TransportMode.access_walk, TransportMode.egress_walk)){
+		List<String> scoreModes = new LinkedList<String>();
+		scoreModes.addAll(Arrays.asList(TransportMode.access_walk, TransportMode.egress_walk));
+		scoreModes.addAll(networkModes);
+
+		for(String mode : scoreModes){
 			ModeParams modeParams = config.planCalcScore().getModes().get(mode);
 			modeParams.setMarginalUtilityOfTraveling(-60.);
 			//The distance coefficient is used as coefficient for congestion time... ... Not proud of it myself.
@@ -152,7 +184,7 @@ public class RunBicycleCopenhagen {
 		config.strategy().addStrategySettings(reRoute);
 		//config.strategy().addStrategySettings(bestScore);
 		config.strategy().addStrategySettings(logit);
-
+		
 
 
 		if(mixed){
@@ -166,9 +198,9 @@ public class RunBicycleCopenhagen {
 					inputBaseDir + "MATSimCopenhagenNetwork_BicyclesOnly.xml.gz");
 		}
 		if(mixed){
-			config.plans().setInputFile(inputBaseDir + "AllPlans_CPH_" + scenarioType + ".xml.gz");
+			config.plans().setInputFile(inputBaseDir + "AllPlans_CPH_" + size + ".xml.gz");
 		} else {
-			config.plans().setInputFile(inputBaseDir + "Plans_CPH_" + scenarioType + ".xml.gz");
+			config.plans().setInputFile(inputBaseDir + "Plans_CPH_" + size + ".xml.gz");
 		}
 
 		//Possible changes to config
@@ -177,13 +209,22 @@ public class RunBicycleCopenhagen {
 
 		Scenario scenario = ScenarioUtils.loadScenario( config ) ;
 		RunMatsim.cleanBicycleNetwork(scenario.getNetwork());
+
 		if(!mixed){
 			removeSouthWesternPart(scenario.getNetwork());
 		}
+
 		scenario = RunMatsim.addCyclistAttributes(config, scenario);
 		//RunMatsim.reducePopulationToN(0, scenario.getPopulation());
+		if(mixed){
+			VehicleType vehicleType = new VehicleTypeImpl( 
+					Id.create( TransportMode.car, VehicleType.class  ) ) ;
+			scenario.getVehicles().addVehicleType( vehicleType);
+		}
+
 
 		Controler controler;
+
 		if(congestion){
 			if(!roW){
 				controler = RunMatsim.createControler(scenario);
@@ -196,8 +237,14 @@ public class RunBicycleCopenhagen {
 		controler.addOverridingModule( new AbstractModule(){
 			@Override public void install() {
 				this.bindScoringFunctionFactory().to( ScoringFunctionPenalisingCongestedTimeFactory.class ) ;
+		//		this.bindLeastCostPathCalculatorFactory().to(DesiredSpeedBicycleDijkstraFactory.class);
+				for(String mode : networkModes){
+					this.addRoutingModuleBinding(mode).toProvider(new NetworkRoutingProviderWithCleaning(mode));
+				}
 			}
 		} );
+
+
 
 		try {			
 			controler.run();
@@ -205,22 +252,18 @@ public class RunBicycleCopenhagen {
 			ee.printStackTrace();
 		}
 
-		if(oneLane){
-			scenarioType += "OneLane";
-		}
-		if(!congestion){
-			scenarioType += "NoCongestion";
-		}
-
 		List<String> ignoredModes = new LinkedList<String>();
 		if(mixed){
-			ignoredModes.add(TransportMode.bike);
+			ignoredModes.add(TransportMode.car);
 		}
+		List<String> analysedModes = Arrays.asList(TransportMode.bike);
 		String outDir = config.controler().getOutputDirectory();
-		ConstructSpeedFlowsFromCopenhagen.run(outDir, scenarioType, -1,	ignoredModes); 
+		ConstructSpeedFlowsFromCopenhagen.run(outDir, scenarioType, -1,	
+				ignoredModes, analysedModes); 
 		//PostProcessing final iteration
 		if(lastIteration != 0){
-			ConstructSpeedFlowsFromCopenhagen.run(outDir, scenarioType, 0,ignoredModes);
+			ConstructSpeedFlowsFromCopenhagen.run(outDir, scenarioType, 0, 
+					ignoredModes, analysedModes);
 			//PostProcessing first iteration
 		}
 

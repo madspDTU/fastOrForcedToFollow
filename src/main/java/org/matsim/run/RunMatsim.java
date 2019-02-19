@@ -63,6 +63,8 @@ import org.matsim.examples.ExamplesUtils;
 import org.matsim.vehicles.VehicleType;
 import org.matsim.vehicles.VehicleTypeImpl;
 
+import fastOrForcedToFollow.configgroups.FFFConfigGroup;
+
 /**
  * @author nagel
  *

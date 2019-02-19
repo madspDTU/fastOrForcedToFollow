@@ -2,7 +2,8 @@ package fastOrForcedToFollow;
 
 
 import org.matsim.core.mobsim.qsim.qnetsimengine.QVehicle;
-import org.matsim.run.FFFConfigGroup;
+
+import fastOrForcedToFollow.configgroups.FFFConfigGroup;
 
 import java.util.LinkedList;
 

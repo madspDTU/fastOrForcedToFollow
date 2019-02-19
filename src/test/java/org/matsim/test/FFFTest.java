@@ -30,11 +30,12 @@ import org.matsim.core.controler.Controler;
 import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.population.io.PopulationReader;
 import org.matsim.core.scenario.ScenarioUtils;
-import org.matsim.run.FFFConfigGroup;
 import org.matsim.run.RunMatsim;
 import org.matsim.testcases.MatsimTestUtils;
 import org.matsim.utils.eventsfilecomparison.EventsFileComparator;
 import org.matsim.utils.eventsfilecomparison.EventsFileComparator.Result;
+
+import fastOrForcedToFollow.configgroups.FFFConfigGroup;
 
 
 public class FFFTest {

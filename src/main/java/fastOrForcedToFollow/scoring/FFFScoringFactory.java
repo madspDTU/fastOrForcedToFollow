@@ -7,9 +7,10 @@ import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.scoring.ScoringFunction;
 import org.matsim.core.scoring.ScoringFunctionFactory;
-import org.matsim.run.FFFScoringConfigGroup;
 
 import com.google.inject.Inject;
+
+import fastOrForcedToFollow.configgroups.FFFScoringConfigGroup;
 
 public class FFFScoringFactory implements ScoringFunctionFactory {
 

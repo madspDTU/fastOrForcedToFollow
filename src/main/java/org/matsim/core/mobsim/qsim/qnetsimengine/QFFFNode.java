@@ -50,8 +50,9 @@ import org.matsim.core.mobsim.qsim.qnetsimengine.QNodeI;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QVehicle;
 import org.matsim.core.mobsim.qsim.qnetsimengine.TurnAcceptanceLogic;
 import org.matsim.core.mobsim.qsim.qnetsimengine.TurnAcceptanceLogic.AcceptTurn;
-import org.matsim.run.FFFNodeConfigGroup;
+
 import fastOrForcedToFollow.Cyclist;
+import fastOrForcedToFollow.configgroups.FFFNodeConfigGroup;
 
 /**
  * Represents a node in the QSimulation.

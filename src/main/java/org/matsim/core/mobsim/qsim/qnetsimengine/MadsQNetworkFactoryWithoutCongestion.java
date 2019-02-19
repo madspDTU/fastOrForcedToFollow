@@ -34,9 +34,9 @@ import org.matsim.core.mobsim.qsim.interfaces.AgentCounter;
 import org.matsim.core.mobsim.qsim.pt.TransitStopAgentTracker;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QNetsimEngine.NetsimInternalInterface;
 import org.matsim.core.mobsim.qsim.qnetsimengine.vehicleq.VehicleQ;
-import org.matsim.run.FFFConfigGroup;
 import org.matsim.vis.snapshotwriters.SnapshotLinkWidthCalculator;
 
+import fastOrForcedToFollow.configgroups.FFFConfigGroup;
 
 import javax.inject.Inject;
 //import java.util.PriorityQueue;

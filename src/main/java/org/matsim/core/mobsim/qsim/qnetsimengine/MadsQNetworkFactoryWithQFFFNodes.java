@@ -29,8 +29,9 @@ import org.matsim.core.config.groups.QSimConfigGroup;
 import org.matsim.core.mobsim.qsim.interfaces.AgentCounter;
 import org.matsim.core.mobsim.qsim.pt.TransitStopAgentTracker;
 import org.matsim.core.mobsim.qsim.qnetsimengine.vehicleq.VehicleQ;
-import org.matsim.run.FFFConfigGroup;
-import org.matsim.run.FFFNodeConfigGroup;
+
+import fastOrForcedToFollow.configgroups.FFFConfigGroup;
+import fastOrForcedToFollow.configgroups.FFFNodeConfigGroup;
 
 import javax.inject.Inject;
 

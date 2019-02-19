@@ -1,56 +1,29 @@
 package org.matsim.run;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
-import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
-import org.matsim.api.core.v01.population.Leg;
-import org.matsim.api.core.v01.population.Person;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
-import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ActivityParams;
-import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.MyModeParams;
 import org.matsim.core.config.groups.StrategyConfigGroup.StrategySettings;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
-import org.matsim.core.controler.ControlerUtils;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
-import org.matsim.core.network.NetworkUtils;
-import org.matsim.core.network.algorithms.TransportModeNetworkFilter;
-import org.matsim.core.network.io.NetworkWriter;
 import org.matsim.core.replanning.strategies.DefaultPlanStrategiesModule.DefaultSelector;
 import org.matsim.core.replanning.strategies.DefaultPlanStrategiesModule.DefaultStrategy;
-import org.matsim.core.router.DijkstraFactory;
-import org.matsim.core.router.TripStructureUtils;
-import org.matsim.core.router.costcalculators.FreespeedTravelTimeAndDisutility;
-import org.matsim.core.router.util.LeastCostPathCalculator;
-import org.matsim.core.router.util.LeastCostPathCalculator.Path;
-import org.matsim.core.router.util.LeastCostPathCalculatorFactory;
-import org.matsim.core.router.util.PreProcessDijkstra;
-import org.matsim.core.router.util.TravelDisutility;
-import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.scenario.ScenarioUtils;
-import org.matsim.core.trafficmonitoring.FreeSpeedTravelTime;
-import org.matsim.vehicles.Vehicle;
 import org.matsim.vehicles.VehicleType;
 import org.matsim.vehicles.VehicleTypeImpl;
 
 import fastOrForcedToFollow.NetworkRoutingProviderWithCleaning;
-import fastOrForcedToFollow.leastcostpathcalculators.DesiredSpeedBicycleDijkstra;
-import fastOrForcedToFollow.leastcostpathcalculators.DesiredSpeedBicycleDijkstraFactory;
 import fastOrForcedToFollow.scoring.FFFModeUtilityParameters;
 import fastOrForcedToFollow.scoring.FFFScoringFactory;
 
@@ -146,6 +119,7 @@ public class RunBicycleCopenhagen {
 
 		config.global().setCoordinateSystem("EPSG:32632");   ///EPSG:32632 is WGS84 UTM32N
 
+		/*
 		{
 			Map<String, String> defaultParams = config.planCalcScore().getActivityParams("work").getParams();
 			for(String actType : Arrays.asList("other","missing","shopping")){
@@ -179,6 +153,7 @@ public class RunBicycleCopenhagen {
 			//The distance coefficient is used as coefficient for congestion time... ... Not proud of it myself.
 			modeParams.setMarginalUtilityOfDistance(-30./3600);
 		}
+		*/
 
 
 

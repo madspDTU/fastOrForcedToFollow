@@ -16,7 +16,7 @@ import org.matsim.core.mobsim.qsim.qnetsimengine.QLinkI;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QNetwork;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QVehicle;
 
-import fastOrForcedToFollow.timeoutmodifiers.TimeoutModifierI;
+import fastOrForcedToFollow.timeoutmodifiers.TimeoutModifier;
 
 public abstract class QFFFAbstractNode { //Interface or abstract
 
@@ -76,7 +76,7 @@ public abstract class QFFFAbstractNode { //Interface or abstract
 	}
 	 
 	 protected void bicycleMoveWithFullLeftTurns(final int inDirection, final double now, 
-				final double nowish, TimeoutModifierI timeoutModifier) {
+				final double nowish, TimeoutModifier timeoutModifier) {
 			QLinkI inLink = bicycleInLinks[inDirection];
 			if(inLink != null){
 				for(QLaneI lane : inLink.getOfferingQLanes()){
@@ -100,7 +100,7 @@ public abstract class QFFFAbstractNode { //Interface or abstract
 		}
 
 	 protected void carMoveAllowingLeftTurns(final int inDirection, final double now, 
-				final double nowish, TimeoutModifierI timeoutModifier) {
+				final double nowish, TimeoutModifier timeoutModifier) {
 			QLinkI inLink = carInLinks[inDirection];
 			if(inLink != null){
 				for(QLaneI lane : inLink.getOfferingQLanes()){

@@ -2,7 +2,7 @@ package fastOrForcedToFollow.timeoutmodifiers;
 
 import org.matsim.core.mobsim.qsim.qnetsimengine.QFFFNodeUtils;
 
-public class RightPriorityCarTimeoutModifier implements TimeoutModifierI{
+public class RightPriorityCarTimeoutModifier implements TimeoutModifier{
 
 	public void updateTimeouts(double[][] bicycleTimeouts, double[][] carTimeouts, int inDirection,
 			int outDirection, boolean[] isSecondary, double nowish) {

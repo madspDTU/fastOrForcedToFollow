@@ -16,7 +16,7 @@ import fastOrForcedToFollow.timeoutmodifiers.PriorityLeftTurnCarTimeoutModifier;
 import fastOrForcedToFollow.timeoutmodifiers.RightPriorityBicycleTimeoutModifier;
 import fastOrForcedToFollow.timeoutmodifiers.RightPriorityCarTimeoutModifier;
 import fastOrForcedToFollow.timeoutmodifiers.SecondaryBicycleTimeoutModifier;
-import fastOrForcedToFollow.timeoutmodifiers.TimeoutModifierI;
+import fastOrForcedToFollow.timeoutmodifiers.TimeoutModifier;
 
 public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode{
 
@@ -40,7 +40,7 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode{
 	}
 
 	protected void bicycleMove(final int inDirection, final double now,
-			final double nowish, TimeoutModifierI timeoutModifier) {
+			final double nowish, TimeoutModifier timeoutModifier) {
 		QLinkI inLink = bicycleInLinks[inDirection];
 		if(inLink != null){
 			for(QLaneI lane : inLink.getOfferingQLanes()){
@@ -441,7 +441,7 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode{
 
 
 	protected void leftTurnCarMove(final int inDirection, 
-			final double now, final double nowish, TimeoutModifierI timeoutModifier) {
+			final double now, final double nowish, TimeoutModifier timeoutModifier) {
 
 		QLinkI inLink = carInLinks[inDirection];
 		if(inLink != null){
@@ -477,7 +477,7 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode{
 
 
 	protected void straightOrRightTurnCarMove(final int inDirection, 
-			final double now, final double nowish, TimeoutModifierI timeoutModifier) {
+			final double now, final double nowish, TimeoutModifier timeoutModifier) {
 
 		LinkedList<QVehicle> temporarilyRemoved;
 

@@ -1,4 +1,4 @@
-package org.matsim.core.scoring;
+package fastOrForcedToFollow.scoring;
 
 public class MyModeUtilityParameters {
 	

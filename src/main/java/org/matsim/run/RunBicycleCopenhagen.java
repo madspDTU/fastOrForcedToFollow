@@ -43,8 +43,6 @@ import org.matsim.core.router.util.PreProcessDijkstra;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.scenario.ScenarioUtils;
-import org.matsim.core.scoring.MyModeUtilityParameters;
-import org.matsim.core.scoring.ScoringFunctionPenalisingCongestedTimeFactory;
 import org.matsim.core.trafficmonitoring.FreeSpeedTravelTime;
 import org.matsim.vehicles.Vehicle;
 import org.matsim.vehicles.VehicleType;
@@ -53,6 +51,8 @@ import org.matsim.vehicles.VehicleTypeImpl;
 import fastOrForcedToFollow.NetworkRoutingProviderWithCleaning;
 import fastOrForcedToFollow.leastcostpathcalculators.DesiredSpeedBicycleDijkstra;
 import fastOrForcedToFollow.leastcostpathcalculators.DesiredSpeedBicycleDijkstraFactory;
+import fastOrForcedToFollow.scoring.MyModeUtilityParameters;
+import fastOrForcedToFollow.scoring.ScoringFunctionPenalisingCongestedTimeFactory;
 
 public class RunBicycleCopenhagen {
 

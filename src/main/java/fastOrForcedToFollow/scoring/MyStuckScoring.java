@@ -1,5 +1,6 @@
-package org.matsim.core.scoring;
+package fastOrForcedToFollow.scoring;
 
+import org.matsim.core.scoring.SumScoringFunction;
 import org.matsim.core.scoring.SumScoringFunction.AgentStuckScoring;
 
 public class MyStuckScoring implements AgentStuckScoring{

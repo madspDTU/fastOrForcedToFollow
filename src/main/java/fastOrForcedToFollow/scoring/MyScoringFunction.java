@@ -1,4 +1,4 @@
-package org.matsim.core.scoring;
+package fastOrForcedToFollow.scoring;
 
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.events.Event;
@@ -6,6 +6,8 @@ import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.population.Activity;
 import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.Person;
+import org.matsim.core.scoring.ScoringFunction;
+import org.matsim.core.scoring.SumScoringFunction;
 import org.matsim.core.scoring.SumScoringFunction.AgentStuckScoring;
 import org.matsim.core.scoring.SumScoringFunction.LegScoring;
 

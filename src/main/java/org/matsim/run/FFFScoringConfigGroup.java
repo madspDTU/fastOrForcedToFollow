@@ -4,8 +4,9 @@ import java.util.Map;
 
 import org.matsim.core.config.ReflectiveConfigGroup;
 import org.matsim.core.config.ReflectiveConfigGroup.StringGetter;
-import org.matsim.core.scoring.MyModeUtilityParameters;
-import org.matsim.core.scoring.MyScoringParameters;
+
+import fastOrForcedToFollow.scoring.MyModeUtilityParameters;
+import fastOrForcedToFollow.scoring.MyScoringParameters;
 
 public class FFFScoringConfigGroup extends ReflectiveConfigGroup {
 

@@ -1,7 +1,8 @@
-package org.matsim.core.scoring;
+package fastOrForcedToFollow.scoring;
 
 import java.util.HashMap;
 import java.util.Map;
+
 import org.matsim.core.api.internal.MatsimParameters;
 
 public class MyScoringParameters implements MatsimParameters{

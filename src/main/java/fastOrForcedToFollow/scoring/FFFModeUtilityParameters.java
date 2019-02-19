@@ -1,6 +1,6 @@
 package fastOrForcedToFollow.scoring;
 
-public class MyModeUtilityParameters {
+public class FFFModeUtilityParameters {
 	
 	public static class Builder {
 		private double marginalUtilityOfTraveling_s = 0;
@@ -31,8 +31,8 @@ public class MyModeUtilityParameters {
 			return this;
 		}
 
-		public MyModeUtilityParameters build() {
-			return new MyModeUtilityParameters(
+		public FFFModeUtilityParameters build() {
+			return new FFFModeUtilityParameters(
 					marginalUtilityOfTraveling_s,
 					marginalUtilityOfCongestedTraveling_s,
 					marginalUtilityOfDistance_m,
@@ -40,7 +40,7 @@ public class MyModeUtilityParameters {
 		}
 	}
 
-	public MyModeUtilityParameters(
+	public FFFModeUtilityParameters(
 			double marginalUtilityOfTraveling_s,
 			double marginalUtilityOfCongestedTraveling_s,
 			double marginalUtilityOfDistance_m,

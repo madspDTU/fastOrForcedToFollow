@@ -11,13 +11,13 @@ import org.matsim.core.scoring.SumScoringFunction;
 import org.matsim.core.scoring.SumScoringFunction.LegScoring;
 
 
-public class MyLegScoring implements LegScoring{
+public class FFFLegScoring implements LegScoring{
 
-	private MyScoringParameters params;
+	private FFFScoringParameters params;
 	private Network network;
 	private Person person;
 
-	public MyLegScoring(final MyScoringParameters params, Network network, Person person) {
+	public FFFLegScoring(final FFFScoringParameters params, Network network, Person person) {
 		this.params = params;
 		this.network = network;
 		this.person = person;
@@ -38,7 +38,7 @@ public class MyLegScoring implements LegScoring{
 
 	@Override
 	public void handleLeg(Leg leg) {
-		MyModeUtilityParameters modeParams = params.modeParams.get(leg.getMode());
+		FFFModeUtilityParameters modeParams = params.modeParams.get(leg.getMode());
 
 		double travelTime = leg.getTravelTime();
 		double distance = leg.getRoute().getDistance(); 

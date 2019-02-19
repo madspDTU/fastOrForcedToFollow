@@ -3,12 +3,12 @@ package fastOrForcedToFollow.scoring;
 import org.matsim.core.scoring.SumScoringFunction;
 import org.matsim.core.scoring.SumScoringFunction.AgentStuckScoring;
 
-public class MyStuckScoring implements AgentStuckScoring{
+public class FFFStuckScoring implements AgentStuckScoring{
 
 	private double stuckUtility;
 	private double score = 0;
 
-	public MyStuckScoring(MyScoringParameters params) {
+	public FFFStuckScoring(FFFScoringParameters params) {
 		this.stuckUtility = params.abortedPlanScore;
 	}
 

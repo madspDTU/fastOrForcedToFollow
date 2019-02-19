@@ -71,7 +71,7 @@ import org.matsim.examples.ExamplesUtils;
 import org.matsim.vehicles.VehicleType;
 import org.matsim.vehicles.VehicleTypeImpl;
 
-import fastOrForcedToFollow.scoring.ScoringFunctionPenalisingCongestedTimeFactory;
+import fastOrForcedToFollow.scoring.FFFScoringFactory;
 
 /**
  * @author nagel

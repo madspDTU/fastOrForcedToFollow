@@ -11,18 +11,18 @@ import org.matsim.run.FFFScoringConfigGroup;
 
 import com.google.inject.Inject;
 
-public class ScoringFunctionPenalisingCongestedTimeFactory implements ScoringFunctionFactory {
+public class FFFScoringFactory implements ScoringFunctionFactory {
 
 	private Network network;
-	private final MyScoringParameters params;
+	private final FFFScoringParameters params;
 
 	
-	public ScoringFunctionPenalisingCongestedTimeFactory( final Scenario sc ) {
+	public FFFScoringFactory( final Scenario sc ) {
 		this( sc.getConfig() , sc.getNetwork() );
 	}
 
 	@Inject
-	ScoringFunctionPenalisingCongestedTimeFactory(Config config, Network network) {
+	FFFScoringFactory(Config config, Network network) {
 		FFFScoringConfigGroup fffScoringConfig =
 				ConfigUtils.addOrGetModule(config, FFFScoringConfigGroup.class);
 		this.params = fffScoringConfig.getMyScoringParameters();
@@ -32,7 +32,7 @@ public class ScoringFunctionPenalisingCongestedTimeFactory implements ScoringFun
 	@Override
 	public ScoringFunction createNewScoringFunction(final Person person) {
 		//Not person-specific at the moment.
-		return new MyScoringFunction(params, network, person);
+		return new FFFScoringFunction(params, network, person);
 	}
 
 }

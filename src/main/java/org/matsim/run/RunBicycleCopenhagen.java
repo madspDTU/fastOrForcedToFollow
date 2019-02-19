@@ -51,8 +51,8 @@ import org.matsim.vehicles.VehicleTypeImpl;
 import fastOrForcedToFollow.NetworkRoutingProviderWithCleaning;
 import fastOrForcedToFollow.leastcostpathcalculators.DesiredSpeedBicycleDijkstra;
 import fastOrForcedToFollow.leastcostpathcalculators.DesiredSpeedBicycleDijkstraFactory;
-import fastOrForcedToFollow.scoring.MyModeUtilityParameters;
-import fastOrForcedToFollow.scoring.ScoringFunctionPenalisingCongestedTimeFactory;
+import fastOrForcedToFollow.scoring.FFFModeUtilityParameters;
+import fastOrForcedToFollow.scoring.FFFScoringFactory;
 
 public class RunBicycleCopenhagen {
 
@@ -230,11 +230,11 @@ public class RunBicycleCopenhagen {
 
 		
 		FFFScoringConfigGroup fffScoringConfig = ConfigUtils.addOrGetModule(config, FFFScoringConfigGroup.class);
-		HashMap<String, MyModeUtilityParameters> modeParams = new HashMap<String, MyModeUtilityParameters>();
-		modeParams.put(TransportMode.access_walk, new MyModeUtilityParameters(-1/60., 0., 0., 0.));
-		modeParams.put(TransportMode.egress_walk, new MyModeUtilityParameters(-1/60., 0., 0., 0.));
-		modeParams.put(TransportMode.car, new MyModeUtilityParameters(-1/60., -1/120., 0., 0.));
-		modeParams.put(TransportMode.bike, new MyModeUtilityParameters(-1/60., -1/120., 0., 0.));
+		HashMap<String, FFFModeUtilityParameters> modeParams = new HashMap<String, FFFModeUtilityParameters>();
+		modeParams.put(TransportMode.access_walk, new FFFModeUtilityParameters(-1/60., 0., 0., 0.));
+		modeParams.put(TransportMode.egress_walk, new FFFModeUtilityParameters(-1/60., 0., 0., 0.));
+		modeParams.put(TransportMode.car, new FFFModeUtilityParameters(-1/60., -1/120., 0., 0.));
+		modeParams.put(TransportMode.bike, new FFFModeUtilityParameters(-1/60., -1/120., 0., 0.));
 		fffScoringConfig.setScoringParameters(modeParams);
 		
 		
@@ -274,7 +274,7 @@ public class RunBicycleCopenhagen {
 		}
 		controler.addOverridingModule( new AbstractModule(){
 			@Override public void install() {
-				this.bindScoringFunctionFactory().to( ScoringFunctionPenalisingCongestedTimeFactory.class ) ;
+				this.bindScoringFunctionFactory().to( FFFScoringFactory.class ) ;
 		//		this.bindLeastCostPathCalculatorFactory().to(DesiredSpeedBicycleDijkstraFactory.class);
 				for(String mode : networkModes){
 					this.addRoutingModuleBinding(mode).toProvider(new NetworkRoutingProviderWithCleaning(mode));

@@ -5,26 +5,26 @@ import java.util.Map;
 
 import org.matsim.core.api.internal.MatsimParameters;
 
-public class MyScoringParameters implements MatsimParameters{
+public class FFFScoringParameters implements MatsimParameters{
 
-	public final Map<String, MyModeUtilityParameters> modeParams;
+	public final Map<String, FFFModeUtilityParameters> modeParams;
 	public final double abortedPlanScore;
 
-	private MyScoringParameters(final Map<String, MyModeUtilityParameters> modeParams,
+	private FFFScoringParameters(final Map<String, FFFModeUtilityParameters> modeParams,
 			final double abortedPlanScore){
 		this.modeParams = modeParams;
 		this.abortedPlanScore = abortedPlanScore;
 	}
 
 	public static final class Builder {
-		private Map<String, MyModeUtilityParameters> modeParams = new HashMap<String,
-				MyModeUtilityParameters>();
+		private Map<String, FFFModeUtilityParameters> modeParams = new HashMap<String,
+				FFFModeUtilityParameters>();
 		private double abortedPlanScore = 0;
 
 
 		public Builder(){};
 
-		public Builder setModeParameters(final Map<String, MyModeUtilityParameters> modeParams ) {
+		public Builder setModeParameters(final Map<String, FFFModeUtilityParameters> modeParams ) {
 			this.modeParams = modeParams;
 			return this;
 		}
@@ -34,8 +34,8 @@ public class MyScoringParameters implements MatsimParameters{
 			return this;
 		}
 
-		public MyScoringParameters build() {
-			return new MyScoringParameters(modeParams, abortedPlanScore);
+		public FFFScoringParameters build() {
+			return new FFFScoringParameters(modeParams, abortedPlanScore);
 		}
 	}
 

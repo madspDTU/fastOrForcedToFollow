@@ -11,15 +11,15 @@ import org.matsim.core.scoring.SumScoringFunction;
 import org.matsim.core.scoring.SumScoringFunction.AgentStuckScoring;
 import org.matsim.core.scoring.SumScoringFunction.LegScoring;
 
-public class MyScoringFunction implements ScoringFunction {
+public class FFFScoringFunction implements ScoringFunction {
 
 	private final LegScoring legScoring;
 	private final AgentStuckScoring stuckScoring;
 
 
-	public MyScoringFunction(final MyScoringParameters params, Network network, Person person) {
-		this.legScoring = new MyLegScoring(params, network, person);
-		this.stuckScoring = new MyStuckScoring(params);
+	public FFFScoringFunction(final FFFScoringParameters params, Network network, Person person) {
+		this.legScoring = new FFFLegScoring(params, network, person);
+		this.stuckScoring = new FFFStuckScoring(params);
 	}
 
 	

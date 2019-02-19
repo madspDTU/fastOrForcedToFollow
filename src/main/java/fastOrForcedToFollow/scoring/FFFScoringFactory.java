@@ -32,7 +32,7 @@ public class FFFScoringFactory implements ScoringFunctionFactory {
 	@Override
 	public ScoringFunction createNewScoringFunction(final Person person) {
 		//Not person-specific at the moment.
-		return new FFFScoringFunction(params, network, person);
+		return new FFFScoringFunctionFactory(params, network, person);
 	}
 
 }

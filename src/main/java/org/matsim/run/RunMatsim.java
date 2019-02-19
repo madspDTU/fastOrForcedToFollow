@@ -112,7 +112,7 @@ public class RunMatsim {
 
 		config.qsim().setEndTime( 100.*3600. );
 
-		PlanCalcScoreConfigGroup.MyModeParams params = new PlanCalcScoreConfigGroup.MyModeParams(TransportMode.bike) ;
+		PlanCalcScoreConfigGroup.ModeParams params = new PlanCalcScoreConfigGroup.ModeParams(TransportMode.bike) ;
 		config.planCalcScore().addModeParams( params );
 		final List<String> networkModes = Arrays.asList( new String[]{TransportMode.car, TransportMode.bike} );
 		config.qsim().setMainModes( networkModes );

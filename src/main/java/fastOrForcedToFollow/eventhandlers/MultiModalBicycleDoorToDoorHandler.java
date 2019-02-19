@@ -18,7 +18,7 @@
  *                                                                         *
  * *********************************************************************** */
 
-package org.matsim.core.events;
+package fastOrForcedToFollow.eventhandlers;
 
 import java.io.FileWriter;
 import java.io.IOException;

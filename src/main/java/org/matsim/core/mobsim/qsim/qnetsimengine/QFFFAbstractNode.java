@@ -30,8 +30,6 @@ public abstract class QFFFAbstractNode { //Interface or abstract
 	double[][] carTimeouts;
 	double[][] bicycleTimeouts;
 
-	final double delay = 2;  //200: -311.6406111785926, 2: 73.94902333161711, 3: 72.87844398617058
-	
 	protected QFFFAbstractNode(final QFFFNode qNode, final TreeMap<Double, LinkedList<Link>> bundleMap, final QNetwork qNetwork){		
 		final int n = bundleMap.size();
 		this.qNode = qNode;
@@ -69,8 +67,12 @@ public abstract class QFFFAbstractNode { //Interface or abstract
 	abstract boolean doSimStep(final double now);
 
 	
-	protected double getNowPlusDelay(final double now){
-		return now + delay;
+	protected double getNowPlusDelayBicycle(final double now){
+		return now + qNode.getFFFNodeConfig().getBicycleDelay();
+	}
+	
+	protected double getNowPlusDelayCar(final double now){
+		return now + qNode.getFFFNodeConfig().getCarDelay();
 	}
 	 
 	 protected void bicycleMoveWithFullLeftTurns(final int inDirection, final double now, 
@@ -88,7 +90,7 @@ public abstract class QFFFAbstractNode { //Interface or abstract
 								break;
 							}
 							timeoutModifier.updateTimeouts(bicycleTimeouts, carTimeouts, 
-									inDirection, outDirection, new boolean[0], nowish);
+									inDirection, outDirection, null, nowish);
 						} else {
 							break;
 						}
@@ -112,7 +114,7 @@ public abstract class QFFFAbstractNode { //Interface or abstract
 								break;
 							}
 							timeoutModifier.updateTimeouts(bicycleTimeouts, carTimeouts, 
-									inDirection, outDirection, new boolean[0], nowish);
+									inDirection, outDirection, null, nowish);
 						} else {
 							break;
 						}

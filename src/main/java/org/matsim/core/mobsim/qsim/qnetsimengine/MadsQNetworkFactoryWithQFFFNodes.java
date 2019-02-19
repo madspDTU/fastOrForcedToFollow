@@ -24,10 +24,14 @@ import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.api.experimental.events.EventsManager;
+import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.QSimConfigGroup;
 import org.matsim.core.mobsim.qsim.interfaces.AgentCounter;
 import org.matsim.core.mobsim.qsim.pt.TransitStopAgentTracker;
 import org.matsim.core.mobsim.qsim.qnetsimengine.vehicleq.VehicleQ;
+import org.matsim.run.FFFConfigGroup;
+import org.matsim.run.FFFNodeConfigGroup;
+
 import javax.inject.Inject;
 
 
@@ -58,15 +62,19 @@ import javax.inject.Inject;
  */
 public class MadsQNetworkFactoryWithQFFFNodes extends MadsQNetworkFactory{ //Extends the original and overrides a single method
 	
+	private FFFNodeConfigGroup fffNodeConfig;
+	
 	@Inject
 	MadsQNetworkFactoryWithQFFFNodes(EventsManager events, Scenario scenario) {
 		super(events, scenario);
+		this.fffNodeConfig = ConfigUtils.addOrGetModule(scenario.getConfig(), FFFNodeConfigGroup.class);
+		
 	}
 
 	@Override
 	public
 	QNodeI createNetsimNode(final Node node) {
-		QFFFNode.Builder builder = new QFFFNode.Builder( netsimEngine, context ) ;
+		QFFFNode.Builder builder = new QFFFNode.Builder( netsimEngine, context, fffNodeConfig ) ;
 		return builder.build( node ) ;
 	}
 

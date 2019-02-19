@@ -25,6 +25,8 @@ class QCycleLaneWithSublinks implements QLaneI{
 	private final PriorityQueue<QCycle> globalQ;
 	private final double correctionFactor;
 
+	private final int lastIndex; // To make some (often queried) methods faster.
+
 	public QCycleLaneWithSublinks( Sublink[] fffLinkArray, AbstractQLink qLinkImpl, NetsimEngineContext context, double correctionFactor ){
 		this.fffLinkArray = fffLinkArray; 
 		this.qLinkImpl = qLinkImpl;
@@ -37,6 +39,7 @@ class QCycleLaneWithSublinks implements QLaneI{
 		} ) ;
 
 		this.correctionFactor = correctionFactor;
+		this.lastIndex = fffLinkArray.length -1;
 
 	}
 
@@ -95,9 +98,13 @@ class QCycleLaneWithSublinks implements QLaneI{
 
 		// Updating tReady and tExit of the link:
 		double tOneBicycleLength = cyclist.getBicycleLength() / vTilde;
-		double surplus = pseudoLane.getLength() / vTilde * (correctionFactor-1);
-		pseudoLane.setTReady(tStart + tOneBicycleLength + surplus);
-		pseudoLane.setTEnd(cyclist.getTEarliestExit() + tOneBicycleLength + surplus);
+		pseudoLane.setTReady(tStart + tOneBicycleLength);
+		pseudoLane.setTEnd(cyclist.getTEarliestExit() + tOneBicycleLength);
+
+			//Only relevant when considering downscaled population
+//		double surplus = pseudoLane.getLength() / vTilde * (correctionFactor-1);
+//		pseudoLane.setTReady(tStart + tOneBicycleLength + surplus);
+//		pseudoLane.setTEnd(cyclist.getTEarliestExit() + tOneBicycleLength + surplus);
 
 
 		// Add qCycle to the downstream queue of the next link.
@@ -141,7 +148,7 @@ class QCycleLaneWithSublinks implements QLaneI{
 			globalQ.remove();
 
 			//Anything but the last subLink
-			if(cyclist.getCurrentLinkIndex() < fffLinkArray.length -1){
+			if(cyclist.getCurrentLinkIndex() < this.lastIndex){
 
 				// internal fff logic:
 
@@ -222,16 +229,16 @@ class QCycleLaneWithSublinks implements QLaneI{
 	}
 
 	@Override public boolean isNotOfferingVehicle() {
-		return fffLinkArray[fffLinkArray.length-1].hasNoLeavingVehicles();
+		return fffLinkArray[lastIndex].hasNoLeavingVehicles();
 
 	}
 
 	@Override public QVehicle popFirstVehicle() {
-		return fffLinkArray[fffLinkArray.length-1].pollFirstLeavingVehicle();
+		return fffLinkArray[lastIndex].pollFirstLeavingVehicle();
 	}
 
 	@Override public QVehicle getFirstVehicle() {
-		return fffLinkArray[fffLinkArray.length-1].getFirstLeavingVehicle();
+		return fffLinkArray[lastIndex].getFirstLeavingVehicle();
 	}
 
 	@Override public boolean isAcceptingFromWait( final QVehicle veh ) {
@@ -250,7 +257,7 @@ class QCycleLaneWithSublinks implements QLaneI{
 			qLinkImpl.letVehicleArrive(qCyc);
 			return;
 		}
-		Sublink lastSubLink = fffLinkArray[ fffLinkArray.length -1];
+		Sublink lastSubLink = fffLinkArray[this.lastIndex];
 
 		// Essentially just skipping this first link (in order to be consistent with scorin mechanism)
 		lastSubLink.addVehicleToLeavingVehicles(qCyc );
@@ -274,7 +281,7 @@ class QCycleLaneWithSublinks implements QLaneI{
 	}
 
 	public void addVehicleToFrontOfLeavingVehicles(final QVehicle veh){
-		this.fffLinkArray[this.fffLinkArray.length - 1].getLeavingVehicles().addFirst(veh);
+		this.fffLinkArray[lastIndex].getLeavingVehicles().addFirst(veh);
 	}
 
 
@@ -330,7 +337,7 @@ class QCycleLaneWithSublinks implements QLaneI{
 	}
 
 	@Override public double getLastMovementTimeOfFirstVehicle() {
-		return fffLinkArray[fffLinkArray.length-1].getLastTimeMoved();
+		return fffLinkArray[this.lastIndex].getLastTimeMoved();
 	}
 
 	@Override public double getLoadIndicator() {
@@ -350,8 +357,8 @@ class QCycleLaneWithSublinks implements QLaneI{
 		//	veh.setCurrentLink(qLinkImpl.getLink()); // Sets the new link as currentLink
 		QCycle qCyc = (QCycle) veh; // Upcast
 		Cyclist cyclist = qCyc.getCyclist(); // Extract cyclist
-		cyclist.setCurrentLinkIndex(fffLinkArray.length -1); //Places cyclist at last sublink
-		this.fffLinkArray[fffLinkArray.length-1].increaseOccupiedSpace(cyclist, cyclist.getSpeed()); // Take up space
+		cyclist.setCurrentLinkIndex(this.lastIndex); //Places cyclist at last sublink
+		this.fffLinkArray[this.lastIndex].increaseOccupiedSpace(cyclist, cyclist.getSpeed()); // Take up space
 		globalQ.add(qCyc); // Add to queue
 	}
 

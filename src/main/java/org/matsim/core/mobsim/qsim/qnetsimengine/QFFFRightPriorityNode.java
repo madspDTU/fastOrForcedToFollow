@@ -1,5 +1,6 @@
 package org.matsim.core.mobsim.qsim.qnetsimengine;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -21,9 +22,8 @@ public class QFFFRightPriorityNode extends QFFFAbstractNode{
 	}
 
 
-	protected boolean doSimStep(final double now){
-		double nowish = getNowPlusDelay(now);
-		List<Integer> inLinkOrder = new LinkedList<Integer>();
+	protected boolean doSimStep(final double now){	
+		ArrayList<Integer> inLinkOrder = new ArrayList<Integer>(carInLinks.length);
 
 		outerLoop: 
 			for(int i = 0; i < carInLinks.length; i++){
@@ -52,22 +52,21 @@ public class QFFFRightPriorityNode extends QFFFAbstractNode{
 			return false;
 		}
 
-		
-		
-		Collections.shuffle(inLinkOrder, random);
+		double nowishBicycle = getNowPlusDelayBicycle(now);
+		double nowishCar = getNowPlusDelayCar(now);
 
-		for(int i : inLinkOrder){
-			bicycleMoveWithFullLeftTurns(i, now, nowish, new RightPriorityBicycleTimeoutModifier());
-			carMoveAllowingLeftTurns(i, now, nowish, new RightPriorityCarTimeoutModifier());
+		int n = inLinkOrder.size();
+		int i = (n == 1) ? 0 : random.nextInt(n);
+		for(int count = 0; count < n; count++){
+			int direction = inLinkOrder.get(i);
+			bicycleMoveWithFullLeftTurns(direction, now, nowishBicycle,
+					new RightPriorityBicycleTimeoutModifier());
+			carMoveAllowingLeftTurns(direction, now, nowishCar,
+					new RightPriorityCarTimeoutModifier());
+			i = QFFFNodeUtils.increaseInt(i, n);
 		}
-		
-		
+
 		return true;
 	}
-
-	
-
-	
-
 
 }

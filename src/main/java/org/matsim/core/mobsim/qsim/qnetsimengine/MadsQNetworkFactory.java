@@ -77,7 +77,7 @@ public class MadsQNetworkFactory implements QNetworkFactory {
 	protected NetsimEngineContext context;
 	protected NetsimInternalInterface netsimEngine ;
 
-	private FFFConfigGroup fffConfig;
+	protected FFFConfigGroup fffConfig;
 	@Inject MadsQNetworkFactory( EventsManager events, Scenario scenario ) {
 		this.events = events;
 		this.scenario = scenario;

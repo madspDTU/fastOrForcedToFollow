@@ -50,8 +50,7 @@ import org.matsim.core.mobsim.qsim.qnetsimengine.QNodeI;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QVehicle;
 import org.matsim.core.mobsim.qsim.qnetsimengine.TurnAcceptanceLogic;
 import org.matsim.core.mobsim.qsim.qnetsimengine.TurnAcceptanceLogic.AcceptTurn;
-import org.matsim.run.RunBicycleCopenhagen;
-
+import org.matsim.run.FFFNodeConfigGroup;
 import fastOrForcedToFollow.Cyclist;
 
 /**
@@ -62,12 +61,15 @@ final class QFFFNode implements QNodeI {
 		private final NetsimInternalInterface netsimEngine;
 		private final NetsimEngineContext context;
 		private TurnAcceptanceLogic turnAcceptanceLogic = new DefaultTurnAcceptanceLogic() ;
-		public Builder( NetsimInternalInterface netsimEngine2, NetsimEngineContext context ) {
+		private final FFFNodeConfigGroup fffNodeConfig;
+		public Builder( NetsimInternalInterface netsimEngine2, NetsimEngineContext context,
+				FFFNodeConfigGroup fffNodeConfig) {
 			this.netsimEngine = netsimEngine2;
 			this.context = context;
+			this.fffNodeConfig = fffNodeConfig;
 		}
 		public QFFFNode build( Node n ) {
-			return new QFFFNode( n, context, netsimEngine, turnAcceptanceLogic ) ;
+			return new QFFFNode( n, context, netsimEngine, turnAcceptanceLogic, fffNodeConfig) ;
 		}
 		public final void setTurnAcceptanceLogic( TurnAcceptanceLogic turnAcceptanceLogic ) {
 			this.turnAcceptanceLogic = turnAcceptanceLogic ;
@@ -99,15 +101,15 @@ final class QFFFNode implements QNodeI {
 
 	private final TurnAcceptanceLogic turnAcceptanceLogic ;
 
+	private final FFFNodeConfigGroup fffNodeConfig;
 
-	private double bundleTol = Math.PI/12;
-
-
-	protected QFFFNode(final Node n, NetsimEngineContext context, NetsimInternalInterface netsimEngine2, TurnAcceptanceLogic turnAcceptanceLogic) {
+	protected QFFFNode(final Node n, NetsimEngineContext context, NetsimInternalInterface netsimEngine2,
+			TurnAcceptanceLogic turnAcceptanceLogic, FFFNodeConfigGroup fffNodeConfig) {
 		this.node = n;
 		this.netsimEngine = netsimEngine2 ;
 		this.context = context ;
 		this.turnAcceptanceLogic = turnAcceptanceLogic;
+		this.fffNodeConfig = fffNodeConfig;
 	}
 
 	/**
@@ -153,7 +155,8 @@ final class QFFFNode implements QNodeI {
 				if(thisTheta == thetaRef){
 					bundleMap.get(baseEntry.getKey()).addFirst(thisEntry.getValue());
 					thisThetaMap.remove(thisEntry.getKey());		
-				} else if( QFFFNodeUtils.calculatePositiveThetaDif(thisTheta, thetaRef) < bundleTol){
+				} else if( QFFFNodeUtils.calculatePositiveThetaDif(thisTheta, thetaRef) < 
+						fffNodeConfig.getBundleTol()){
 					for(TreeMap<Double, Link> map : otherThetaMaps){
 						if( numberOfKeysFromInclToExcl(map, thetaRef, thisTheta) > 0){
 							return thetaRef;
@@ -448,13 +451,13 @@ final class QFFFNode implements QNodeI {
 		Id<Link> nextLinkId = veh.getDriver().chooseNextLinkId();
 		Link currentLink = veh.getCurrentLink();   // Takes it from QVehicle, so temporary link does not enter here...
 
-		AcceptTurn turn = turnAcceptanceLogic.isAcceptingTurn(currentLink, fromLane, nextLinkId, veh, this.netsimEngine.getNetsimNetwork(), now);
-		if ( turn.equals(AcceptTurn.ABORT) ) {
-			moveVehicleFromInlinkToAbort( veh, fromLane, now, currentLink.getId() ) ;
-			return true ;
-		} else if ( turn.equals(AcceptTurn.WAIT) ) {
-			return false;
-		}
+//		AcceptTurn turn = turnAcceptanceLogic.isAcceptingTurn(currentLink, fromLane, nextLinkId, veh, this.netsimEngine.getNetsimNetwork(), now);
+//		if ( turn.equals(AcceptTurn.ABORT) ) {
+//			moveVehicleFromInlinkToAbort( veh, fromLane, now, currentLink.getId() ) ;
+//			return true ;
+//		} else if ( turn.equals(AcceptTurn.WAIT) ) {
+//			return false;
+//		}
 
 		QLinkI nextQueueLink = this.netsimEngine.getNetsimNetwork().getNetsimLinks().get(nextLinkId);
 		QLaneI nextQueueLane = nextQueueLink.getAcceptingQLane() ;
@@ -482,7 +485,7 @@ final class QFFFNode implements QNodeI {
 		return false;
 
 	}
-
+	
 	private int numberOfKeysFromInclToExcl(TreeMap<Double,Link> thetaMap, double lowerInclBound, double upperExclBound){
 		Entry<Double, Link> entry = thetaMap.ceilingEntry(lowerInclBound);
 		if(entry == null){
@@ -517,6 +520,55 @@ final class QFFFNode implements QNodeI {
 	}
 
 
+
+	FFFNodeConfigGroup getFFFNodeConfig(){
+		return this.fffNodeConfig;
+	}
+
+	
+	protected boolean moveCarPassingOnTheRightOverNode( final QVehicle veh, QLinkI fromLink, final QLaneI fromLane, final double now ) {
+		Id<Link> nextLinkId = veh.getDriver().chooseNextLinkId();
+		Link currentLink = veh.getCurrentLink();   // Takes it from QVehicle, so temporary link does not enter here...
+
+		QLinkI nextQueueLink = this.netsimEngine.getNetsimNetwork().getNetsimLinks().get(nextLinkId);
+		QLaneI nextQueueLane = nextQueueLink.getAcceptingQLane() ;
+		if (nextQueueLane.isAcceptingFromUpstream()) {
+			moveCarPassingOnTheRightFromInlinkToOutlink(veh, currentLink.getId(), fromLane, nextLinkId, nextQueueLane);
+			return true;
+		}
+
+		if (vehicleIsStuck(fromLane, now)) {
+			if (this.context.qsimConfig.isRemoveStuckVehicles()) {
+				moveVehicleFromInlinkToAbort(veh, fromLane, now, currentLink.getId());
+				return false ;
+			} else {
+				moveCarPassingOnTheRightFromInlinkToOutlink(veh, currentLink.getId(), fromLane, nextLinkId, nextQueueLane);
+				return true;
+			}
+		}
+
+		return false;
+	}
+	
+	private void moveCarPassingOnTheRightFromInlinkToOutlink(final QVehicle veh, Id<Link> currentLinkId, final QLaneI fromLane, Id<Link> nextLinkId, QLaneI nextQueueLane) {
+
+		double now = this.context.getSimTimer().getTimeOfDay();
+
+		// The vehicle is popped at a later stage...
+		// -->
+		//		network.simEngine.getMobsim().getEventsManager().processEvent(new LaneLeaveEvent(now, veh.getId(), currentLinkId, fromLane.getId()));
+
+		this.context.getEventsManager().processEvent(new LinkLeaveEvent(now, veh.getId(), currentLinkId));
+		// <--
+
+		veh.getDriver().notifyMoveOverNode( nextLinkId );
+
+		// -->
+		this.context.getEventsManager().processEvent(new LinkEnterEvent(now, veh.getId(), nextLinkId ));
+
+		// <--
+		nextQueueLane.addFromUpstream(veh);
+	}
 
 
 }

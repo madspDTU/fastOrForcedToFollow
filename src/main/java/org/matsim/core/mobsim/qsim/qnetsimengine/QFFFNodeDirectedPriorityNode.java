@@ -1,5 +1,6 @@
 package org.matsim.core.mobsim.qsim.qnetsimengine;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -55,7 +56,7 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode{
 							}
 						} else { // a partial turn
 							t = decreaseInt(t);
-							moveLeftTurningBicyclePartiallyOverNode(veh, lane, nowish, t);
+							moveLeftTurningBicyclePartiallyOverNode(veh, lane, t);
 						}
 						timeoutModifier.updateTimeouts(bicycleTimeouts, carTimeouts, 
 								inDirection, t, isSecondary, nowish);
@@ -76,9 +77,9 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode{
 		// (Currently, straightahead is considered a left turn, which it should not). 
 
 		// The outputs either the outdirection, or the bundle FOLLOWING the bundle with the appropriate inlink
-			// The FOLLOWING bundle is used, because the conflicts have to be based on this bundle.
-				// One link is "subtracted" before using it in a stepwise left turn move. 
-		
+		// The FOLLOWING bundle is used, because the conflicts have to be based on this bundle.
+		// One link is "subtracted" before using it in a stepwise left turn move. 
+
 		int[][] turns = new int[carInLinks.length][carInLinks.length];
 		for(int inDirection = 0; inDirection < carInLinks.length; inDirection++){
 			for(int outDirection = 0; outDirection < carInLinks.length; outDirection++){
@@ -108,12 +109,12 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode{
 						}
 					}
 				}
-				
+
 				//Choose the following bundle based on inlink..
 				if(t != outDirection){
 					t = increaseInt(t);
 				}
-				
+
 				turns[inDirection][outDirection] = t;
 			}
 		}
@@ -179,15 +180,6 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode{
 		}
 		return leftTurns;
 
-	}
-
-
-	private int decreaseInt(int i){
-		if(i == 0){
-			return carInLinks.length - 1;
-		} else {
-			return i - 1;
-		}
 	}
 
 
@@ -347,10 +339,9 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode{
 	}
 
 	protected boolean doSimStep(final double now){
-		double nowish = getNowPlusDelay(now);
 
-		List<Integer> primaryInLinkOrder = new LinkedList<Integer>();
-		List<Integer> secondaryInLinkOrder = new LinkedList<Integer>();
+		ArrayList<Integer> primaryInLinkOrder = new ArrayList<Integer>(carInLinks.length); 
+		ArrayList<Integer> secondaryInLinkOrder = new ArrayList<Integer>(carInLinks.length);
 
 		outerLoop: 
 			for(int i = 0; i < carInLinks.length; i++){
@@ -387,56 +378,65 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode{
 			return false;
 		}
 
+		double nowishBicycle = getNowPlusDelayBicycle(now);
+		double nowishCar = getNowPlusDelayCar(now);
 
 		// A)
 		if(!primaryInLinkOrder.isEmpty()){
-			Collections.shuffle(primaryInLinkOrder, random);
 
+			int n = primaryInLinkOrder.size();
+			int i = (n == 0) ? 1 : random.nextInt(n);
+			
 			//1 ) priorityMovesForBicycles
-			for(int i : primaryInLinkOrder){
-				bicycleMove(i, now, nowish, new RightPriorityBicycleTimeoutModifier()); // includes step-wise left turns
+			for(int count = 0; count < n; count++){
+				int direction = primaryInLinkOrder.get(i);
+				bicycleMove(direction, now, nowishBicycle, new RightPriorityBicycleTimeoutModifier()); // includes step-wise left turns
+				i = QFFFNodeUtils.increaseInt(i, n);
 			}
 			//2 ) straight or right moves from priority for cars
-			for(int i : primaryInLinkOrder){
-				straightOrRightTurnCarMove(i, now, nowish, new RightPriorityCarTimeoutModifier()); // left turns handled below
+			for(int count = 0; count < n; count++){
+				int direction = primaryInLinkOrder.get(i);
+				straightOrRightTurnCarMove(direction, now, nowishCar, new RightPriorityCarTimeoutModifier()); // left turns handled below
+				i = QFFFNodeUtils.increaseInt(i, n);
+
 			}
 			//3 ) left turn moves for cars from priority
-			for(int i : primaryInLinkOrder){
-				leftTurnCarMove(i, now, nowish, new PriorityLeftTurnCarTimeoutModifier()); // includes step-wise left turns
+			for(int count = 0; count < n; count++){
+				int direction = primaryInLinkOrder.get(i);
+				leftTurnCarMove(direction, now, nowishCar, new PriorityLeftTurnCarTimeoutModifier()); // includes step-wise left turns
+				i = QFFFNodeUtils.increaseInt(i, n);
 			}
 		}
 
 
 		// B) secondary inlinks.
 		if(!secondaryInLinkOrder.isEmpty()){
-			Collections.shuffle(secondaryInLinkOrder, random);
 
+			int n = secondaryInLinkOrder.size();
+			int i = (n == 0) ? 1 : random.nextInt(n);
+			
 			//4 ) secondary MovesForBicycles 
-			for(int i : secondaryInLinkOrder){
-				bicycleMove(i, now, nowish, new SecondaryBicycleTimeoutModifier()); // includes step-wise left turns
+			for(int count = 0; count < n; count++){
+				int direction = secondaryInLinkOrder.get(i);
+				bicycleMove(direction, now, nowishBicycle, new SecondaryBicycleTimeoutModifier()); // includes step-wise left turns
+				i = QFFFNodeUtils.increaseInt(i, n);
 			}
 			//5 ) straight or right moves from secondary for cars
-			for(int i : secondaryInLinkOrder){
+			for(int count = 0; count < n; count++){
 				//TODO: Is this the correct timeoutModifier to use here???
-				straightOrRightTurnCarMove(i, now, nowish, new PriorityLeftTurnCarTimeoutModifier()); // left turns handled below
+				int direction = secondaryInLinkOrder.get(i);
+				straightOrRightTurnCarMove(direction, now, nowishCar, new PriorityLeftTurnCarTimeoutModifier()); // left turns handled below
+				i = QFFFNodeUtils.increaseInt(i, n);
 			}
 			//6 ) left turn moves for cars from secondary
-			for(int i : secondaryInLinkOrder){
+			for(int count = 0; count < n; count++){
 				//TODO: Is this the correct timeoutModifier to use here???
-				leftTurnCarMove(i, now, nowish, new PriorityLeftTurnCarTimeoutModifier()); // includes step-wise left turns
+				int direction = secondaryInLinkOrder.get(i);
+				leftTurnCarMove(direction, now, nowishCar, new PriorityLeftTurnCarTimeoutModifier()); // includes step-wise left turns
+				i = QFFFNodeUtils.increaseInt(i, n);
 			}
 		}
-
 		return true;
-	}
-
-
-	private int increaseInt(int i){
-		if(i == carInLinks.length -1){
-			return 0;
-		} else {
-			return i + 1;
-		}
 	}
 
 
@@ -466,7 +466,7 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode{
 
 
 
-	private void moveLeftTurningBicyclePartiallyOverNode( final QVehicle veh, final QLaneI fromLane, final double now, final int tempBundle ) {
+	private void moveLeftTurningBicyclePartiallyOverNode( final QVehicle veh, final QLaneI fromLane, final int tempBundle ) {
 		QLinkI qLink =  (QLinkI) bicycleInLinks[tempBundle];
 		QCycleLaneWithSublinks qCycleLink = (QCycleLaneWithSublinks) qLink.getAcceptingQLane();
 		fromLane.popFirstVehicle(); // Remove veh from previous queue
@@ -504,21 +504,21 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode{
 					}
 				}
 
-				//Inserting left turning vehicles again....
-				if(lane instanceof QCycleLaneWithSublinks){
-					QCycleLaneWithSublinks qCycleLane = (QCycleLaneWithSublinks) lane;
-					for(QVehicle veh : temporarilyRemoved){
-						qCycleLane.addVehicleToFrontOfLeavingVehicles(veh);
-					}
-				} else if (lane instanceof QueueWithBuffer) {
-					QueueWithBuffer qCycleLane = (QueueWithBuffer) lane;
-					for(QVehicle veh : temporarilyRemoved){
-						qCycleLane.addToFrontOfBuffer(veh);
-					}
+				//if (lane instanceof QueueWithBuffer) {
+				QueueWithBuffer qCycleLane = (QueueWithBuffer) lane;
+				for(QVehicle veh : temporarilyRemoved){
+					qCycleLane.addToFrontOfBuffer(veh);
 				}
+				//}
 			}
 		}
 	}
 
+	private int decreaseInt(int i){
+		return QFFFNodeUtils.decreaseInt(i, carInLinks.length);
+	}
+	private int increaseInt(int i){
+		return QFFFNodeUtils.increaseInt(i, carInLinks.length);
+	}
 
 }

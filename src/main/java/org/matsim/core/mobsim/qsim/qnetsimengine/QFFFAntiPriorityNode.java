@@ -1,5 +1,6 @@
 package org.matsim.core.mobsim.qsim.qnetsimengine;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -31,10 +32,9 @@ public class QFFFAntiPriorityNode extends QFFFAbstractNode {
 
 	@Override
 	boolean doSimStep(double now) {
-		double nowish = getNowPlusDelay(now);
-
-		List<Integer> primaryInLinkOrder = new LinkedList<Integer>();
-		List<Integer> secondaryInLinkOrder = new LinkedList<Integer>();
+			
+		ArrayList<Integer> primaryInLinkOrder = new ArrayList<Integer>(carInLinks.length); 
+		ArrayList<Integer> secondaryInLinkOrder = new ArrayList<Integer>(carInLinks.length);
 
 		outerLoop: 
 			for(int i = 0; i < carInLinks.length; i++){
@@ -71,18 +71,37 @@ public class QFFFAntiPriorityNode extends QFFFAbstractNode {
 			return false;
 		}
 
+		
+		double nowishBicycle = getNowPlusDelayBicycle(now);
+		double nowishCar = getNowPlusDelayCar(now);
+
+		
 		if(!primaryInLinkOrder.isEmpty()){
-			Collections.shuffle(primaryInLinkOrder, random);
-			for(int i : primaryInLinkOrder){
-				bicycleMoveWithFullLeftTurns(i, now, nowish, new RightPriorityBicycleTimeoutModifier());
-				carMoveAllowingLeftTurns(i, now, nowish, new RightPriorityCarTimeoutModifier());
+
+			int n = primaryInLinkOrder.size();
+			int i = (n == 0) ? 1 : random.nextInt(n);
+		
+			for(int count = 0; count < n; count++){
+				int direction = primaryInLinkOrder.get(i);
+				bicycleMoveWithFullLeftTurns(direction, now, nowishBicycle,
+						new RightPriorityBicycleTimeoutModifier());
+				carMoveAllowingLeftTurns(direction, now, nowishCar, 
+						new RightPriorityCarTimeoutModifier());
+				i = QFFFNodeUtils.increaseInt(i, n);
 			}
 		}
 		if(!secondaryInLinkOrder.isEmpty()){
-			Collections.shuffle(primaryInLinkOrder, random);
-			for(int i : secondaryInLinkOrder){
-				bicycleMoveWithFullLeftTurns(i, now, nowish, new RightPriorityBicycleTimeoutModifier());
-				carMoveAllowingLeftTurns(i, now, nowish, new RightPriorityCarTimeoutModifier());
+			
+			int n = secondaryInLinkOrder.size();
+			int i = (n == 0) ? 1 : random.nextInt(n);
+			
+			for(int count = 0; count < n; count++){
+				int direction = secondaryInLinkOrder.get(i);
+				bicycleMoveWithFullLeftTurns(direction, now, nowishBicycle,
+						new RightPriorityBicycleTimeoutModifier());
+				carMoveAllowingLeftTurns(direction, now, nowishCar,
+						new RightPriorityCarTimeoutModifier());
+				i = QFFFNodeUtils.increaseInt(i, n);
 			}
 		}
 

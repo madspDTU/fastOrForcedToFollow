@@ -73,6 +73,8 @@ public class RunBicycleCopenhagen {
 		boolean oneLane = false;
 		boolean roW = false;
 		boolean mixed = false;
+		boolean uneven = false;
+		double qSimEndTime = 100*3600;
 		if(args.length > 0){
 			scenarioType = args[0];
 			if(scenarioType.contains("NoCongestion")){
@@ -93,8 +95,18 @@ public class RunBicycleCopenhagen {
 				mixed = true;
 				oneLane = false; // We don't have a one-lane mixed network yet...
 			}
+			if(scenarioType.contains("Uneven")){
+				uneven = true;
+				mixed = true;
+				oneLane = false;
+			}
+			if(scenarioType.contains("QSimEndsAt")){
+				qSimEndTime = Double.valueOf(
+						scenarioType.substring(scenarioType.lastIndexOf("QSimEndsAt") + 10,
+						scenarioType.length())) * 3600;
+			}
 		}
-
+		
 		System.out.println("Running " + scenarioType);
 
 		Config config = RunMatsim.createConfigFromExampleName("berlin");
@@ -152,8 +164,8 @@ public class RunBicycleCopenhagen {
 			ap.setEarliestEndTime(-0.5);
 			ap.setLatestStartTime(99*3600);
 			ap.setScoringThisActivityAtAll(false);
-
 		}
+		
 
 		List<String> scoreModes = new LinkedList<String>();
 		scoreModes.addAll(Arrays.asList(TransportMode.access_walk, TransportMode.egress_walk));
@@ -186,6 +198,15 @@ public class RunBicycleCopenhagen {
 		config.strategy().addStrategySettings(logit);
 		
 
+		config.qsim().setEndTime(qSimEndTime);
+		if(uneven){
+			config.qsim().setFlowCapFactor(0.2); // This has to be calibrated
+			//config.qsim().setFlowCapFactor(0.1); // This has to be calibrated
+			config.qsim().setStorageCapFactor(0.3); // This has to be calibrated
+			//config.qsim().setStorageCapFactor(0.24); // This has to be calibrated
+			FFFNodeConfigGroup fffNodeConfig = ConfigUtils.addOrGetModule(config, FFFNodeConfigGroup.class);
+			fffNodeConfig.setCarDelay(10. );
+		}
 
 		if(mixed){
 			config.network().setInputFile(
@@ -197,7 +218,9 @@ public class RunBicycleCopenhagen {
 			config.network().setInputFile(
 					inputBaseDir + "MATSimCopenhagenNetwork_BicyclesOnly.xml.gz");
 		}
-		if(mixed){
+		if(uneven){
+			config.plans().setInputFile(inputBaseDir + "AllPlans_CPH_uneven.xml.gz");		
+		} else if(mixed){
 			config.plans().setInputFile(inputBaseDir + "AllPlans_CPH_" + size + ".xml.gz");
 		} else {
 			config.plans().setInputFile(inputBaseDir + "Plans_CPH_" + size + ".xml.gz");

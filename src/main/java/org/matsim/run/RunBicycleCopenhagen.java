@@ -3,6 +3,7 @@ package org.matsim.run;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -21,7 +22,7 @@ import org.matsim.api.core.v01.population.Person;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ActivityParams;
-import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ModeParams;
+import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.MyModeParams;
 import org.matsim.core.config.groups.StrategyConfigGroup.StrategySettings;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
@@ -42,6 +43,7 @@ import org.matsim.core.router.util.PreProcessDijkstra;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.scenario.ScenarioUtils;
+import org.matsim.core.scoring.MyModeUtilityParameters;
 import org.matsim.core.scoring.ScoringFunctionPenalisingCongestedTimeFactory;
 import org.matsim.core.trafficmonitoring.FreeSpeedTravelTime;
 import org.matsim.vehicles.Vehicle;
@@ -172,7 +174,7 @@ public class RunBicycleCopenhagen {
 		scoreModes.addAll(networkModes);
 
 		for(String mode : scoreModes){
-			ModeParams modeParams = config.planCalcScore().getModes().get(mode);
+			MyModeParams modeParams = config.planCalcScore().getModes().get(mode);
 			modeParams.setMarginalUtilityOfTraveling(-60.);
 			//The distance coefficient is used as coefficient for congestion time... ... Not proud of it myself.
 			modeParams.setMarginalUtilityOfDistance(-30./3600);
@@ -226,6 +228,19 @@ public class RunBicycleCopenhagen {
 			config.plans().setInputFile(inputBaseDir + "Plans_CPH_" + size + ".xml.gz");
 		}
 
+		
+		FFFScoringConfigGroup fffScoringConfig = ConfigUtils.addOrGetModule(config, FFFScoringConfigGroup.class);
+		HashMap<String, MyModeUtilityParameters> modeParams = new HashMap<String, MyModeUtilityParameters>();
+		modeParams.put(TransportMode.access_walk, new MyModeUtilityParameters(-1/60., 0., 0., 0.));
+		modeParams.put(TransportMode.egress_walk, new MyModeUtilityParameters(-1/60., 0., 0., 0.));
+		modeParams.put(TransportMode.car, new MyModeUtilityParameters(-1/60., -1/120., 0., 0.));
+		modeParams.put(TransportMode.bike, new MyModeUtilityParameters(-1/60., -1/120., 0., 0.));
+		fffScoringConfig.setScoringParameters(modeParams);
+		
+		
+		
+		
+		
 		//Possible changes to config
 		FFFConfigGroup fffConfig = ConfigUtils.addOrGetModule(config, FFFConfigGroup.class);
 		// fffConfig.setLMax(Double.MAX_VALUE); // To disable sublinks (faster computation, but lower realism)

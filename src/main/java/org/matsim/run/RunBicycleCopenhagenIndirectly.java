@@ -11,8 +11,8 @@ public class RunBicycleCopenhagenIndirectly {
 		String[] arguments = new String[]{"smallRoWMixedQSimEndsAt30", "1"};
 		RunBicycleCopenhagen.main(arguments);
 	
-		//		ConstructSpeedFlowsFromCopenhagen.run(
-		//"/work1/s103232/ABMTRANS2019/withNodeModelling/smallRoWMixed/", 
-			//	"small", -1, Arrays.asList(TransportMode.car),Arrays.asList(TransportMode.bike));
+//				ConstructSpeedFlowsFromCopenhagen.run(
+	//	"/work1/s103232/ABMTRANS2019/withNodeModelling/smallRoWMixedQSimEndsAt30/", 
+		//		"small", -1, Arrays.asList(),Arrays.asList(TransportMode.bike, TransportMode.car));
 	}
 }

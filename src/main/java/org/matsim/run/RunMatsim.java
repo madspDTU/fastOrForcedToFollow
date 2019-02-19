@@ -49,7 +49,7 @@ import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ActivityParams;
-import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ModeParams;
+import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.MyModeParams;
 import org.matsim.core.config.groups.QSimConfigGroup;
 import org.matsim.core.config.groups.StrategyConfigGroup.StrategySettings;
 import org.matsim.core.controler.AbstractModule;
@@ -121,7 +121,7 @@ public class RunMatsim {
 
 		config.qsim().setEndTime( 100.*3600. );
 
-		PlanCalcScoreConfigGroup.ModeParams params = new PlanCalcScoreConfigGroup.ModeParams(TransportMode.bike) ;
+		PlanCalcScoreConfigGroup.MyModeParams params = new PlanCalcScoreConfigGroup.MyModeParams(TransportMode.bike) ;
 		config.planCalcScore().addModeParams( params );
 		final List<String> networkModes = Arrays.asList( new String[]{TransportMode.car, TransportMode.bike} );
 		config.qsim().setMainModes( networkModes );

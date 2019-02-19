@@ -102,8 +102,8 @@ public class RunMatsimWithRoW {
 		Controler controler = RunMatsim.createControlerWithRoW(scenario); 
 		//Controler controler = RunMatsim.createControler(scenario); 
 
-		config.planCalcScore().addModeParams( new PlanCalcScoreConfigGroup.ModeParams(TransportMode.ride) );
-		config.planCalcScore().addModeParams( new PlanCalcScoreConfigGroup.ModeParams(TransportMode.walk) );
+		config.planCalcScore().addModeParams( new PlanCalcScoreConfigGroup.MyModeParams(TransportMode.ride) );
+		config.planCalcScore().addModeParams( new PlanCalcScoreConfigGroup.MyModeParams(TransportMode.walk) );
 		
 		
 

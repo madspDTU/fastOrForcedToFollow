@@ -1,11 +1,14 @@
 package fastOrForcedToFollow;
 
 
+import org.matsim.core.mobsim.qsim.qnetsimengine.QCycle;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QVehicle;
 
 import fastOrForcedToFollow.configgroups.FFFConfigGroup;
 
+import java.util.Comparator;
 import java.util.LinkedList;
+import java.util.PriorityQueue;
 
 /**
  * 
@@ -13,6 +16,9 @@ import java.util.LinkedList;
  */
 public class Sublink{
 
+	
+	private final PriorityQueue<QCycle> queue;
+	
 	
 	/**
 	 * The id of the link.
@@ -52,6 +58,9 @@ public class Sublink{
 	public void addVehicleToLeavingVehicles(final QVehicle veh){
 		this.leavingVehicles.addLast(veh);
 	}
+	public void addVehicleToFrontOfLeavingVehicles(final QVehicle veh){
+		this.leavingVehicles.addFirst(veh);
+	}
 	public QVehicle getFirstLeavingVehicle(){
 		return leavingVehicles.isEmpty() ? null : leavingVehicles.peekFirst();
 	}
@@ -63,6 +72,12 @@ public class Sublink{
 	}
 	public LinkedList<QVehicle> getLeavingVehicles(){
 		return this.leavingVehicles;
+	}
+	public PriorityQueue<QCycle> getQ(){
+		return queue;
+	}
+	public void addToQ(QCycle qCyc){
+		queue.add(qCyc);
 	}
 	
 
@@ -96,6 +111,14 @@ public class Sublink{
 			totalLaneLength += pseudoLane.getLength();
 		}
 		this.totalLaneLength = totalLaneLength;
+		
+		this.queue = new PriorityQueue<>( new Comparator<QCycle>(){
+			@Override
+			public int compare( QCycle qc1, QCycle qc2 ){
+				return Double.compare(qc1.getCyclist().getTEarliestExit(), qc2.getCyclist().getTEarliestExit());
+			}
+		} ) ;
+
 		
 	}
 
@@ -156,6 +179,10 @@ public class Sublink{
 	public void reduceOccupiedSpace(final Cyclist cyclist, final double speed){
 		this.supplementOccupiedSpace(-cyclist.getSafetyBufferDistance(speed));
 	}
+	
+	public void reduceOccupiedSpaceByBicycleLength(final Cyclist cyclist){
+		this.supplementOccupiedSpace(-cyclist.getBicycleLength());
+	}
 
 	/**
 	 * Increases the occupied space of link by the safety distance corresponding to <code>speed</code> of <code>cyclist</code>.
@@ -166,6 +193,9 @@ public class Sublink{
 
 	public void increaseOccupiedSpace(final Cyclist cyclist, final double speed){
 		this.supplementOccupiedSpace(cyclist.getSafetyBufferDistance(speed));
+	}
+	public void increaseOccupiedSpaceByBicycleLength(final Cyclist cyclist){
+		this.supplementOccupiedSpace(cyclist.getBicycleLength());
 	}
 
 

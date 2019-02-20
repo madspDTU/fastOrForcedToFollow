@@ -73,7 +73,8 @@ public class RunMatsimWithRoW {
 		}
 
 
-		Config config = RunMatsim.createConfigFromExampleName(scenarioExample);	
+		Config config = RunMatsim.createConfigFromExampleName(scenarioExample, 
+				Arrays.asList(TransportMode.bike, TransportMode.car));	
 		
 		//Possible changes to config
 		FFFConfigGroup fffConfig = ConfigUtils.addOrGetModule(config, FFFConfigGroup.class);

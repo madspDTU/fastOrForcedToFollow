@@ -6,6 +6,11 @@ public class FFFConfigGroup extends ReflectiveConfigGroup {
 
 	static final String GROUP_NAME = "fastOrForcedToFollow";
 
+	public static final String DESIRED_SPEED = "v_0";
+	public static final String HEADWAY_DISTANCE_INTERCEPT = "theta_0";
+	public static final String HEADWAY_DISTANCE_SLOPE= "theta_1";
+	public static final String BICYCLE_LENGTH = "lambda_c";
+
 	
 	/**
 	 * Excess travel time factor forced onto tReady and tEnd. 

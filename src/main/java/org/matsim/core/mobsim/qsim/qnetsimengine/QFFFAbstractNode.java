@@ -20,7 +20,7 @@ import fastOrForcedToFollow.timeoutmodifiers.TimeoutModifier;
 
 public abstract class QFFFAbstractNode { //Interface or abstract
 
-	
+
 	final Random random;
 	final QFFFNode qNode;
 	final QLinkI[] carInLinks;
@@ -66,60 +66,60 @@ public abstract class QFFFAbstractNode { //Interface or abstract
 
 	abstract boolean doSimStep(final double now);
 
-	
+
 	protected double getNowPlusDelayBicycle(final double now){
 		return now + qNode.getFFFNodeConfig().getBicycleDelay();
 	}
-	
+
 	protected double getNowPlusDelayCar(final double now){
 		return now + qNode.getFFFNodeConfig().getCarDelay();
 	}
-	 
-	 protected void bicycleMoveWithFullLeftTurns(final int inDirection, final double now, 
-				final double nowish, TimeoutModifier timeoutModifier) {
-			QLinkI inLink = bicycleInLinks[inDirection];
-			if(inLink != null){
-				for(QLaneI lane : inLink.getOfferingQLanes()){
-					while(! lane.isNotOfferingVehicle()){
-						QVehicle veh = lane.getFirstVehicle();
-						Id<Link> nextLinkId = veh.getDriver().chooseNextLinkId();	
-						int outDirection = bicycleOutTransformations.get(nextLinkId);
-						if(bicycleTimeouts[inDirection][outDirection] <= now){
-							//Ignoring left turns when using right priority.
-							if (! this.qNode.moveVehicleOverNode(veh, inLink, lane, now )) {
-								break;
-							}
-							timeoutModifier.updateTimeouts(bicycleTimeouts, carTimeouts, 
-									inDirection, outDirection, null, nowish);
-						} else {
-							break;
-						}
-					}
-				}
-			}
-		}
 
-	 protected void carMoveAllowingLeftTurns(final int inDirection, final double now, 
-				final double nowish, TimeoutModifier timeoutModifier) {
-			QLinkI inLink = carInLinks[inDirection];
-			if(inLink != null){
-				for(QLaneI lane : inLink.getOfferingQLanes()){
-					while(! lane.isNotOfferingVehicle()){
-						QVehicle veh = lane.getFirstVehicle();
-						Id<Link> nextLinkId = veh.getDriver().chooseNextLinkId();
-						int outDirection = carOutTransformations.get(nextLinkId);
-						if(carTimeouts[inDirection][outDirection] <= now){
-							//Ignoring left turns when using right priority.
-							if (! this.qNode.moveVehicleOverNode(veh, inLink, lane, now )) {
-								break;
-							}
-							timeoutModifier.updateTimeouts(bicycleTimeouts, carTimeouts, 
-									inDirection, outDirection, null, nowish);
-						} else {
+	protected void bicycleMoveWithFullLeftTurns(final int inDirection, final double now, 
+			final double nowish, TimeoutModifier timeoutModifier) {
+		QLinkI inLink = bicycleInLinks[inDirection];
+		if(inLink != null){
+			for(QLaneI lane : inLink.getOfferingQLanes()){
+				while(! lane.isNotOfferingVehicle()){
+					QVehicle veh = lane.getFirstVehicle();
+					Id<Link> nextLinkId = veh.getDriver().chooseNextLinkId();	
+					int outDirection = bicycleOutTransformations.get(nextLinkId);
+					if(bicycleTimeouts[inDirection][outDirection] <= now){
+						//Ignoring left turns when using right priority.
+						if (! this.qNode.moveVehicleOverNode(veh, inLink, lane, now )) {
 							break;
 						}
+						timeoutModifier.updateTimeouts(bicycleTimeouts, carTimeouts, 
+								inDirection, outDirection, null, nowish);
+					} else {
+						break;
 					}
 				}
 			}
 		}
+	}
+
+	protected void carMoveAllowingLeftTurns(final int inDirection, final double now, 
+			final double nowish, TimeoutModifier timeoutModifier) {
+		QLinkI inLink = carInLinks[inDirection];
+		if(inLink != null){
+			for(QLaneI lane : inLink.getOfferingQLanes()){
+				while(! lane.isNotOfferingVehicle()){
+					QVehicle veh = lane.getFirstVehicle();
+					Id<Link> nextLinkId = veh.getDriver().chooseNextLinkId();
+					int outDirection = carOutTransformations.get(nextLinkId);
+					if(carTimeouts[inDirection][outDirection] <= now){
+						//Ignoring left turns when using right priority.
+						if (! this.qNode.moveVehicleOverNode(veh, inLink, lane, now )) {
+							break;
+						}
+						timeoutModifier.updateTimeouts(bicycleTimeouts, carTimeouts, 
+								inDirection, outDirection, null, nowish);
+					} else {
+						break;
+					}
+				}
+			}
+		}
+	}
 }

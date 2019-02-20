@@ -26,6 +26,8 @@ import org.matsim.vehicles.VehicleType;
 import org.matsim.vehicles.VehicleTypeImpl;
 import org.matsim.vehicles.VehicleUtils;
 
+import fastOrForcedToFollow.configgroups.FFFConfigGroup;
+
 public class DesiredSpeedBicycleDijkstra extends Dijkstra{
 
 	DesiredSpeedBicycleDijkstra(Network network, TravelDisutility costFunction,
@@ -46,11 +48,12 @@ public class DesiredSpeedBicycleDijkstra extends Dijkstra{
 				Id.create(idString, VehicleType.class));
 	
 		double v_0 = (double) person.getAttributes().getAttribute( 
-				RunMatsim.DESIRED_SPEED );
+				FFFConfigGroup.DESIRED_SPEED );
 		vehicleType.setMaximumVelocity(v_0);
 
 		Vehicle actualVehicle = VehicleUtils.getFactory().createVehicle(
 				Id.createVehicleId(idString), vehicleType);
+			
 		return super.calcLeastCostPath(fromNode, toNode, startTime, person, actualVehicle);
 
 		

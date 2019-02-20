@@ -1,4 +1,4 @@
-package fastOrForcedToFollow;
+package fastOrForcedToFollow.leastcostpathcalculators;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -23,8 +23,6 @@ import org.matsim.core.router.costcalculators.TravelDisutilityFactory;
 import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.router.util.LeastCostPathCalculatorFactory;
 import org.matsim.core.router.util.TravelTime;
-
-import fastOrForcedToFollow.leastcostpathcalculators.DesiredSpeedBicycleDijkstraFactory;
 
 public class NetworkRoutingProviderWithCleaning implements Provider<RoutingModule> {
 	private static final Logger log = Logger.getLogger( NetworkRoutingProviderWithCleaning.class ) ;

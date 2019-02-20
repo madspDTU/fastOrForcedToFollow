@@ -22,24 +22,20 @@ class QCycleLaneWithSublinks implements QLaneI{
 	private final fastOrForcedToFollow.Sublink[] fffLinkArray;
 	private final AbstractQLink qLinkImpl;
 	private final NetsimEngineContext context;
-	private final PriorityQueue<QCycle> globalQ;
 	private final double correctionFactor;
 
 	private final int lastIndex; // To make some (often queried) methods faster.
+
+	private int numberOfCyclistsOnLink;
 
 	public QCycleLaneWithSublinks( Sublink[] fffLinkArray, AbstractQLink qLinkImpl, NetsimEngineContext context, double correctionFactor ){
 		this.fffLinkArray = fffLinkArray; 
 		this.qLinkImpl = qLinkImpl;
 		this.context = context;
-		this.globalQ = new PriorityQueue<>( new Comparator<QCycle>(){
-			@Override
-			public int compare( QCycle qc1, QCycle qc2 ){
-				return Double.compare(qc1.getCyclist().getTEarliestExit(), qc2.getCyclist().getTEarliestExit());
-			}
-		} ) ;
 
 		this.correctionFactor = correctionFactor;
 		this.lastIndex = fffLinkArray.length -1;
+		this.numberOfCyclistsOnLink = 0;
 
 	}
 
@@ -60,7 +56,7 @@ class QCycleLaneWithSublinks implements QLaneI{
 	@Override public void addFromUpstream( final QVehicle veh ) {  
 		// activate link since there is now action on it:
 		activateLink();
-
+		numberOfCyclistsOnLink++;
 		veh.setCurrentLink( qLinkImpl.getLink() );
 
 		// upcast:
@@ -84,7 +80,7 @@ class QCycleLaneWithSublinks implements QLaneI{
 
 
 		double tEarliestExit = cyclist.getTEarliestExit();
-	
+
 
 		// The time at which the tip of the cyclist enters the beginning of the link:
 		double tStart = Double.max(pseudoLane.getTReady(), cyclist.getTEarliestExit()) ;
@@ -101,16 +97,16 @@ class QCycleLaneWithSublinks implements QLaneI{
 		pseudoLane.setTReady(tStart + tOneBicycleLength);
 		pseudoLane.setTEnd(cyclist.getTEarliestExit() + tOneBicycleLength);
 
-			//Only relevant when considering downscaled population
-//		double surplus = pseudoLane.getLength() / vTilde * (correctionFactor-1);
-//		pseudoLane.setTReady(tStart + tOneBicycleLength + surplus);
-//		pseudoLane.setTEnd(cyclist.getTEarliestExit() + tOneBicycleLength + surplus);
+		//Only relevant when considering downscaled population
+		//		double surplus = pseudoLane.getLength() / vTilde * (correctionFactor-1);
+		//		pseudoLane.setTReady(tStart + tOneBicycleLength + surplus);
+		//		pseudoLane.setTEnd(cyclist.getTEarliestExit() + tOneBicycleLength + surplus);
 
 
 		// Add qCycle to the downstream queue of the next link.
 		//	fffLinkArray[0].getOutQ().add(qCyc ); 
 		qCyc.getCyclist().resetCurrentLinkIndex();
-		globalQ.add(qCyc);
+		fffLinkArray[qCyc.getCyclist().getCurrentLinkIndex()].addToQ(qCyc);
 
 	}
 
@@ -131,99 +127,92 @@ class QCycleLaneWithSublinks implements QLaneI{
 
 	@Override public boolean doSimStep() {
 
-		LinkedList<QCycle> qCycsWhereNextSublinkIsFull = new LinkedList<QCycle>();
+		for(int i = this.lastIndex; i>=0; i--){
+			Sublink currentFFFLink = fffLinkArray[i];
+			QCycle qCyc;
+			while((qCyc = currentFFFLink.getQ().peek()) != null){
 
-		QCycle qCyc;
-		while((qCyc = globalQ.peek()) != null){
-
-			double tEarliestExit = qCyc.getEarliestLinkExitTime();
-			
-			if( tEarliestExit > context.getSimTimer().getTimeOfDay()){
-				break;
-			}
-
-			Cyclist cyclist = qCyc.getCyclist();
-			Sublink currentFFFLink = fffLinkArray[cyclist.getCurrentLinkIndex()];
-
-			globalQ.remove();
-
-			//Anything but the last subLink
-			if(cyclist.getCurrentLinkIndex() < this.lastIndex){
-
-				// internal fff logic:
-
-				// Selecting the appropriate pseudoLane:
-				Sublink receivingFFFLink = fffLinkArray[cyclist.getCurrentLinkIndex() + 1];
-
-				if(receivingFFFLink.isLinkFull()){
-					qCycsWhereNextSublinkIsFull.add(qCyc);
-					continue;
+				double tEarliestExit = qCyc.getEarliestLinkExitTime();
+				if( tEarliestExit > context.getSimTimer().getTimeOfDay()){
+					break;
 				}
 
-
-				// qCyc can in fact leave current sublink
-				currentFFFLink.reduceOccupiedSpace(cyclist, cyclist.getSpeed() );			
-				cyclist.incrementCurrentLinkIndex();
-
-				// Selecting a pseudolane
-				PseudoLane pseudoLane = cyclist.selectPseudoLane( receivingFFFLink );
-
-				// Assigning a provisional, maximum speed for this link:
-				double vTilde = cyclist.getVMax(pseudoLane);
-				vTilde = Math.min(cyclist.getDesiredSpeed(), vTilde);
-				cyclist.setSpeed(vTilde);
+				Cyclist cyclist = qCyc.getCyclist();
 
 
-				// The time at which the tip of the cyclist enters the beginning of the link:
-				double tStart = Double.max(pseudoLane.getTReady(), cyclist.getTEarliestExit()) ;
+				if(i < this.lastIndex){
+					// internal fff logic:
 
-				// Calculating earliest possible exit of the link:
-				tEarliestExit = tStart + pseudoLane.getLength() / vTilde;
-				cyclist.setTEarliestExit( tEarliestExit );
+					// Selecting the appropriate pseudoLane:
+					Sublink receivingFFFLink = fffLinkArray[cyclist.getCurrentLinkIndex() + 1];
 
-				// Increasing the occupied space on link:
-				receivingFFFLink.increaseOccupiedSpace(cyclist, vTilde );
+					if(receivingFFFLink.isLinkFull()){
+						break;
+					}
 
-				// Updating tReady and tExit of the link:
-				double tOneBicycleLength = cyclist.getBicycleLength() / vTilde;
+					// qCyc can in fact leave current sublink
+					currentFFFLink.getQ().remove();
+					currentFFFLink.reduceOccupiedSpace(cyclist, cyclist.getSpeed() );			
+					cyclist.incrementCurrentLinkIndex();
 
-				pseudoLane.setTReady(tStart + tOneBicycleLength);
-				pseudoLane.setTEnd(cyclist.getTEarliestExit() + tOneBicycleLength);
+					// Selecting a pseudolane
+					PseudoLane pseudoLane = cyclist.selectPseudoLane( receivingFFFLink );
 
-				// ONLY RELEVANT WHEN USING DOWNSCALED POPULATION
-				//double surplus = pseudoLane.getLength() / vTilde * (correctionFactor-1);
-				//pseudoLane.setTReady(tStart + tOneBicycleLength + surplus);
-				//pseudoLane.setTEnd(cyclist.getTEarliestExit() + tOneBicycleLength + surplus);
-
-				globalQ.add(qCyc);
-
-			} else { ///fffLink is last subLink
-
-				currentFFFLink.reduceOccupiedSpace(cyclist, cyclist.getSpeed() );
+					// Assigning a provisional, maximum speed for this link:
+					double vTilde = cyclist.getVMax(pseudoLane);
+					vTilde = Math.min(cyclist.getDesiredSpeed(), vTilde);
+					cyclist.setSpeed(vTilde);
 
 
-				if(qCyc.getDriver().isWantingToArriveOnCurrentLink()){
-					qLinkImpl.letVehicleArrive(qCyc );
-					continue;
-				}
+					// The time at which the tip of the cyclist enters the beginning of the link:
+					double tStart = Double.max(pseudoLane.getTReady(), cyclist.getTEarliestExit()) ;
+
+					// Calculating earliest possible exit of the link:
+					tEarliestExit = tStart + pseudoLane.getLength() / vTilde;
+					cyclist.setTEarliestExit( tEarliestExit );
+
+					// Increasing the occupied space on link:
+					receivingFFFLink.increaseOccupiedSpace(cyclist, vTilde );
+
+					// Updating tReady and tExit of the link:
+					double tOneBicycleLength = cyclist.getBicycleLength() / vTilde;
+
+					pseudoLane.setTReady(tStart + tOneBicycleLength);
+					pseudoLane.setTEnd(cyclist.getTEarliestExit() + tOneBicycleLength);
+
+					// ONLY RELEVANT WHEN USING DOWNSCALED POPULATION
+					//double surplus = pseudoLane.getLength() / vTilde * (correctionFactor-1);
+					//pseudoLane.setTReady(tStart + tOneBicycleLength + surplus);
+					//pseudoLane.setTEnd(cyclist.getTEarliestExit() + tOneBicycleLength + surplus);
+
+					receivingFFFLink.addToQ(qCyc);
+
+				} else { ///fffLink is last subLink
+
+					currentFFFLink.getQ().remove();
+					currentFFFLink.reduceOccupiedSpace(cyclist, cyclist.getSpeed() );
+
+					if(qCyc.getDriver().isWantingToArriveOnCurrentLink()){
+						qLinkImpl.letVehicleArrive(qCyc );
+						numberOfCyclistsOnLink--;
+						continue;
+					}
 
 
-				//Auxiliary buffer created to fit the piece into MATSim.
-				currentFFFLink.addVehicleToLeavingVehicles(qCyc );
-				currentFFFLink.setLastTimeMoved(tEarliestExit);
+					//Auxiliary buffer created to fit the piece into MATSim.
+					currentFFFLink.addVehicleToLeavingVehicles(qCyc );
+					currentFFFLink.increaseOccupiedSpaceByBicycleLength(cyclist);
+					currentFFFLink.setLastTimeMoved(tEarliestExit);
 
 
-				final QNodeI toNode = qLinkImpl.getToNode();
-				if ( toNode instanceof QNodeImpl ) {
-					((QNodeImpl) toNode).activateNode();
-				} else if( toNode instanceof QFFFNode) {
-					((QFFFNode) toNode).activateNode();
+					final QNodeI toNode = qLinkImpl.getToNode();
+					if ( toNode instanceof QNodeImpl ) {
+						((QNodeImpl) toNode).activateNode();
+					} else if( toNode instanceof QFFFNode) {
+						((QFFFNode) toNode).activateNode();
+					}
 				}
 			}
-		}
-		//Reinserting potentially stuck cyclists...
-		for(QCycle stuckQCyc : qCycsWhereNextSublinkIsFull){
-			globalQ.add(stuckQCyc);
 		}
 		return true;
 	}
@@ -234,6 +223,10 @@ class QCycleLaneWithSublinks implements QLaneI{
 	}
 
 	@Override public QVehicle popFirstVehicle() {
+		QVehicle qVeh = fffLinkArray[lastIndex].pollFirstLeavingVehicle();
+		Cyclist cyclist = ((QCycle) qVeh).getCyclist();
+		fffLinkArray[lastIndex].reduceOccupiedSpaceByBicycleLength(cyclist);
+		numberOfCyclistsOnLink--;
 		return fffLinkArray[lastIndex].pollFirstLeavingVehicle();
 	}
 
@@ -260,7 +253,9 @@ class QCycleLaneWithSublinks implements QLaneI{
 		Sublink lastSubLink = fffLinkArray[this.lastIndex];
 
 		// Essentially just skipping this first link (in order to be consistent with scorin mechanism)
+		numberOfCyclistsOnLink++;
 		lastSubLink.addVehicleToLeavingVehicles(qCyc );
+		lastSubLink.increaseOccupiedSpaceByBicycleLength(qCyc.getCyclist());
 		lastSubLink.setLastTimeMoved(now);
 		qCyc.getCyclist().setTEarliestExit( now );
 
@@ -273,7 +268,7 @@ class QCycleLaneWithSublinks implements QLaneI{
 	}
 
 	@Override public boolean isActive() {
-		if(globalQ.isEmpty() && isNotOfferingVehicle()){
+		if(numberOfCyclistsOnLink == 0){
 			return false;
 		} else {
 			return true;
@@ -281,6 +276,7 @@ class QCycleLaneWithSublinks implements QLaneI{
 	}
 
 	public void addVehicleToFrontOfLeavingVehicles(final QVehicle veh){
+		numberOfCyclistsOnLink++;
 		this.fffLinkArray[lastIndex].getLeavingVehicles().addFirst(veh);
 	}
 
@@ -294,13 +290,16 @@ class QCycleLaneWithSublinks implements QLaneI{
 	}
 
 	@Override public QVehicle getVehicle( final Id<Vehicle> vehicleId ) {
-		for(QCycle cqo : globalQ){
-			if( cqo.getVehicle().getId().equals( vehicleId.toString() ) ){
-				return cqo;
+		for(Sublink sublink : fffLinkArray){
+			for(QCycle cqo : sublink.getQ()){
+				if( cqo.getVehicle().getId().equals( vehicleId.toString() ) ){
+					return cqo;
+				}
 			}
 		}
-		return null ;
+		return null;
 	}
+
 
 	@Override public double getStorageCapacity() {
 		throw new RuntimeException( "not implemented" );
@@ -325,13 +324,17 @@ class QCycleLaneWithSublinks implements QLaneI{
 
 
 	@Override public void clearVehicles() {
-		globalQ.clear();
+		for(Sublink sublink : fffLinkArray){
+			sublink.getQ().clear();
+		}
 	}
 
 	@Override public Collection<MobsimVehicle> getAllVehicles() {
 		ArrayList<MobsimVehicle> qCycs = new ArrayList<MobsimVehicle>();
-		for(QCycle cqo : globalQ){
-			qCycs.add(cqo);
+		for(Sublink sublink : fffLinkArray){
+			for(QCycle cqo : sublink.getQ()){
+				qCycs.add(cqo);
+			}
 		}
 		return qCycs;
 	}
@@ -354,12 +357,9 @@ class QCycleLaneWithSublinks implements QLaneI{
 	 */
 	public void placeVehicleAtFront(QVehicle veh){
 		activateLink(); // Activates the new link
-		//	veh.setCurrentLink(qLinkImpl.getLink()); // Sets the new link as currentLink
 		QCycle qCyc = (QCycle) veh; // Upcast
-		Cyclist cyclist = qCyc.getCyclist(); // Extract cyclist
-		cyclist.setCurrentLinkIndex(this.lastIndex); //Places cyclist at last sublink
-		this.fffLinkArray[this.lastIndex].increaseOccupiedSpace(cyclist, cyclist.getSpeed()); // Take up space
-		globalQ.add(qCyc); // Add to queue
+		this.fffLinkArray[this.lastIndex].addVehicleToFrontOfLeavingVehicles(qCyc);
+		this.fffLinkArray[this.lastIndex].increaseOccupiedSpaceByBicycleLength(qCyc.getCyclist());
 	}
 
 }

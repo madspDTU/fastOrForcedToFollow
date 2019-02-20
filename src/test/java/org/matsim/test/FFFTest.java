@@ -18,12 +18,15 @@
  * *********************************************************************** */
 package org.matsim.test;
 
+import java.util.Arrays;
+
 import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.matsim.api.core.v01.Scenario;
+import org.matsim.api.core.v01.TransportMode;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.controler.Controler;
@@ -50,7 +53,7 @@ public class FFFTest {
 	public final void berlinTest_Max50_2() {
 		int lanesPerLink = 2;
 				
-		Config config = RunMatsim.createConfigFromExampleName("berlin");
+		Config config = RunMatsim.createConfigFromExampleName("berlin", Arrays.asList(TransportMode.bike));
 		config.controler().setOutputDirectory(utils.getOutputDirectory());
 		
 		//Possible changes to config
@@ -76,7 +79,7 @@ public class FFFTest {
 		int lanesPerLink = 2;
 		
 
-		Config config = RunMatsim.createConfigFromExampleName("equil");
+		Config config = RunMatsim.createConfigFromExampleName("equil", Arrays.asList(TransportMode.bike));
 		config.controler().setOutputDirectory(utils.getOutputDirectory());
 		
 		Scenario scenario = RunMatsim.createScenario(config, lanesPerLink, true, 1.);
@@ -95,7 +98,7 @@ public class FFFTest {
 	public final void berlinTest_2() {
 		int lanesPerLink = 2;
 
-		Config config = RunMatsim.createConfigFromExampleName("berlin");
+		Config config = RunMatsim.createConfigFromExampleName("berlin", Arrays.asList(TransportMode.bike));
 		config.controler().setOutputDirectory(utils.getOutputDirectory());
 		
 		Scenario scenario = RunMatsim.createScenario(config, lanesPerLink, false, 1.);

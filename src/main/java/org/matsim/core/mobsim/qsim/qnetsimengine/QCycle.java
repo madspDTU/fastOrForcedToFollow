@@ -1,6 +1,7 @@
 package org.matsim.core.mobsim.qsim.qnetsimengine;
 
 import fastOrForcedToFollow.Cyclist;
+import fastOrForcedToFollow.configgroups.FFFConfigGroup;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
@@ -52,10 +53,10 @@ public class QCycle implements QVehicle
 
 		if ( driver!=null ){   // is null when vehicle arrives, and driver LEAVES vehicle!
 			Person person = ((HasPerson) driver).getPerson();
-			final double v_0 = (double) person.getAttributes().getAttribute( RunMatsim.DESIRED_SPEED );
-			final double theta_0 = (double) person.getAttributes().getAttribute( RunMatsim.HEADWAY_DISTANCE_INTERCEPT );
-			final double theta_1 = (double) person.getAttributes().getAttribute( RunMatsim.HEADWAY_DISTANCE_SLOPE );
-			final double lambda_c = (double) person.getAttributes().getAttribute( RunMatsim.BICYCLE_LENGTH );
+			final double v_0 = (double) person.getAttributes().getAttribute( FFFConfigGroup.DESIRED_SPEED );
+			final double theta_0 = (double) person.getAttributes().getAttribute( FFFConfigGroup.HEADWAY_DISTANCE_INTERCEPT );
+			final double theta_1 = (double) person.getAttributes().getAttribute( FFFConfigGroup.HEADWAY_DISTANCE_SLOPE );
+			final double lambda_c = (double) person.getAttributes().getAttribute( FFFConfigGroup.BICYCLE_LENGTH );
 			this.cyclist = Cyclist.createIndividualisedCyclistWithSqrtLTM(v_0, theta_0, theta_1, lambda_c);
 			((VehicleTypeImpl) this.qVehicle.getVehicle().getType()).setMaximumVelocity(v_0);
 	         

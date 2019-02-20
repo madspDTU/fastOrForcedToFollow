@@ -21,6 +21,8 @@ package org.matsim.run;
 import java.math.BigInteger;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -44,8 +46,12 @@ import org.matsim.api.core.v01.population.Population;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup;
+import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ModeParams;
 import org.matsim.core.config.groups.QSimConfigGroup;
+import org.matsim.core.config.groups.ControlerConfigGroup.RoutingAlgorithmType;
+import org.matsim.core.config.groups.QSimConfigGroup.VehicleBehavior;
 import org.matsim.core.config.groups.StrategyConfigGroup.StrategySettings;
+import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.mobsim.qsim.AbstractQSimModule;
@@ -64,6 +70,11 @@ import org.matsim.vehicles.VehicleType;
 import org.matsim.vehicles.VehicleTypeImpl;
 
 import fastOrForcedToFollow.configgroups.FFFConfigGroup;
+import fastOrForcedToFollow.configgroups.FFFNodeConfigGroup;
+import fastOrForcedToFollow.configgroups.FFFScoringConfigGroup;
+import fastOrForcedToFollow.leastcostpathcalculators.NetworkRoutingProviderWithCleaning;
+import fastOrForcedToFollow.scoring.FFFModeUtilityParameters;
+import fastOrForcedToFollow.scoring.FFFScoringFactory;
 
 /**
  * @author nagel
@@ -72,10 +83,6 @@ import fastOrForcedToFollow.configgroups.FFFConfigGroup;
 public class RunMatsim {
 	private static final Logger log = Logger.getLogger( RunMatsim.class ) ;
 
-	public static final String DESIRED_SPEED = "v_0";
-	public static final String HEADWAY_DISTANCE_INTERCEPT = "theta_0";
-	public static final String HEADWAY_DISTANCE_SLOPE= "theta_1";
-	public static final String BICYCLE_LENGTH = "lambda_c";
 	public static final long RANDOM_SEED = 5355633;
 
 	public static void main(String[] args) {
@@ -85,7 +92,7 @@ public class RunMatsim {
 		double marketShareOfBicycles = 1.;
 		boolean useRandomActivityLocations = false;
 
-		Config config = createConfigFromExampleName(scenarioExample);		
+		Config config = createConfigFromExampleName(scenarioExample, Arrays.asList(TransportMode.bike));		
 
 		Scenario scenario = createScenario(config, lanesPerLink, useRandomActivityLocations, marketShareOfBicycles);
 		Controler controler = createControler(scenario);
@@ -99,10 +106,12 @@ public class RunMatsim {
 
 	/**
 	 * @param exampleName The example name that a config will be created from
+	 * @param networkModes 
 	 * 
 	 * @return A config based on a given example name.
 	 */
-	public static Config createConfigFromExampleName(String exampleName){
+	public static Config createConfigFromExampleName(String exampleName,
+			Collection<String> networkModes){
 		URL url = ExamplesUtils.getTestScenarioURL( exampleName);;
 		URL configUrl = IOUtils.newUrl( url, "config.xml" ) ;
 		Config config = ConfigUtils.loadConfig( configUrl ) ;
@@ -112,45 +121,68 @@ public class RunMatsim {
 		config.controler().setWriteEventsInterval(25);
 		config.controler().setWritePlansInterval(25);
 
-		config.qsim().setEndTime( 100.*3600. );
-
-		PlanCalcScoreConfigGroup.ModeParams params = new PlanCalcScoreConfigGroup.ModeParams(TransportMode.bike) ;
-		config.planCalcScore().addModeParams( params );
-		final List<String> networkModes = Arrays.asList( new String[]{TransportMode.car, TransportMode.bike} );
-		config.qsim().setMainModes( networkModes );
-		config.plansCalcRoute().removeModeRoutingParams( TransportMode.bike );
-		config.plansCalcRoute().setNetworkModes( networkModes );
-		config.plansCalcRoute().setInsertingAccessEgressWalk(true);
-		config.planCalcScore().getOrCreateModeParams(TransportMode.access_walk);
-		config.planCalcScore().getOrCreateModeParams(TransportMode.egress_walk);
-
-
+		config.qsim().setEndTime( 30.*3600. );
+		config.qsim().setVehiclesSource( QSimConfigGroup.VehiclesSource.modeVehicleTypesFromVehiclesData );
+	
 		config.strategy().clearStrategySettings();
 		StrategySettings reRoute = new StrategySettings();
 		reRoute.setStrategyName(DefaultStrategy.ReRoute);
 		reRoute.setWeight(0.2);
-		StrategySettings bestScore = new StrategySettings();
-		bestScore.setStrategyName(DefaultSelector.BestScore);
-		bestScore.setWeight(0.8);
+		//StrategySettings bestScore = new StrategySettings();
+		//bestScore.setStrategyName(DefaultSelector.BestScore);
+		//bestScore.setWeight(0.001);
+		StrategySettings logit = new StrategySettings();
+		logit.setStrategyName(DefaultSelector.SelectExpBeta);
+		logit.setWeight(0.8);
+
 		config.strategy().addStrategySettings(reRoute);
-		config.strategy().addStrategySettings(bestScore);
+		//config.strategy().addStrategySettings(bestScore);
+		config.strategy().addStrategySettings(logit);
+		config.strategy().setFractionOfIterationsToDisableInnovation(0.8);
 
-		config.travelTimeCalculator().setSeparateModes(true); //To get separate travel times for different modes on the same link..
 
-		config.qsim().setVehiclesSource( QSimConfigGroup.VehiclesSource.modeVehicleTypesFromVehiclesData );
-
+		config.qsim().setVehiclesSource( QSimConfigGroup.VehiclesSource.modeVehicleTypesFromVehiclesData);
+		config.qsim().setVehicleBehavior(VehicleBehavior.teleport);
 		config.global().setRandomSeed(RANDOM_SEED);
-		
+
+		for(String mode : networkModes){
+			config.plansCalcRoute().removeModeRoutingParams(mode);
+			config.planCalcScore().addModeParams(new ModeParams(mode)); //Not used, but checked for...
+		}
+		config.qsim().setMainModes(networkModes);
+		config.plansCalcRoute().setNetworkModes(networkModes);
+		config.plansCalcRoute().setInsertingAccessEgressWalk(true);
+		config.travelTimeCalculator().setAnalyzedModes(new HashSet<String>(networkModes));
+	
 		//Possible changes to config
 		FFFConfigGroup fffConfig = ConfigUtils.addOrGetModule(config, FFFConfigGroup.class);
 		// fffConfig.setLMax(Double.MAX_VALUE); // To disable sublinks (faster computation, but lower realism)
+
+		FFFScoringConfigGroup fffScoringConfig = ConfigUtils.addOrGetModule(config, FFFScoringConfigGroup.class);
+		HashMap<String, FFFModeUtilityParameters> modeParams = new HashMap<String, FFFModeUtilityParameters>();
+		modeParams.put(TransportMode.access_walk, new FFFModeUtilityParameters(-1/60., 0., 0., 0.));
+		modeParams.put(TransportMode.egress_walk, new FFFModeUtilityParameters(-1/60., 0., 0., 0.));
+		modeParams.put(TransportMode.car, new FFFModeUtilityParameters(-1/60., -1/120., 0., 0.));
+		modeParams.put(TransportMode.bike, new FFFModeUtilityParameters(-1/60., -1/120., 0., 0.));
+		fffScoringConfig.setScoringParameters(modeParams);
 
 
 		return config;		
 	}
 
+	public static void addRoWModuleToConfig(Config config, boolean uneven){
+		FFFNodeConfigGroup fffNodeConfig = ConfigUtils.addOrGetModule(config, FFFNodeConfigGroup.class);
+		fffNodeConfig.setBicycleDelay(2.);
+		fffNodeConfig.setBundleTol(Math.PI/12.);
+		if(uneven){
+			config.qsim().setFlowCapFactor(0.1); // This has to be calibrated
+			config.qsim().setStorageCapFactor(0.24); // This has to be calibrated
+			fffNodeConfig.setCarDelay(10.);
+		}
+	}
+
 	public static Scenario addCyclistAttributes(Config config, Scenario scenario){
-	final long RANDOM_SEED = config.global().getRandomSeed();
+		final long RANDOM_SEED = config.global().getRandomSeed();
 		final FFFConfigGroup fffConfig = ConfigUtils.addOrGetModule(config, FFFConfigGroup.class);
 		return addCyclistAttributes(scenario, fffConfig, RANDOM_SEED);
 	}
@@ -174,10 +206,10 @@ public class RunMatsim {
 			double theta_0 = fffConfig.getTheta_0() + z_c * fffConfig.getZeta_0();
 			double theta_1 = fffConfig.getTheta_1() + z_c * fffConfig.getZeta_1();
 
-			person.getAttributes().putAttribute(DESIRED_SPEED, v_0);
-			person.getAttributes().putAttribute(HEADWAY_DISTANCE_INTERCEPT, theta_0);
-			person.getAttributes().putAttribute(HEADWAY_DISTANCE_SLOPE, theta_1);
-			person.getAttributes().putAttribute(BICYCLE_LENGTH, fffConfig.getLambda_c());
+			person.getAttributes().putAttribute(FFFConfigGroup.DESIRED_SPEED, v_0);
+			person.getAttributes().putAttribute(FFFConfigGroup.HEADWAY_DISTANCE_INTERCEPT, theta_0);
+			person.getAttributes().putAttribute(FFFConfigGroup.HEADWAY_DISTANCE_SLOPE, theta_1);
+			person.getAttributes().putAttribute(FFFConfigGroup.BICYCLE_LENGTH, fffConfig.getLambda_c());
 
 		}
 
@@ -220,10 +252,10 @@ public class RunMatsim {
 					double z_c = headwayRandom.nextDouble(); 
 					double theta_0 = fffConfig.getTheta_0() + z_c * fffConfig.getZeta_0();
 					double theta_1 = fffConfig.getTheta_1() + z_c * fffConfig.getZeta_1();
-					person.getAttributes().putAttribute(DESIRED_SPEED, v_0);
-					person.getAttributes().putAttribute(HEADWAY_DISTANCE_INTERCEPT, theta_0);
-					person.getAttributes().putAttribute(HEADWAY_DISTANCE_SLOPE, theta_1);
-					person.getAttributes().putAttribute(BICYCLE_LENGTH, fffConfig.getLambda_c());
+					person.getAttributes().putAttribute(FFFConfigGroup.DESIRED_SPEED, v_0);
+					person.getAttributes().putAttribute(FFFConfigGroup.HEADWAY_DISTANCE_INTERCEPT, theta_0);
+					person.getAttributes().putAttribute(FFFConfigGroup.HEADWAY_DISTANCE_SLOPE, theta_1);
+					person.getAttributes().putAttribute(FFFConfigGroup.BICYCLE_LENGTH, fffConfig.getLambda_c());
 
 				}
 
@@ -329,6 +361,22 @@ public class RunMatsim {
 
 		});
 
+		controler = addRoutingToControler(controler, scenario);
+
+		return controler;
+	}
+
+	public static Controler addRoutingToControler(Controler controler, final Scenario scenario){
+		scenario.getConfig().controler().setRoutingAlgorithmType(RoutingAlgorithmType.FastAStarLandmarks);
+		Collection<String> networkModes = scenario.getConfig().plansCalcRoute().getNetworkModes();
+		controler.addOverridingModule( new AbstractModule(){
+			@Override public void install() {
+				this.bindScoringFunctionFactory().to( FFFScoringFactory.class ) ;
+				for(String mode : networkModes){
+					this.addRoutingModuleBinding(mode).toProvider(new NetworkRoutingProviderWithCleaning(mode));
+				}
+			}
+		} );
 		return controler;
 	}
 
@@ -345,6 +393,9 @@ public class RunMatsim {
 
 		});
 
+
+		controler = addRoutingToControler(controler, scenario);
+
 		return controler;
 	}
 
@@ -360,6 +411,9 @@ public class RunMatsim {
 			}
 
 		});
+
+
+		controler = addRoutingToControler(controler, scenario);
 
 		return controler;
 	}
@@ -610,7 +664,7 @@ public class RunMatsim {
 		}
 		System.out.println(counter + " redundant bimodal nodes removed from the network");
 	}
-	
+
 	public static void reducePopulationToN(int n, Population population){
 		LinkedList<Person> personsToRemove = new LinkedList<Person>();
 		for(Person person : population.getPersons().values()){

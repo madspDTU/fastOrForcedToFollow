@@ -2,6 +2,7 @@ package org.matsim.run;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -14,6 +15,7 @@ import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
+import org.matsim.core.config.groups.ControlerConfigGroup.RoutingAlgorithmType;
 import org.matsim.core.config.groups.StrategyConfigGroup.StrategySettings;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
@@ -24,10 +26,10 @@ import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.vehicles.VehicleType;
 import org.matsim.vehicles.VehicleTypeImpl;
 
-import fastOrForcedToFollow.NetworkRoutingProviderWithCleaning;
 import fastOrForcedToFollow.configgroups.FFFConfigGroup;
 import fastOrForcedToFollow.configgroups.FFFNodeConfigGroup;
 import fastOrForcedToFollow.configgroups.FFFScoringConfigGroup;
+import fastOrForcedToFollow.leastcostpathcalculators.NetworkRoutingProviderWithCleaning;
 import fastOrForcedToFollow.scoring.FFFModeUtilityParameters;
 import fastOrForcedToFollow.scoring.FFFScoringFactory;
 
@@ -35,7 +37,7 @@ public class RunBicycleCopenhagen {
 
 	public final static int numberOfThreads = 20;
 	public static int numberOfQSimThreads = 20;
-	public static List<String> networkModes = null;
+	public static Collection<String> networkModes = null;
 
 	public static String outputBaseDir = "/work1/s103232/ABMTRANS2019/"; //With final /
 	//public static String outputBaseDir = "./output/ABMTRANS2019/"; //With final / 
@@ -88,7 +90,14 @@ public class RunBicycleCopenhagen {
 		
 		System.out.println("Running " + scenarioType);
 
-		Config config = RunMatsim.createConfigFromExampleName("berlin");
+		if(mixed){
+			networkModes = Arrays.asList( TransportMode.car, TransportMode.bike );
+		} else {
+			networkModes = Arrays.asList( TransportMode.bike );
+		}
+	
+		
+		Config config = RunMatsim.createConfigFromExampleName("berlin", networkModes);
 		config.controler().setOutputDirectory(outputBaseDir + scenarioType);
 
 		String size = null;
@@ -103,13 +112,6 @@ public class RunBicycleCopenhagen {
 			config.controler().setLastIteration(0);
 		}
 
-		if(mixed){
-			networkModes = Arrays.asList( new String[]{TransportMode.car, TransportMode.bike} );
-		} else {
-			networkModes = Arrays.asList( new String[]{TransportMode.bike} );
-		}
-		config.qsim().setMainModes( networkModes );
-		config.plansCalcRoute().setNetworkModes(networkModes);
 		config.controler().setWritePlansInterval(config.controler().getLastIteration()+1);
 		config.controler().setWriteEventsInterval(config.controler().getLastIteration()+1);
 		config.controler().setCreateGraphs(true);
@@ -119,76 +121,17 @@ public class RunBicycleCopenhagen {
 
 		config.global().setNumberOfThreads(numberOfThreads);
 		config.qsim().setNumberOfThreads(numberOfQSimThreads);
-		config.parallelEventHandling().setNumberOfThreads(numberOfThreads);
+		config.parallelEventHandling().setNumberOfThreads(numberOfQSimThreads);
 
 		config.global().setCoordinateSystem("EPSG:32632");   ///EPSG:32632 is WGS84 UTM32N
 
-		/*
-		{
-			Map<String, String> defaultParams = config.planCalcScore().getActivityParams("work").getParams();
-			for(String actType : Arrays.asList("other","missing","shopping")){
-				ActivityParams ap = new ActivityParams(actType);
-				for(String key : defaultParams.keySet()){
-					if(!key.equals("activityType")){
-						ap.addParam(key, defaultParams.get(key));
-					}
-				}
-				config.planCalcScore().addActivityParams(ap);
-			}
-			config.planCalcScore().getActivityParams("edu").setActivityType("school");
-		}
-		for(ActivityParams ap : config.planCalcScore().getActivityParams()){
-			ap.setClosingTime(98*3600);
-			ap.setOpeningTime(-1.);
-			ap.setMinimalDuration(-1);
-			ap.setEarliestEndTime(-0.5);
-			ap.setLatestStartTime(99*3600);
-			ap.setScoringThisActivityAtAll(false);
-		}
-		
-
-		List<String> scoreModes = new LinkedList<String>();
-		scoreModes.addAll(Arrays.asList(TransportMode.access_walk, TransportMode.egress_walk));
-		scoreModes.addAll(networkModes);
-
-		for(String mode : scoreModes){
-			MyModeParams modeParams = config.planCalcScore().getModes().get(mode);
-			modeParams.setMarginalUtilityOfTraveling(-60.);
-			//The distance coefficient is used as coefficient for congestion time... ... Not proud of it myself.
-			modeParams.setMarginalUtilityOfDistance(-30./3600);
-		}
-		*/
-
-
-
-		config.strategy().clearStrategySettings();
-		StrategySettings reRoute = new StrategySettings();
-		reRoute.setStrategyName(DefaultStrategy.ReRoute);
-		reRoute.setWeight(0.2);
-		reRoute.setDisableAfter((int) Math.round(config.controler().getLastIteration() * 0.8));
-		//StrategySettings bestScore = new StrategySettings();
-		//bestScore.setStrategyName(DefaultSelector.BestScore);
-		//bestScore.setWeight(0.001);
-		StrategySettings logit = new StrategySettings();
-		logit.setStrategyName(DefaultSelector.SelectExpBeta);
-		logit.setWeight(0.8);
-		logit.setDisableAfter((int) Math.round(config.controler().getLastIteration() * 1.1));
-
-		config.strategy().addStrategySettings(reRoute);
-		//config.strategy().addStrategySettings(bestScore);
-		config.strategy().addStrategySettings(logit);
-		
 
 		config.qsim().setEndTime(qSimEndTime);
-		if(uneven){
-			config.qsim().setFlowCapFactor(0.2); // This has to be calibrated
-			//config.qsim().setFlowCapFactor(0.1); // This has to be calibrated
-			config.qsim().setStorageCapFactor(0.3); // This has to be calibrated
-			//config.qsim().setStorageCapFactor(0.24); // This has to be calibrated
-			FFFNodeConfigGroup fffNodeConfig = ConfigUtils.addOrGetModule(config, FFFNodeConfigGroup.class);
-			fffNodeConfig.setCarDelay(10. );
+		
+		if(roW){
+			RunMatsim.addRoWModuleToConfig(config, uneven);
 		}
-
+		
 		if(mixed){
 			config.network().setInputFile(
 					inputBaseDir + "MATSimCopenhagenNetwork_WithBicycleInfrastructure.xml.gz");
@@ -204,40 +147,25 @@ public class RunBicycleCopenhagen {
 		} else if(mixed){
 			config.plans().setInputFile(inputBaseDir + "AllPlans_CPH_" + size + ".xml.gz");
 		} else {
-			config.plans().setInputFile(inputBaseDir + "Plans_CPH_" + size + ".xml.gz");
+			config.plans().setInputFile(inputBaseDir + "BicyclePlans_CPH_" + size + ".xml.gz");
 		}
 
 		
-		FFFScoringConfigGroup fffScoringConfig = ConfigUtils.addOrGetModule(config, FFFScoringConfigGroup.class);
-		HashMap<String, FFFModeUtilityParameters> modeParams = new HashMap<String, FFFModeUtilityParameters>();
-		modeParams.put(TransportMode.access_walk, new FFFModeUtilityParameters(-1/60., 0., 0., 0.));
-		modeParams.put(TransportMode.egress_walk, new FFFModeUtilityParameters(-1/60., 0., 0., 0.));
-		modeParams.put(TransportMode.car, new FFFModeUtilityParameters(-1/60., -1/120., 0., 0.));
-		modeParams.put(TransportMode.bike, new FFFModeUtilityParameters(-1/60., -1/120., 0., 0.));
-		fffScoringConfig.setScoringParameters(modeParams);
-		
-		
-		
-		
-		
-		//Possible changes to config
-		FFFConfigGroup fffConfig = ConfigUtils.addOrGetModule(config, FFFConfigGroup.class);
-		// fffConfig.setLMax(Double.MAX_VALUE); // To disable sublinks (faster computation, but lower realism)
-
+			
 		Scenario scenario = ScenarioUtils.loadScenario( config ) ;
 		RunMatsim.cleanBicycleNetwork(scenario.getNetwork());
 
-		if(!mixed){
+	//	if(!mixed){
 			removeSouthWesternPart(scenario.getNetwork());
-		}
+	//	}
 
 		scenario = RunMatsim.addCyclistAttributes(config, scenario);
 		//RunMatsim.reducePopulationToN(0, scenario.getPopulation());
-		if(mixed){
+	//	if(mixed){
 			VehicleType vehicleType = new VehicleTypeImpl( 
 					Id.create( TransportMode.car, VehicleType.class  ) ) ;
 			scenario.getVehicles().addVehicleType( vehicleType);
-		}
+//		}
 
 
 		Controler controler;
@@ -251,15 +179,7 @@ public class RunBicycleCopenhagen {
 		} else {
 			controler = RunMatsim.createControlerWithoutCongestion(scenario);
 		}
-		controler.addOverridingModule( new AbstractModule(){
-			@Override public void install() {
-				this.bindScoringFunctionFactory().to( FFFScoringFactory.class ) ;
-		//		this.bindLeastCostPathCalculatorFactory().to(DesiredSpeedBicycleDijkstraFactory.class);
-				for(String mode : networkModes){
-					this.addRoutingModuleBinding(mode).toProvider(new NetworkRoutingProviderWithCleaning(mode));
-				}
-			}
-		} );
+		
 
 
 

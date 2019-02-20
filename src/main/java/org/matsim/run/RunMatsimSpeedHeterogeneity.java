@@ -70,30 +70,12 @@ public class RunMatsimSpeedHeterogeneity {
 		scenarioExample = "equil";
 
 
-		Config config = RunMatsim.createConfigFromExampleName(scenarioExample);	
+		Config config = RunMatsim.createConfigFromExampleName(scenarioExample,
+				Arrays.asList(TransportMode.bike));	
 		config.controler().setLastIteration(lastIteration);
 		config.controler().setOutputDirectory("./output/SpeedHeterogeneity/");
 		config.facilities().setFacilitiesSource(FacilitiesSource.onePerActivityLocationInPlansFile);
-		config.plansCalcRoute().setNetworkModes(Arrays.asList(TransportMode.bike));
-		config.qsim().setMainModes(Arrays.asList(TransportMode.bike));
-		config.linkStats().setWriteLinkStatsInterval(-1);
-		config.linkStats().setAverageLinkStatsOverIterations(-1);
 		
-		config.strategy().clearStrategySettings();
-		StrategySettings stratSets = new StrategySettings();
-		stratSets.setStrategyName(DefaultStrategy.ReRoute);
-		stratSets.setWeight(0.2);
-		config.strategy().addStrategySettings(stratSets);
-		stratSets = new StrategySettings();
-		stratSets.setStrategyName(DefaultSelector.BestScore);
-		stratSets.setWeight(0.8);
-		config.strategy().addStrategySettings(stratSets);
-		config.strategy().setFractionOfIterationsToDisableInnovation(0.8);
-
-		//Possible changes to config
-		FFFConfigGroup fffConfig = ConfigUtils.addOrGetModule(config, FFFConfigGroup.class);
-		// fffConfig.setLMax(Double.MAX_VALUE); // To disable sublinks (faster computation, but lower realism)
-
 		
 		Scenario scenario = ScenarioUtils.createScenario(config);
 
@@ -127,7 +109,7 @@ public class RunMatsimSpeedHeterogeneity {
 		double timeC = 7.25*3600;
 
 		
-		int N = 500;
+		int N = 50000;
 		for(int i = 0; i < N; i++){
 			double startTime1 = timeA;
 			double startTime2 = timeC;

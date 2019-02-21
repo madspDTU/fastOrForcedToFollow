@@ -86,7 +86,7 @@ public abstract class QFFFAbstractNode { //Interface or abstract
 					int outDirection = bicycleOutTransformations.get(nextLinkId);
 					if(bicycleTimeouts[inDirection][outDirection] <= now){
 						//Ignoring left turns when using right priority.
-						if (! this.qNode.moveVehicleOverNode(veh, inLink, lane, now )) {
+						if (! this.qNode.moveVehicleOverNode(veh, inLink, lane, now, true )) {
 							break;
 						}
 						timeoutModifier.updateTimeouts(bicycleTimeouts, carTimeouts, 
@@ -110,7 +110,7 @@ public abstract class QFFFAbstractNode { //Interface or abstract
 					int outDirection = carOutTransformations.get(nextLinkId);
 					if(carTimeouts[inDirection][outDirection] <= now){
 						//Ignoring left turns when using right priority.
-						if (! this.qNode.moveVehicleOverNode(veh, inLink, lane, now )) {
+						if (! this.qNode.moveVehicleOverNode(veh, inLink, lane, now, true )) {
 							break;
 						}
 						timeoutModifier.updateTimeouts(bicycleTimeouts, carTimeouts, 

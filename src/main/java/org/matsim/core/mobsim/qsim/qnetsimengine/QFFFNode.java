@@ -410,7 +410,7 @@ final class QFFFNode implements QNodeI {
 	}
 
 
-	private void moveVehicleFromInlinkToOutlink(final QVehicle veh, Id<Link> currentLinkId, final QLaneI fromLane, Id<Link> nextLinkId, QLaneI nextQueueLane) {
+	private void moveVehicleFromInlinkToOutlink(final QVehicle veh, Id<Link> currentLinkId, final QLaneI fromLane, Id<Link> nextLinkId, QLaneI nextQueueLane, boolean pop) {
 
 		double now = this.context.getSimTimer().getTimeOfDay();
 
@@ -426,7 +426,9 @@ final class QFFFNode implements QNodeI {
 			}
 		}
 
-		fromLane.popFirstVehicle();
+		if(pop){
+			fromLane.popFirstVehicle();
+		}
 		// -->
 		//		network.simEngine.getMobsim().getEventsManager().processEvent(new LaneLeaveEvent(now, veh.getId(), currentLinkId, fromLane.getId()));
 
@@ -448,22 +450,24 @@ final class QFFFNode implements QNodeI {
 	 * @return <code>true</code> if the vehicle was successfully moved over the node, <code>false</code>
 	 * otherwise (e.g. in case where the next link is jammed)
 	 */
-	protected boolean moveVehicleOverNode( final QVehicle veh, QLinkI fromLink, final QLaneI fromLane, final double now ) {
+
+
+	protected boolean moveVehicleOverNode( final QVehicle veh, QLinkI fromLink, final QLaneI fromLane, final double now, final boolean pop ) {
 		Id<Link> nextLinkId = veh.getDriver().chooseNextLinkId();
 		Link currentLink = veh.getCurrentLink();   // Takes it from QVehicle, so temporary link does not enter here...
 
-//		AcceptTurn turn = turnAcceptanceLogic.isAcceptingTurn(currentLink, fromLane, nextLinkId, veh, this.netsimEngine.getNetsimNetwork(), now);
-//		if ( turn.equals(AcceptTurn.ABORT) ) {
-//			moveVehicleFromInlinkToAbort( veh, fromLane, now, currentLink.getId() ) ;
-//			return true ;
-//		} else if ( turn.equals(AcceptTurn.WAIT) ) {
-//			return false;
-//		}
+		//		AcceptTurn turn = turnAcceptanceLogic.isAcceptingTurn(currentLink, fromLane, nextLinkId, veh, this.netsimEngine.getNetsimNetwork(), now);
+		//		if ( turn.equals(AcceptTurn.ABORT) ) {
+		//			moveVehicleFromInlinkToAbort( veh, fromLane, now, currentLink.getId() ) ;
+		//			return true ;
+		//		} else if ( turn.equals(AcceptTurn.WAIT) ) {
+		//			return false;
+		//		}
 
 		QLinkI nextQueueLink = this.netsimEngine.getNetsimNetwork().getNetsimLinks().get(nextLinkId);
 		QLaneI nextQueueLane = nextQueueLink.getAcceptingQLane() ;
 		if (nextQueueLane.isAcceptingFromUpstream()) {
-			moveVehicleFromInlinkToOutlink(veh, currentLink.getId(), fromLane, nextLinkId, nextQueueLane);
+			moveVehicleFromInlinkToOutlink(veh, currentLink.getId(), fromLane, nextLinkId, nextQueueLane, pop);
 			return true;
 		}
 
@@ -476,7 +480,7 @@ final class QFFFNode implements QNodeI {
 				moveVehicleFromInlinkToAbort(veh, fromLane, now, currentLink.getId());
 				return false ;
 			} else {
-				moveVehicleFromInlinkToOutlink(veh, currentLink.getId(), fromLane, nextLinkId, nextQueueLane);
+				moveVehicleFromInlinkToOutlink(veh, currentLink.getId(), fromLane, nextLinkId, nextQueueLane, pop);
 				return true;
 				// (yyyy why is this returning `true'?  Since this is a fix to avoid gridlock, this should proceed in small steps. 
 				// kai, feb'12) 
@@ -486,7 +490,7 @@ final class QFFFNode implements QNodeI {
 		return false;
 
 	}
-	
+
 	private int numberOfKeysFromInclToExcl(TreeMap<Double,Link> thetaMap, double lowerInclBound, double upperExclBound){
 		Entry<Double, Link> entry = thetaMap.ceilingEntry(lowerInclBound);
 		if(entry == null){
@@ -526,7 +530,7 @@ final class QFFFNode implements QNodeI {
 		return this.fffNodeConfig;
 	}
 
-	
+
 	protected boolean moveCarPassingOnTheRightOverNode( final QVehicle veh, QLinkI fromLink, final QLaneI fromLane, final double now ) {
 		Id<Link> nextLinkId = veh.getDriver().chooseNextLinkId();
 		Link currentLink = veh.getCurrentLink();   // Takes it from QVehicle, so temporary link does not enter here...
@@ -550,7 +554,7 @@ final class QFFFNode implements QNodeI {
 
 		return false;
 	}
-	
+
 	private void moveCarPassingOnTheRightFromInlinkToOutlink(final QVehicle veh, Id<Link> currentLinkId, final QLaneI fromLane, Id<Link> nextLinkId, QLaneI nextQueueLane) {
 
 		double now = this.context.getSimTimer().getTimeOfDay();
@@ -571,5 +575,9 @@ final class QFFFNode implements QNodeI {
 		nextQueueLane.addFromUpstream(veh);
 	}
 
+
+	QFFFAbstractNode getQFFFAbstractNode(){
+		return nodeType;
+	}
 
 }

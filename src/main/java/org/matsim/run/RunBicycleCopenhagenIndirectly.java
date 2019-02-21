@@ -16,7 +16,7 @@ public class RunBicycleCopenhagenIndirectly {
 
 
 		//			ConstructSpeedFlowsFromCopenhagen.run(
-		//	"/work1/s103232/ABMTRANS2019/withNodeModelling/smallRoWMixedQSimEndsAt30/", 
+		//	"/work1/s103232/ABMTRANS2019/withNodeModelling/smallRoWMixedQSimEndsAt100/", 
 		//			"small", 0, Arrays.asList(),Arrays.asList(TransportMode.bike, TransportMode.car));
 	}
 }

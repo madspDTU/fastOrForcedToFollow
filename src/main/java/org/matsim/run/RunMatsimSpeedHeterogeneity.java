@@ -59,11 +59,11 @@ import fastOrForcedToFollow.configgroups.FFFConfigGroup;
  */
 public class RunMatsimSpeedHeterogeneity {
 
-	final static double freeSpeedSlow = 5;
+	final static double freeSpeedSlow = 7;
 	final static double freeSpeedFast = 100;
-	final static int numberOfAgents = 1;
+	final static int numberOfAgents = 10000;
 	
-	final static int lastIteration = 0;
+	final static int lastIteration = 1;
 
 	public static void main(String[] args) {
 		String scenarioExample;

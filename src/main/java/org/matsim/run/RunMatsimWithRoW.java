@@ -59,7 +59,7 @@ public class RunMatsimWithRoW {
 	public static boolean useEqualCapacities = false;
 
 	private static double bicycleMarketShare = 0.5;
-	private static int numberOfAgents = 20000;
+	private static int numberOfAgents = 1;
 
 	private static boolean useToyNetwork = true;
 

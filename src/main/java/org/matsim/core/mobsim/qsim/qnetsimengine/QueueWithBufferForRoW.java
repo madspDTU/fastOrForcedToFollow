@@ -157,7 +157,9 @@ final class QueueWithBufferForRoW implements QLaneI, SignalizeableItem {
 	/**
 	 * Holds all vehicles that are ready to cross the outgoing intersection
 	 */
-	private final Queue<QVehicle> buffer = new LinkedList<>() ;
+	private final Queue<QVehicle> generalBuffer = new LinkedList<>() ;
+	private final Queue<QVehicle> leftBuffer = new LinkedList<>() ;
+
 	/**
 	 * null if the link is not signalized
 	 */
@@ -229,9 +231,6 @@ final class QueueWithBufferForRoW implements QLaneI, SignalizeableItem {
 		addToBuffer(veh);
 	}
 
-	public void addToFrontOfBuffer(final QVehicle veh){
-		((LinkedList<QVehicle>) buffer).addFirst(veh);
-	}
 
 	private void addToBuffer(final QVehicle veh) {
 		// yy might make sense to just accumulate to "zero" and go into negative when something is used up.
@@ -240,12 +239,21 @@ final class QueueWithBufferForRoW implements QLaneI, SignalizeableItem {
 		double now = context.getSimTimer().getTimeOfDay() ;
 		flowcap_accumulate.addValue(-veh.getFlowCapacityConsumptionInEquivalents(), now);
 
-		buffer.add(veh);
-		if (buffer.size() == 1) {
-			bufferLastMovedTime = now;
-			// (if there is one vehicle in the buffer now, there were zero vehicles in the buffer before.  in consequence,
-			// need to reset the lastMovedTime.  If, in contrast, there was already a vehicle in the buffer before, we can
-			// use the lastMovedTime that was (somehow) computed for that vehicle.)
+	
+		Id<Link> nextLinkId = veh.getDriver().chooseNextLinkId();
+		QFFFAbstractNode toNode = ((QFFFNode) this.qLink.getToNodeQ()).getQFFFAbstractNode();
+					// Left buffer
+		if(toNode instanceof QFFFNodeDirectedPriorityNode && 
+				((QFFFNodeDirectedPriorityNode) toNode).isLeftTurn(this.qLink.getId(), nextLinkId) ){
+			leftBuffer.add(veh);
+			if (leftBuffer.size() == 1 && generalBuffer.size() == 0) {
+				bufferLastMovedTime = now;
+			}
+		} else { 	// General buffer
+			generalBuffer.add(veh);
+			if (generalBuffer.size() == 1 && leftBuffer.size() == 0) {
+				bufferLastMovedTime = now;
+			}
 		}
 		((QFFFNode) qLink.getToNodeQ()).activateNode();
 	}
@@ -643,7 +651,11 @@ final class QueueWithBufferForRoW implements QLaneI, SignalizeableItem {
 			if (veh.getId().equals(vehicleId))
 				return veh;
 		}
-		for (QVehicle veh : this.buffer) {
+		for (QVehicle veh : this.generalBuffer) {
+			if (veh.getId().equals(vehicleId))
+				return veh;
+		}
+		for (QVehicle veh : this.leftBuffer) {
 			if (veh.getId().equals(vehicleId))
 				return veh;
 		}
@@ -656,7 +668,8 @@ final class QueueWithBufferForRoW implements QLaneI, SignalizeableItem {
 		 * It will be more complicated for passingQueue. amit feb'16
 		 */
 		Collection<MobsimVehicle> vehicles = new ArrayList<>();
-		vehicles.addAll(buffer);
+		vehicles.addAll(generalBuffer);
+		vehicles.addAll(leftBuffer);
 		vehicles.addAll(vehQueue);
 		return vehicles ;
 	}
@@ -672,10 +685,18 @@ final class QueueWithBufferForRoW implements QLaneI, SignalizeableItem {
 		}
 		return veh;
 	}
+	
+	public void removeFirstLeftVehicle() {
+		leftBuffer.remove();
+	}
+	public  void removeFirstGeneralVehicle() {
+		generalBuffer.remove();
+	}
 
 	private final QVehicle removeFirstVehicle(){
 		double now = context.getSimTimer().getTimeOfDay() ;
-		QVehicle veh = buffer.poll();
+
+		QVehicle veh = generalBuffer.poll();
 		bufferLastMovedTime = now; // just in case there is another vehicle in the buffer that is now the new front-most
 		if( context.qsimConfig.isUsingFastCapacityUpdate() ) {
 			flowcap_accumulate.setTimeStep(now - 1);
@@ -718,7 +739,15 @@ final class QueueWithBufferForRoW implements QLaneI, SignalizeableItem {
 
 	@Override
 	public final boolean isNotOfferingVehicle() {
-		return buffer.isEmpty();
+		return generalBuffer.isEmpty() && leftBuffer.isEmpty();
+	}
+	
+	public final boolean isNotOfferingGeneralVehicle() {
+		return generalBuffer.isEmpty();
+	}
+	
+	public final boolean isNotOfferingLeftVehicle() {
+		return leftBuffer.isEmpty();
 	}
 
 	@Override
@@ -736,14 +765,16 @@ final class QueueWithBufferForRoW implements QLaneI, SignalizeableItem {
 		}
 		vehQueue.clear();
 
-		for (QVehicle veh : buffer) {
-			context.getEventsManager().processEvent( new VehicleAbortsEvent(now, veh.getId(), veh.getCurrentLink().getId()));
-			context.getEventsManager().processEvent( new PersonStuckEvent(now, veh.getDriver().getId(), veh.getCurrentLink().getId(), veh.getDriver().getMode()));
+		for(Queue<QVehicle> buffer : Arrays.asList(generalBuffer, leftBuffer)){
+			for (QVehicle veh : buffer) {
+				context.getEventsManager().processEvent( new VehicleAbortsEvent(now, veh.getId(), veh.getCurrentLink().getId()));
+				context.getEventsManager().processEvent( new PersonStuckEvent(now, veh.getDriver().getId(), veh.getCurrentLink().getId(), veh.getDriver().getMode()));
 
-			context.getAgentCounter().incLost();
-			context.getAgentCounter().decLiving();
+				context.getAgentCounter().incLost();
+				context.getAgentCounter().decLiving();
+			}
+			buffer.clear();
 		}
-		buffer.clear();
 
 		holes.clear();
 		this.remainingHolesStorageCapacity = this.storageCapacity;
@@ -817,10 +848,17 @@ final class QueueWithBufferForRoW implements QLaneI, SignalizeableItem {
 
 	@Override
 	public final QVehicle getFirstVehicle() {
-		if (this.buffer.isEmpty()) {
+		if (this.generalBuffer.isEmpty() && this.leftBuffer.isEmpty()) {
 			return this.vehQueue.peek();
 		}
-		return this.buffer.peek() ;
+		return this.generalBuffer.peek() ;
+	}
+	
+	public final QVehicle getFirstGeneralVehicle() {
+		return this.generalBuffer.peek() ;
+	}
+	public final QVehicle getFirstLeftVehicle() {
+		return this.leftBuffer.peek() ;
 	}
 
 	@Override
@@ -866,7 +904,8 @@ final class QueueWithBufferForRoW implements QLaneI, SignalizeableItem {
 
 		@Override
 		public final Collection<AgentSnapshotInfo> addAgentSnapshotInfo(Collection<AgentSnapshotInfo> positions, double now) {
-			if ( !buffer.isEmpty() || !vehQueue.isEmpty() || !holes.isEmpty() ) {
+			if ( !leftBuffer.isEmpty() || !generalBuffer.isEmpty() || !vehQueue.isEmpty() ||
+					!holes.isEmpty() ) {
 				Gbl.assertNotNull(positions);
 				Gbl.assertNotNull( context.snapshotInfoBuilder );
 				if ( this.upstreamCoord==null ) {

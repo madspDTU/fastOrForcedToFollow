@@ -76,11 +76,9 @@ public final class MadsQNetworkFactoryWithoutCongestion implements QNetworkFacto
 	private NetsimEngineContext context;
 	private NetsimInternalInterface netsimEngine ;
 
-	private FFFConfigGroup fffConfig;
 	@Inject MadsQNetworkFactoryWithoutCongestion( EventsManager events, Scenario scenario ) {
 		this.events = events;
 		this.scenario = scenario;
-		this.fffConfig = ConfigUtils.addOrGetModule(scenario.getConfig(), FFFConfigGroup.class);
 	}
 	@Override
 	public

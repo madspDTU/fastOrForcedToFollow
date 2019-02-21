@@ -504,12 +504,10 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode{
 					}
 				}
 
-				//if (lane instanceof QueueWithBuffer) {
-				QueueWithBuffer qCycleLane = (QueueWithBuffer) lane;
+				QueueWithBufferForRoW qCycleLane = (QueueWithBufferForRoW) lane;
 				for(QVehicle veh : temporarilyRemoved){
 					qCycleLane.addToFrontOfBuffer(veh);
 				}
-				//}
 			}
 		}
 	}

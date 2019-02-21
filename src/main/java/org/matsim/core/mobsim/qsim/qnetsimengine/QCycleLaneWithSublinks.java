@@ -104,9 +104,7 @@ class QCycleLaneWithSublinks implements QLaneI{
 
 
 		// Add qCycle to the downstream queue of the next link.
-		//	fffLinkArray[0].getOutQ().add(qCyc ); 
-		qCyc.getCyclist().resetCurrentLinkIndex();
-		fffLinkArray[qCyc.getCyclist().getCurrentLinkIndex()].addToQ(qCyc);
+		fffLinkArray[0].addToQ(qCyc);
 
 	}
 
@@ -144,7 +142,7 @@ class QCycleLaneWithSublinks implements QLaneI{
 					// internal fff logic:
 
 					// Selecting the appropriate pseudoLane:
-					Sublink receivingFFFLink = fffLinkArray[cyclist.getCurrentLinkIndex() + 1];
+					Sublink receivingFFFLink = fffLinkArray[i+1];
 
 					if(receivingFFFLink.isLinkFull()){
 						break;
@@ -153,8 +151,7 @@ class QCycleLaneWithSublinks implements QLaneI{
 					// qCyc can in fact leave current sublink
 					currentFFFLink.getQ().remove();
 					currentFFFLink.reduceOccupiedSpace(cyclist, cyclist.getSpeed() );			
-					cyclist.incrementCurrentLinkIndex();
-
+			
 					// Selecting a pseudolane
 					PseudoLane pseudoLane = cyclist.selectPseudoLane( receivingFFFLink );
 
@@ -227,7 +224,7 @@ class QCycleLaneWithSublinks implements QLaneI{
 		Cyclist cyclist = ((QCycle) qVeh).getCyclist();
 		fffLinkArray[lastIndex].reduceOccupiedSpaceByBicycleLength(cyclist);
 		numberOfCyclistsOnLink--;
-		return fffLinkArray[lastIndex].pollFirstLeavingVehicle();
+		return qVeh;
 	}
 
 	@Override public QVehicle getFirstVehicle() {
@@ -276,7 +273,6 @@ class QCycleLaneWithSublinks implements QLaneI{
 	}
 
 	public void addVehicleToFrontOfLeavingVehicles(final QVehicle veh){
-		numberOfCyclistsOnLink++;
 		this.fffLinkArray[lastIndex].getLeavingVehicles().addFirst(veh);
 	}
 
@@ -358,6 +354,7 @@ class QCycleLaneWithSublinks implements QLaneI{
 	public void placeVehicleAtFront(QVehicle veh){
 		activateLink(); // Activates the new link
 		QCycle qCyc = (QCycle) veh; // Upcast
+		numberOfCyclistsOnLink++;
 		this.fffLinkArray[this.lastIndex].addVehicleToFrontOfLeavingVehicles(qCyc);
 		this.fffLinkArray[this.lastIndex].increaseOccupiedSpaceByBicycleLength(qCyc.getCyclist());
 	}

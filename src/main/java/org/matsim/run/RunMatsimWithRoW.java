@@ -58,8 +58,8 @@ public class RunMatsimWithRoW {
 	public static boolean omitEastLinks = false;
 	public static boolean useEqualCapacities = false;
 
-	private static double bicycleMarketShare = 1.0;
-	private static int numberOfAgents = 1;
+	private static double bicycleMarketShare = 0.5;
+	private static int numberOfAgents = 20000;
 
 	private static boolean useToyNetwork = true;
 
@@ -77,7 +77,7 @@ public class RunMatsimWithRoW {
 				Arrays.asList(TransportMode.bike, TransportMode.car));	
 		
 		//Possible changes to config
-		FFFConfigGroup fffConfig = ConfigUtils.addOrGetModule(config, FFFConfigGroup.class);
+		//	FFFConfigGroup fffConfig = ConfigUtils.addOrGetModule(config, FFFConfigGroup.class);
 		// fffConfig.setLMax(Double.MAX_VALUE); // To disable sublinks (faster computation, but lower realism)
 	
 		config.controler().setLastIteration(0);

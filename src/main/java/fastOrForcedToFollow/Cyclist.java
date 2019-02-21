@@ -27,10 +27,6 @@ public final class Cyclist {
 	 */
 	private double tEarliestExit;
 
-	/**
-	 * The current sublink index, i.e. at which sublink [zero-indiced] is the cyclist currently at.
-	 */
-	private int currentSublinkIndex;
 
 
 	/**
@@ -64,9 +60,6 @@ public final class Cyclist {
 		return desiredSpeed;
 	}
 
-	public int getCurrentLinkIndex(){
-		return this.currentSublinkIndex;
-	}
 
 	/**
 	 * See corresponding method in {@link fastOrForcedToFollow.LinkTransmissionModel#getSafetyBufferDistance(double) LinkTransmissionModel}
@@ -97,23 +90,8 @@ public final class Cyclist {
 		return this.ltm.selectPseudoLane(receivingLink, this.desiredSpeed, this.tEarliestExit);
 	}
 
-	public void resetCurrentLinkIndex(){
-		this.currentSublinkIndex = 0;
-	}
-	
+
 	/**
-	 * Used when the cyclist for some reason is skipping the queue and enters the link somewhere else than upstream (e.g. downstream)
-	 * @param newIndex The index of sublinks, where the cyclist is being set to.
-	 */
-	public void setCurrentLinkIndex(int newIndex){
-		this.currentSublinkIndex = newIndex;
-	}
-
-	public void incrementCurrentLinkIndex(){
-		this.currentSublinkIndex++;
-	}
-
-	/**s
 	 * @param newCurrentSpeed The provisional speed that the cyclist will get if it doesn't exceed his/her desired speed.
 	 */
 	public void setSpeed(final double newCurrentSpeed) {

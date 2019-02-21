@@ -61,6 +61,7 @@ public class RunMatsimSpeedHeterogeneity {
 
 	final static double freeSpeedSlow = 5;
 	final static double freeSpeedFast = 100;
+	final static int numberOfAgents = 1;
 	
 	final static int lastIteration = 0;
 
@@ -74,7 +75,7 @@ public class RunMatsimSpeedHeterogeneity {
 				Arrays.asList(TransportMode.bike));	
 		config.controler().setLastIteration(lastIteration);
 		config.controler().setOutputDirectory("./output/SpeedHeterogeneity/");
-		config.facilities().setFacilitiesSource(FacilitiesSource.onePerActivityLocationInPlansFile);
+		config.facilities().setFacilitiesSource(FacilitiesSource.none);
 		
 		
 		Scenario scenario = ScenarioUtils.createScenario(config);
@@ -109,8 +110,7 @@ public class RunMatsimSpeedHeterogeneity {
 		double timeC = 7.25*3600;
 
 		
-		int N = 50000;
-		for(int i = 0; i < N; i++){
+		for(int i = 0; i < numberOfAgents; i++){
 			double startTime1 = timeA;
 			double startTime2 = timeC;
 			Link startLink;

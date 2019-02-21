@@ -155,9 +155,9 @@ public class RunBicycleCopenhagen {
 		Scenario scenario = ScenarioUtils.loadScenario( config ) ;
 		RunMatsim.cleanBicycleNetwork(scenario.getNetwork());
 
-	//	if(!mixed){
+		if(!mixed || size.equals("small")){
 			removeSouthWesternPart(scenario.getNetwork());
-	//	}
+		}
 
 		scenario = RunMatsim.addCyclistAttributes(config, scenario);
 		//RunMatsim.reducePopulationToN(0, scenario.getPopulation());

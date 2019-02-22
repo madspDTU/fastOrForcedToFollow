@@ -55,9 +55,10 @@ import fastOrForcedToFollow.Cyclist;
 import fastOrForcedToFollow.configgroups.FFFNodeConfigGroup;
 
 /**
- * Represents a node in the QSimulation.
+ * Represents a node supporting right of way at intersections.
  */
-final class QFFFNode implements QNodeI {
+//final class QFFFNode extends AbstractQNode {
+final class QFFFNode implements QNodeI{
 	public static class Builder {
 		private final NetsimInternalInterface netsimEngine;
 		private final NetsimEngineContext context;
@@ -80,21 +81,19 @@ final class QFFFNode implements QNodeI {
 
 	private static int wrnCnt = 0 ;
 
-	/*
-	 * This needs to be atomic since this allows us to ensure that an node which is
-	 * already active is not activated again. This could happen if multiple thread call
-	 * activateNode() concurrently.
-	 * cdobler, sep'14
-	 */
+	// TOBEDELETED
 	final AtomicBoolean active = new AtomicBoolean(false);
 
+	// TOBEDELETED
 	private final Node node;
 
-	// necessary if Nodes are (de)activated
+	// TOBEDELETED
 	private NetElementActivationRegistry activator = null;
 
-	// for Customizable
+	// TOBEDELETED
 	private final Map<String, Object> customAttributes = new HashMap<>();
+	
+	
 	private final NetsimEngineContext context;
 
 	private final NetsimInternalInterface netsimEngine; 
@@ -106,6 +105,8 @@ final class QFFFNode implements QNodeI {
 
 	protected QFFFNode(final Node n, NetsimEngineContext context, NetsimInternalInterface netsimEngine2,
 			TurnAcceptanceLogic turnAcceptanceLogic, FFFNodeConfigGroup fffNodeConfig) {
+		//super(n);
+		// TOBEDELETED
 		this.node = n;
 		this.netsimEngine = netsimEngine2 ;
 		this.context = context ;
@@ -113,6 +114,8 @@ final class QFFFNode implements QNodeI {
 		this.fffNodeConfig = fffNodeConfig;
 	}
 
+	
+	// TOBEDELETED
 	/**
 	 * This method is called from QueueWithBuffer.addToBuffer(...) which is triggered at 
 	 * some placed, but always initially by a QLink's doSomStep(...) method. I.e. QNodes
@@ -357,6 +360,7 @@ final class QFFFNode implements QNodeI {
 		}
 	}
 
+	// TOBEDELETED
 	final boolean isActive() {
 		// yyyy I cannot say if this needs to be in QNodeI or not.  The mechanics of this are tricky to implement, so it would 
 		// not be a stable/robust API.  kai, jul'17
@@ -511,7 +515,7 @@ final class QFFFNode implements QNodeI {
 	 * The ParallelQSim replaces the activator with the QSimEngineRunner 
 	 * that handles this node.
 	 */
-	/*package*/ void setNetElementActivationRegistry(NetElementActivationRegistry activator) {
+	public void setNetElementActivationRegistry(NetElementActivationRegistry activator) {
 		// yyyy I cannot say if this needs to be in QNodeI or not.  The mechanics of this are tricky to implement, so it would 
 		// not be a stable/robust API.  kai, jul'17
 

@@ -144,7 +144,7 @@ final class QNodeImpl implements QNodeI {
 	 * The ParallelQSim replaces the activator with the QSimEngineRunner 
 	 * that handles this node.
 	 */
-	/*package*/ void setNetElementActivationRegistry(NetElementActivationRegistry activator) {
+	public void setNetElementActivationRegistry(NetElementActivationRegistry activator) {
 		// yyyy I cannot say if this needs to be in QNodeI or not.  The mechanics of this are tricky to implement, so it would 
 		// not be a stable/robust API.  kai, jul'17
 		

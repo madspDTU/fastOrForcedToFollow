@@ -63,6 +63,7 @@ import org.matsim.core.mobsim.qsim.qnetsimengine.QNetworkFactory;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QVehicleFactory;
 import org.matsim.core.replanning.strategies.DefaultPlanStrategiesModule.DefaultSelector;
 import org.matsim.core.replanning.strategies.DefaultPlanStrategiesModule.DefaultStrategy;
+import org.matsim.core.router.NetworkRoutingProviderWithCleaning;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.utils.io.IOUtils;
 import org.matsim.examples.ExamplesUtils;
@@ -72,7 +73,6 @@ import org.matsim.vehicles.VehicleTypeImpl;
 import fastOrForcedToFollow.configgroups.FFFConfigGroup;
 import fastOrForcedToFollow.configgroups.FFFNodeConfigGroup;
 import fastOrForcedToFollow.configgroups.FFFScoringConfigGroup;
-import fastOrForcedToFollow.leastcostpathcalculators.NetworkRoutingProviderWithCleaning;
 import fastOrForcedToFollow.scoring.FFFModeUtilityParameters;
 import fastOrForcedToFollow.scoring.FFFScoringFactory;
 
@@ -120,6 +120,7 @@ public class RunMatsim {
 		config.controler().setLastIteration( 25 );
 		config.controler().setWriteEventsInterval(25);
 		config.controler().setWritePlansInterval(25);
+		config.controler().setRoutingAlgorithmType(RoutingAlgorithmType.FastAStarLandmarks);
 
 		config.qsim().setEndTime( 30.*3600. );
 		config.qsim().setVehiclesSource( QSimConfigGroup.VehiclesSource.modeVehicleTypesFromVehiclesData );
@@ -367,7 +368,6 @@ public class RunMatsim {
 	}
 
 	public static Controler addRoutingToControler(Controler controler, final Scenario scenario){
-		scenario.getConfig().controler().setRoutingAlgorithmType(RoutingAlgorithmType.FastAStarLandmarks);
 		Collection<String> networkModes = scenario.getConfig().plansCalcRoute().getNetworkModes();
 		controler.addOverridingModule( new AbstractModule(){
 			@Override public void install() {

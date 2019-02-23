@@ -1,4 +1,4 @@
-package fastOrForcedToFollow.leastcostpathcalculators;
+package org.matsim.core.router;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -17,6 +17,7 @@ import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.algorithms.NetworkCleaner;
 import org.matsim.core.network.algorithms.TransportModeNetworkFilter;
 import org.matsim.core.router.DefaultRoutingModules;
+import org.matsim.core.router.FastAStarLandmarksFactory;
 import org.matsim.core.router.RoutingModule;
 import org.matsim.core.router.SingleModeNetworksCache;
 import org.matsim.core.router.costcalculators.TravelDisutilityFactory;
@@ -111,7 +112,12 @@ public class NetworkRoutingProviderWithCleaning implements Provider<RoutingModul
 						filteredNetwork,
 						travelDisutilityFactory.createTravelDisutility(travelTime),
 						travelTime);
-		LeastCostPathCalculator routeAlgoBicycle =
+		LeastCostPathCalculator routeAlgoBicycle = 
+				(leastCostPathCalculatorFactory.getClass().equals(FastAStarLandmarksFactory.class)) ?
+				new DesiredSpeedBicycleFastAStarLandmarksFactory().createPathCalculator(
+								filteredNetwork,
+								travelDisutilityFactory.createTravelDisutility(travelTime),
+								travelTime) 												        :
 				new DesiredSpeedBicycleDijkstraFactory().createPathCalculator(
 						filteredNetwork,
 						travelDisutilityFactory.createTravelDisutility(travelTime),

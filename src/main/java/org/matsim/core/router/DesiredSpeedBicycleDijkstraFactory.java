@@ -18,7 +18,7 @@
  *                                                                         *
  * *********************************************************************** */
 
-package fastOrForcedToFollow.leastcostpathcalculators;
+package org.matsim.core.router;
 
 import java.util.HashMap;
 import java.util.Map;

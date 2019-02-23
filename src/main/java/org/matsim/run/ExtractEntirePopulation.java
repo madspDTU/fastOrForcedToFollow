@@ -26,7 +26,7 @@ import org.matsim.facilities.MatsimFacilitiesReader;
 public class ExtractEntirePopulation {
 	
 	static double bicycleProbability = 1.0;
-	static double carProbability = 0.1;
+	static double carProbability = 0.1; 
 	
 	
 	

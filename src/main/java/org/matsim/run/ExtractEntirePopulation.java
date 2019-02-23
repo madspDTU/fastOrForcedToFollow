@@ -68,7 +68,7 @@ public class ExtractEntirePopulation {
 		
 		
 		Random randomSmall = new Random(1);
-		Random randomUneven = new Random(1);
+		Random randomUneven = new Random(137);
 		
 		
 		

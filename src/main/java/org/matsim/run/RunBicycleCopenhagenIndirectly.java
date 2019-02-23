@@ -9,7 +9,7 @@ import org.matsim.api.core.v01.TransportMode;
 public class RunBicycleCopenhagenIndirectly {
 
 	public static void main(String[] args) throws IOException{
-		String[] arguments = new String[]{"smallRoWMixedQSimEndsAt100", "1"};
+		String[] arguments = new String[]{"fullRoWUnevenQSimEndsAt100", "1"};
 		RunBicycleCopenhagen.main(arguments);
 
 

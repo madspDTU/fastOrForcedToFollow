@@ -13,6 +13,8 @@ import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
+import org.matsim.api.core.v01.population.Leg;
+import org.matsim.api.core.v01.population.Person;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.ControlerConfigGroup.RoutingAlgorithmType;
@@ -22,6 +24,7 @@ import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.replanning.strategies.DefaultPlanStrategiesModule.DefaultSelector;
 import org.matsim.core.replanning.strategies.DefaultPlanStrategiesModule.DefaultStrategy;
+import org.matsim.core.router.TripStructureUtils;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.vehicles.VehicleType;
 import org.matsim.vehicles.VehicleTypeImpl;
@@ -153,6 +156,25 @@ public class RunBicycleCopenhagen {
 		
 			
 		Scenario scenario = ScenarioUtils.loadScenario( config ) ;
+		
+		int carTrips = 0;
+		int carPersons = 0;
+		for(Person person : scenario.getPopulation().getPersons().values()){
+			boolean bool = false;
+			for(Leg leg : TripStructureUtils.getLegs(person.getSelectedPlan())){
+				if(leg.getMode().equals(TransportMode.car)){
+					carTrips++;
+					bool = true;
+				}
+			}
+			if(bool){
+				carPersons++;
+			}
+		}
+		
+		
+		System.out.println("A total of " + carTrips + " car trips spread on " + carPersons + " agents.");
+		System.exit(-1);
 		RunMatsim.cleanBicycleNetwork(scenario.getNetwork());
 
 		if(!mixed || size.equals("small")){

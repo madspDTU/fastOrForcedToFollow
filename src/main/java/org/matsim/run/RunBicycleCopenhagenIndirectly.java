@@ -2,14 +2,13 @@ package org.matsim.run;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Random;
 
 import org.matsim.api.core.v01.TransportMode;
 
 public class RunBicycleCopenhagenIndirectly {
 
 	public static void main(String[] args) throws IOException{
-		String[] arguments = new String[]{"fullRoWUnevenQSimEndsAt100", "1"};
+		String[] arguments = new String[]{"smallRoWMixed", "1"};
 		RunBicycleCopenhagen.main(arguments);
 
 

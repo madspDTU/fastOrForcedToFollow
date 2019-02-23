@@ -27,12 +27,12 @@ public class DesiredSpeedBicycleFastAStarLandmarks extends FastAStarLandmarks {
 	@Override
 	public Path calcLeastCostPath(final Node fromNode, final Node toNode, final double startTime,
 			final Person person, final Vehicle vehicle) {
+		
 		String idString = person.getId().toString();
 		VehicleType vehicleType = VehicleUtils.getFactory().createVehicleType(
 				Id.create(idString, VehicleType.class));
 	
-		double v_0 = (double) person.getAttributes().getAttribute( 
-				FFFConfigGroup.DESIRED_SPEED );
+		double v_0 = (double) person.getAttributes().getAttribute( FFFConfigGroup.DESIRED_SPEED );
 		vehicleType.setMaximumVelocity(v_0);
 
 		Vehicle actualVehicle = VehicleUtils.getFactory().createVehicle(

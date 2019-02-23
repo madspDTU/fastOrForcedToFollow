@@ -156,26 +156,7 @@ public class RunBicycleCopenhagen {
 		
 			
 		Scenario scenario = ScenarioUtils.loadScenario( config ) ;
-		
-		int carTrips = 0;
-		int carPersons = 0;
-		for(Person person : scenario.getPopulation().getPersons().values()){
-			boolean bool = false;
-			for(Leg leg : TripStructureUtils.getLegs(person.getSelectedPlan())){
-				if(leg.getMode().equals(TransportMode.car)){
-					carTrips++;
-					bool = true;
-				}
-			}
-			if(bool){
-				carPersons++;
-			}
-		}
-		
-		
-		System.out.println("A total of " + carTrips + " car trips spread on " + carPersons + " agents.");
-		System.exit(-1);
-		RunMatsim.cleanBicycleNetwork(scenario.getNetwork());
+		RunMatsim.cleanBicycleNetwork(scenario.getNetwork(), config);
 
 		if(!mixed || size.equals("small")){
 			removeSouthWesternPart(scenario.getNetwork());

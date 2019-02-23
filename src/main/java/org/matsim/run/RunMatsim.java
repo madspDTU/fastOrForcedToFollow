@@ -49,11 +49,13 @@ import org.matsim.core.config.groups.PlanCalcScoreConfigGroup;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ModeParams;
 import org.matsim.core.config.groups.QSimConfigGroup;
 import org.matsim.core.config.groups.ControlerConfigGroup.RoutingAlgorithmType;
+import org.matsim.core.config.groups.FacilitiesConfigGroup.FacilitiesSource;
 import org.matsim.core.config.groups.QSimConfigGroup.VehicleBehavior;
 import org.matsim.core.config.groups.StrategyConfigGroup.StrategySettings;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
+import org.matsim.core.gbl.Gbl;
 import org.matsim.core.mobsim.qsim.AbstractQSimModule;
 import org.matsim.core.mobsim.qsim.qnetsimengine.MadsQNetworkFactory;
 import org.matsim.core.mobsim.qsim.qnetsimengine.MadsQNetworkFactoryWithQFFFNodes;
@@ -124,7 +126,7 @@ public class RunMatsim {
 
 		config.qsim().setEndTime( 30.*3600. );
 		config.qsim().setVehiclesSource( QSimConfigGroup.VehiclesSource.modeVehicleTypesFromVehiclesData );
-	
+
 		config.strategy().clearStrategySettings();
 		StrategySettings reRoute = new StrategySettings();
 		reRoute.setStrategyName(DefaultStrategy.ReRoute);
@@ -154,7 +156,8 @@ public class RunMatsim {
 		config.plansCalcRoute().setNetworkModes(networkModes);
 		config.plansCalcRoute().setInsertingAccessEgressWalk(true);
 		config.travelTimeCalculator().setAnalyzedModes(new HashSet<String>(networkModes));
-	
+
+
 		//Possible changes to config
 		FFFConfigGroup fffConfig = ConfigUtils.addOrGetModule(config, FFFConfigGroup.class);
 		// fffConfig.setLMax(Double.MAX_VALUE); // To disable sublinks (faster computation, but lower realism)
@@ -201,8 +204,11 @@ public class RunMatsim {
 		final Population population= scenario.getPopulation() ;
 
 		for ( Person person : population.getPersons().values() ) {
-			double v_0 = uniformToJohnson(speedRandom.nextDouble(), fffConfig);
-			v_0 = Math.max(v_0, fffConfig.getMinimumAllowedDesiredSpeed());
+			double v_0 = 0;
+			while(v_0 < fffConfig.getMinimumAllowedDesiredSpeed() ||
+					v_0 > fffConfig.getMaximumAllowedDesiredSpeed() ){
+				v_0 = uniformToJohnson(speedRandom.nextDouble(), fffConfig);
+			}
 			double z_c = headwayRandom.nextDouble(); 
 			double theta_0 = fffConfig.getTheta_0() + z_c * fffConfig.getZeta_0();
 			double theta_1 = fffConfig.getTheta_1() + z_c * fffConfig.getZeta_1();
@@ -522,9 +528,23 @@ public class RunMatsim {
 		}
 	}
 
-	static void cleanBicycleNetwork(Network network){
-		//removeRedundantNodes(network);
+	static void cleanBicycleNetwork(Network network, Config config){
+		removeRedundantNodes(network);
 		removeDuplicateLinks(network);
+		setFreespeed(network, config);
+	}
+
+
+
+
+	private static void setFreespeed(Network network, Config config) {
+		FFFConfigGroup fffConfigGroup = ConfigUtils.addOrGetModule(config, FFFConfigGroup.class);
+		for(Link link : network.getLinks().values()){
+			if(link.getAllowedModes().contains(TransportMode.bike)){
+				Gbl.assertIf(link.getAllowedModes().size() == 1); // Otherwise this is wrong
+				link.setFreespeed(fffConfigGroup.getMaximumAllowedDesiredSpeed());
+			}
+		}	
 	}
 
 

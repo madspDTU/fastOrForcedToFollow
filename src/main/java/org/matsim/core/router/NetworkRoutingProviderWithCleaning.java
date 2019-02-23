@@ -12,6 +12,7 @@ import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.population.PopulationFactory;
+import org.matsim.core.config.groups.GlobalConfigGroup;
 import org.matsim.core.config.groups.PlansCalcRouteConfigGroup;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.algorithms.NetworkCleaner;
@@ -40,6 +41,9 @@ public class NetworkRoutingProviderWithCleaning implements Provider<RoutingModul
 
 	@Inject
 	PlansCalcRouteConfigGroup plansCalcRouteConfigGroup;
+	
+	@Inject
+	GlobalConfigGroup globalConfigGroup;
 
 	@Inject
 	Network network;
@@ -112,17 +116,18 @@ public class NetworkRoutingProviderWithCleaning implements Provider<RoutingModul
 						filteredNetwork,
 						travelDisutilityFactory.createTravelDisutility(travelTime),
 						travelTime);
-		LeastCostPathCalculator routeAlgoBicycle = 
-				(leastCostPathCalculatorFactory.getClass().equals(FastAStarLandmarksFactory.class)) ?
-				new DesiredSpeedBicycleFastAStarLandmarksFactory().createPathCalculator(
-								filteredNetwork,
-								travelDisutilityFactory.createTravelDisutility(travelTime),
-								travelTime) 												        :
-				new DesiredSpeedBicycleDijkstraFactory().createPathCalculator(
-						filteredNetwork,
-						travelDisutilityFactory.createTravelDisutility(travelTime),
-						travelTime);
-
+		
+		LeastCostPathCalculatorFactory bicycleFactory;
+		if(leastCostPathCalculatorFactory instanceof FastAStarLandmarksFactory){
+			bicycleFactory = new DesiredSpeedBicycleFastAStarLandmarksFactory(globalConfigGroup);
+		} else {
+			bicycleFactory = new DesiredSpeedBicycleDijkstraFactory();
+		}
+		LeastCostPathCalculator routeAlgoBicycle = bicycleFactory.createPathCalculator(
+				filteredNetwork,
+				travelDisutilityFactory.createTravelDisutility(travelTime),
+				travelTime	);
+		
 		// the following again refers to the (transport)mode, since it will determine the mode of the leg on the network:
 		if ( plansCalcRouteConfigGroup.isInsertingAccessEgressWalk() ) {
 			return DefaultRoutingModules.createAccessEgressNetworkRouter(mode, populationFactory, filteredNetwork, 

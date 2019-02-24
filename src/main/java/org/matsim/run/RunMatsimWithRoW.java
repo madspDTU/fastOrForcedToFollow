@@ -64,16 +64,8 @@ public class RunMatsimWithRoW {
 	private static boolean useToyNetwork = true;
 
 	public static void main(String[] args) {
-		String scenarioExample;
 
-		if(useToyNetwork){
-			scenarioExample = "equil";
-		} else {
-			scenarioExample = "berlin";
-		}
-
-
-		Config config = RunMatsim.createConfigFromExampleName(scenarioExample, 
+		Config config = RunMatsim.createConfigFromExampleName(
 				Arrays.asList(TransportMode.bike, TransportMode.car));	
 		
 		//Possible changes to config

@@ -82,7 +82,7 @@ public class FFFConfigGroup extends ReflectiveConfigGroup {
 	/**
 	 * The maximum allowed desired speed (upper bound for truncation).
 	 */
-	private double maximumAllowedDesiredSpeed = 2.;
+	private double maximumAllowedDesiredSpeed = 50./3.6;
 	
 	/**
 	 * Additional width needed to gain another efficient lane. Based on Buch & Greibe (2015).

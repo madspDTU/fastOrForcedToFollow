@@ -38,7 +38,7 @@ import fastOrForcedToFollow.scoring.FFFScoringFactory;
 
 public class RunBicycleCopenhagen {
 
-	public final static int numberOfThreads = 20;
+	public static int numberOfGlobalThreads = 20;
 	public static int numberOfQSimThreads = 20;
 	public static Collection<String> networkModes = null;
 
@@ -59,6 +59,7 @@ public class RunBicycleCopenhagen {
 		boolean mixed = false;
 		boolean uneven = false;
 		double qSimEndTime = 100*3600;
+		
 		if(args.length > 0){
 			scenarioType = args[0];
 			if(scenarioType.contains("NoCongestion")){
@@ -100,7 +101,7 @@ public class RunBicycleCopenhagen {
 		}
 	
 		
-		Config config = RunMatsim.createConfigFromExampleName("berlin", networkModes);
+		Config config = RunMatsim.createConfigFromExampleName(networkModes);
 		config.controler().setOutputDirectory(outputBaseDir + scenarioType);
 
 		String size = null;
@@ -108,6 +109,7 @@ public class RunBicycleCopenhagen {
 			size = "full";
 		} else if(scenarioType.substring(0,5).equals("small")){
 			size = "small";
+			numberOfGlobalThreads = 1;
 		}
 		config.controler().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists);
 		config.controler().setLastIteration(lastIteration);
@@ -117,12 +119,8 @@ public class RunBicycleCopenhagen {
 
 		config.controler().setWritePlansInterval(config.controler().getLastIteration()+1);
 		config.controler().setWriteEventsInterval(config.controler().getLastIteration()+1);
-		config.controler().setCreateGraphs(true);
-		config.linkStats().setWriteLinkStatsInterval(-1);
-		config.counts().setWriteCountsInterval(-1);
-		config.controler().setDumpDataAtEnd(true);
-
-		config.global().setNumberOfThreads(numberOfThreads);
+	
+		config.global().setNumberOfThreads(numberOfGlobalThreads);
 		config.qsim().setNumberOfThreads(numberOfQSimThreads);
 		config.parallelEventHandling().setNumberOfThreads(numberOfQSimThreads);
 

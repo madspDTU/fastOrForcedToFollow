@@ -116,17 +116,16 @@ public class NetworkRoutingProviderWithCleaning implements Provider<RoutingModul
 						filteredNetwork,
 						travelDisutilityFactory.createTravelDisutility(travelTime),
 						travelTime);
+		LeastCostPathCalculator routeAlgoBicycle = 
+				(leastCostPathCalculatorFactory instanceof DesiredSpeedBicycleFastAStarLandmarksFactory) ?
+					((DesiredSpeedBicycleFastAStarLandmarksFactory) leastCostPathCalculatorFactory).
+							createDesiredSpeedPathCalculator(
+					filteredNetwork,
+					travelDisutilityFactory.createTravelDisutility(travelTime),
+					travelTime	) 			:    
+						routeAlgo;
+
 		
-		LeastCostPathCalculatorFactory bicycleFactory;
-		if(leastCostPathCalculatorFactory instanceof FastAStarLandmarksFactory){
-			bicycleFactory = new DesiredSpeedBicycleFastAStarLandmarksFactory(globalConfigGroup);
-		} else {
-			bicycleFactory = new DesiredSpeedBicycleDijkstraFactory();
-		}
-		LeastCostPathCalculator routeAlgoBicycle = bicycleFactory.createPathCalculator(
-				filteredNetwork,
-				travelDisutilityFactory.createTravelDisutility(travelTime),
-				travelTime	);
 		
 		// the following again refers to the (transport)mode, since it will determine the mode of the leg on the network:
 		if ( plansCalcRouteConfigGroup.isInsertingAccessEgressWalk() ) {

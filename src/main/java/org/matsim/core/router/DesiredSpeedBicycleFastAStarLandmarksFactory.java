@@ -41,7 +41,7 @@ import org.matsim.core.router.util.TravelTime;
 
 @Singleton
 public class DesiredSpeedBicycleFastAStarLandmarksFactory implements LeastCostPathCalculatorFactory {
-	
+
 	private final RoutingNetworkFactory routingNetworkFactory;
 	private final Map<Network, RoutingNetwork> routingNetworks = new HashMap<>();
 	private final Map<Network, PreProcessLandmarks> preProcessData = new HashMap<>();
@@ -79,7 +79,6 @@ public class DesiredSpeedBicycleFastAStarLandmarksFactory implements LeastCostPa
 		this.nThreads = numberOfThreads;
 	}
 
-	@Override
 	public synchronized LeastCostPathCalculator createPathCalculator(final Network network, final TravelDisutility travelCosts, final TravelTime travelTimes) {
 		RoutingNetwork routingNetwork = this.routingNetworks.get(network);
 		PreProcessLandmarks preProcessLandmarks = this.preProcessData.get(network);
@@ -102,6 +101,33 @@ public class DesiredSpeedBicycleFastAStarLandmarksFactory implements LeastCostPa
 		}
 		FastRouterDelegateFactory fastRouterFactory = new ArrayFastRouterDelegateFactory();
 		
+		final double overdoFactor = 1.0;
+		return new FastAStarLandmarks(routingNetwork, preProcessLandmarks, travelCosts, travelTimes, overdoFactor, fastRouterFactory);
+	}
+
+	
+	public synchronized LeastCostPathCalculator createDesiredSpeedPathCalculator(final Network network, final TravelDisutility travelCosts, final TravelTime travelTimes) {
+		RoutingNetwork routingNetwork = this.routingNetworks.get(network);
+		PreProcessLandmarks preProcessLandmarks = this.preProcessData.get(network);
+
+		if (routingNetwork == null) {
+			routingNetwork = this.routingNetworkFactory.createRoutingNetwork(network);
+
+			if (preProcessLandmarks == null) {
+				preProcessLandmarks = new PreProcessLandmarks(travelCosts);
+				preProcessLandmarks.setNumberOfThreads(nThreads);
+				preProcessLandmarks.run(network);
+				this.preProcessData.put(network, preProcessLandmarks);
+
+				for (RoutingNetworkNode node : routingNetwork.getNodes().values()) {
+					node.setDeadEndData(preProcessLandmarks.getNodeData(node.getNode()));
+				}
+			}				
+
+			this.routingNetworks.put(network, routingNetwork);
+		}
+		FastRouterDelegateFactory fastRouterFactory = new ArrayFastRouterDelegateFactory();
+
 		final double overdoFactor = 1.0;
 		return new DesiredSpeedBicycleFastAStarLandmarks(routingNetwork, preProcessLandmarks, travelCosts, travelTimes, overdoFactor, fastRouterFactory);
 	}

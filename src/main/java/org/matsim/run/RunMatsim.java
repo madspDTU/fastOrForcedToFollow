@@ -46,6 +46,7 @@ import org.matsim.api.core.v01.population.Population;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup;
+import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ActivityParams;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ModeParams;
 import org.matsim.core.config.groups.QSimConfigGroup;
 import org.matsim.core.config.groups.ControlerConfigGroup.RoutingAlgorithmType;
@@ -65,7 +66,10 @@ import org.matsim.core.mobsim.qsim.qnetsimengine.QNetworkFactory;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QVehicleFactory;
 import org.matsim.core.replanning.strategies.DefaultPlanStrategiesModule.DefaultSelector;
 import org.matsim.core.replanning.strategies.DefaultPlanStrategiesModule.DefaultStrategy;
+import org.matsim.core.router.DesiredSpeedBicycleDijkstraFactory;
+import org.matsim.core.router.DesiredSpeedBicycleFastAStarLandmarksFactory;
 import org.matsim.core.router.NetworkRoutingProviderWithCleaning;
+import org.matsim.core.router.util.LeastCostPathCalculatorFactory;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.utils.io.IOUtils;
 import org.matsim.examples.ExamplesUtils;
@@ -94,7 +98,7 @@ public class RunMatsim {
 		double marketShareOfBicycles = 1.;
 		boolean useRandomActivityLocations = false;
 
-		Config config = createConfigFromExampleName(scenarioExample, Arrays.asList(TransportMode.bike));		
+		Config config = createConfigFromExampleName(Arrays.asList(TransportMode.bike));		
 
 		Scenario scenario = createScenario(config, lanesPerLink, useRandomActivityLocations, marketShareOfBicycles);
 		Controler controler = createControler(scenario);
@@ -112,16 +116,17 @@ public class RunMatsim {
 	 * 
 	 * @return A config based on a given example name.
 	 */
-	public static Config createConfigFromExampleName(String exampleName,
-			Collection<String> networkModes){
-		URL url = ExamplesUtils.getTestScenarioURL( exampleName);;
-		URL configUrl = IOUtils.newUrl( url, "config.xml" ) ;
-		Config config = ConfigUtils.loadConfig( configUrl ) ;
+	public static Config createConfigFromExampleName(Collection<String> networkModes){
+		Config config = ConfigUtils.createConfig( ) ;
 
 		config.controler().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists );
 		config.controler().setLastIteration( 25 );
-		config.controler().setWriteEventsInterval(25);
-		config.controler().setWritePlansInterval(25);
+		config.controler().setWriteEventsInterval(26);
+		config.controler().setWritePlansInterval(26);
+		config.counts().setWriteCountsInterval(-1);
+		config.linkStats().setWriteLinkStatsInterval(-1);
+
+		config.global().setRandomSeed(RANDOM_SEED);
 		config.controler().setRoutingAlgorithmType(RoutingAlgorithmType.FastAStarLandmarks);
 
 		config.qsim().setEndTime( 30.*3600. );
@@ -146,7 +151,6 @@ public class RunMatsim {
 
 		config.qsim().setVehiclesSource( QSimConfigGroup.VehiclesSource.modeVehicleTypesFromVehiclesData);
 		config.qsim().setVehicleBehavior(VehicleBehavior.teleport);
-		config.global().setRandomSeed(RANDOM_SEED);
 
 		for(String mode : networkModes){
 			config.plansCalcRoute().removeModeRoutingParams(mode);
@@ -155,7 +159,7 @@ public class RunMatsim {
 		config.qsim().setMainModes(networkModes);
 		config.plansCalcRoute().setNetworkModes(networkModes);
 		config.plansCalcRoute().setInsertingAccessEgressWalk(true);
-		config.travelTimeCalculator().setAnalyzedModes(new HashSet<String>(networkModes));
+		config.travelTimeCalculator().setAnalyzedModes(new HashSet<String>(networkModes)); //To avoid warning
 
 
 		//Possible changes to config
@@ -164,10 +168,12 @@ public class RunMatsim {
 
 		FFFScoringConfigGroup fffScoringConfig = ConfigUtils.addOrGetModule(config, FFFScoringConfigGroup.class);
 		HashMap<String, FFFModeUtilityParameters> modeParams = new HashMap<String, FFFModeUtilityParameters>();
-		modeParams.put(TransportMode.access_walk, new FFFModeUtilityParameters(-1/60., 0., 0., 0.));
-		modeParams.put(TransportMode.egress_walk, new FFFModeUtilityParameters(-1/60., 0., 0., 0.));
-		modeParams.put(TransportMode.car, new FFFModeUtilityParameters(-1/60., -1/120., 0., 0.));
-		modeParams.put(TransportMode.bike, new FFFModeUtilityParameters(-1/60., -1/120., 0., 0.));
+		double ttUtility = -1./60.;
+		double congTTUtility = -1./120.;
+		modeParams.put(TransportMode.access_walk, new FFFModeUtilityParameters(ttUtility, 0., 0., 0.));
+		modeParams.put(TransportMode.egress_walk, new FFFModeUtilityParameters(ttUtility, 0., 0., 0.));
+		modeParams.put(TransportMode.car, new FFFModeUtilityParameters(ttUtility, congTTUtility, 0., 0.));
+		modeParams.put(TransportMode.bike, new FFFModeUtilityParameters(ttUtility, congTTUtility, 0., 0.));
 		fffScoringConfig.setScoringParameters(modeParams);
 
 
@@ -177,7 +183,6 @@ public class RunMatsim {
 	public static void addRoWModuleToConfig(Config config, boolean uneven){
 		FFFNodeConfigGroup fffNodeConfig = ConfigUtils.addOrGetModule(config, FFFNodeConfigGroup.class);
 		fffNodeConfig.setBicycleDelay(2.);
-		fffNodeConfig.setBundleTol(Math.PI/12.);
 		if(uneven){
 			config.qsim().setFlowCapFactor(0.1); // This has to be calibrated
 			config.qsim().setStorageCapFactor(0.24); // This has to be calibrated
@@ -378,6 +383,14 @@ public class RunMatsim {
 		controler.addOverridingModule( new AbstractModule(){
 			@Override public void install() {
 				this.bindScoringFunctionFactory().to( FFFScoringFactory.class ) ;
+				if(scenario.getConfig().controler().getRoutingAlgorithmType() ==
+						RoutingAlgorithmType.FastAStarLandmarks ){
+					this.bind(LeastCostPathCalculatorFactory.class).to(
+							DesiredSpeedBicycleFastAStarLandmarksFactory.class);
+				} else {
+					this.bind(LeastCostPathCalculatorFactory.class).to(
+							DesiredSpeedBicycleDijkstraFactory.class);	
+				}
 				for(String mode : networkModes){
 					this.addRoutingModuleBinding(mode).toProvider(new NetworkRoutingProviderWithCleaning(mode));
 				}
@@ -529,7 +542,7 @@ public class RunMatsim {
 	}
 
 	static void cleanBicycleNetwork(Network network, Config config){
-		removeRedundantNodes(network);
+		//removeRedundantNodes(network); // This method does not work yet...
 		removeDuplicateLinks(network);
 		setFreespeed(network, config);
 	}
@@ -539,12 +552,15 @@ public class RunMatsim {
 
 	private static void setFreespeed(Network network, Config config) {
 		FFFConfigGroup fffConfigGroup = ConfigUtils.addOrGetModule(config, FFFConfigGroup.class);
+		System.out.print("Setting free speed of bicycle links to " + 
+				fffConfigGroup.getMaximumAllowedDesiredSpeed() + "... ");
 		for(Link link : network.getLinks().values()){
 			if(link.getAllowedModes().contains(TransportMode.bike)){
 				Gbl.assertIf(link.getAllowedModes().size() == 1); // Otherwise this is wrong
 				link.setFreespeed(fffConfigGroup.getMaximumAllowedDesiredSpeed());
 			}
 		}	
+		System.out.println(" Done!");
 	}
 
 
@@ -566,7 +582,14 @@ public class RunMatsim {
 				for(Link link : node.getOutLinks().values()){
 					outLink = link;
 				}
+
+				int inBranches = inLink.getFromNode().getInLinks().size() +
+						inLink.getFromNode().getOutLinks().size();
+				int outBranches = outLink.getToNode().getInLinks().size() +
+						outLink.getToNode().getOutLinks().size();
+
 				if(inLink.getFromNode() != outLink.getToNode() &&
+						inBranches <= 1 && outBranches <= 1 &&
 						inLink.getCapacity() == outLink.getCapacity() &&
 						inLink.getFreespeed() == outLink.getFreespeed() &&
 						inLink.getNumberOfLanes() == outLink.getNumberOfLanes() &&
@@ -595,9 +618,9 @@ public class RunMatsim {
 			node.removeInLink(inLink.getId());
 			node.removeOutLink(outLink.getId());
 			network.removeNode(node.getId());
-			outNode.addInLink(inLink);
 			outNode.removeInLink(outLink.getId());
 			network.removeLink(outLink.getId());
+			outNode.addInLink(inLink);
 
 			counter++;
 		}
@@ -628,15 +651,21 @@ public class RunMatsim {
 						bicycleOutLink = link;
 					}
 				}
-				if(carInLink != null && carOutLink != null && bicycleInLink != null && bicycleOutLink != null){
-					//Check of they have the same attributes per mode!!!;
+				if(carInLink != null && carInLink.getToNode() != carInLink.getFromNode() &&
+						carOutLink != null && carOutLink.getToNode() != carOutLink.getFromNode() &&
+						bicycleInLink != null && bicycleInLink.getToNode() != bicycleInLink.getFromNode() &&
+						bicycleOutLink != null && bicycleOutLink.getToNode() != bicycleOutLink.getFromNode() &&
+						carInLink.getFromNode() == bicycleInLink.getFromNode() &&
+						carOutLink.getToNode() == bicycleOutLink.getToNode()   &&
+						carInLink.getFromNode() != carInLink.getToNode()){
 
-					if(carInLink.getCapacity() == carOutLink.getCapacity() &&
+					//Check if they have the same attributes per mode
+					if( carInLink.getCapacity() == carOutLink.getCapacity() &&
 							carInLink.getFreespeed() == carOutLink.getFreespeed() &&
 							carInLink.getNumberOfLanes() == carOutLink.getNumberOfLanes() &&
 							bicycleInLink.getCapacity() == bicycleOutLink.getCapacity() &&
 							bicycleInLink.getFreespeed() == bicycleOutLink.getFreespeed() &&
-							bicycleInLink.getNumberOfLanes() == bicycleOutLink.getNumberOfLanes()){
+							bicycleInLink.getNumberOfLanes() == bicycleOutLink.getNumberOfLanes() ){
 						nodesToBeRemoved.addLast(node);
 					}
 				}
@@ -663,23 +692,28 @@ public class RunMatsim {
 				}
 			}
 
-			Node outNode = carOutLink.getToNode();
+			Node toNode = carOutLink.getToNode();
+
 			double carLength = carInLink.getLength() + carOutLink.getLength();
 			double bicycleLength = bicycleInLink.getLength() + bicycleOutLink.getLength();
 
+			toNode.removeInLink(carOutLink.getId());
+			toNode.removeInLink(bicycleOutLink.getId());
 			network.removeLink(carOutLink.getId());
 			network.removeLink(bicycleOutLink.getId());
 
-			carInLink.setToNode(outNode);
-			carInLink.setLength(carLength);
-			bicycleInLink.setToNode(outNode);
-			bicycleInLink.setLength(bicycleLength);
 
 			node.removeInLink(carInLink.getId());
 			node.removeInLink(bicycleInLink.getId());
-			outNode.addInLink(carInLink);
-			outNode.addInLink(bicycleInLink);
 			network.removeNode(node.getId());
+
+			carInLink.setToNode(toNode);
+			carInLink.setLength(carLength);
+			bicycleInLink.setToNode(toNode);
+			bicycleInLink.setLength(bicycleLength);
+
+			toNode.addInLink(carInLink);
+			toNode.addInLink(bicycleInLink);
 			counter++;
 		}
 		System.out.println(counter + " redundant bimodal nodes removed from the network");

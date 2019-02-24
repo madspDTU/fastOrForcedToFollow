@@ -90,12 +90,12 @@ class QCycleLaneWithSublinks implements QLaneI{
 		tEarliestExit = tStart + pseudoLane.getLength() / vTilde;
 		cyclist.setTEarliestExit( tEarliestExit );
 
-		if(tEarliestExit > 60*3600){
-			log.debug("At time " + context.getSimTimer().getTimeOfDay() + " cyclist " + qCyc.getId() + 
-					" got a tEarliestExit = " + tEarliestExit + " at sublink " + 0 + " of link " +
-					qLinkImpl.getLink().getId() + ", which is " + qLinkImpl.getLink().getLength() +
-					" long.");
-		}
+		//		if(tEarliestExit > 60*3600){
+		//			log.debug("At time " + context.getSimTimer().getTimeOfDay() + " cyclist " + qCyc.getId() + 
+		//					" got a tEarliestExit = " + tEarliestExit + " at sublink " + 0 + " of link " +
+		//					qLinkImpl.getLink().getId() + ", which is " + qLinkImpl.getLink().getLength() +
+		//					" long.");
+		//		}
 
 		// Increasing the occupied space on link:
 		fffLink.increaseOccupiedSpace(cyclist, vTilde );
@@ -176,12 +176,12 @@ class QCycleLaneWithSublinks implements QLaneI{
 					tEarliestExit = tStart + pseudoLane.getLength() / vTilde;
 					cyclist.setTEarliestExit( tEarliestExit );
 
-					if(tEarliestExit > 60*3600){
-						log.debug("At time " + context.getSimTimer().getTimeOfDay() + " cyclist " + qCyc.getId() + 
-								" got a tEarliestExit = " + tEarliestExit + " at sublink " + i + " of link " +
-								qLinkImpl.getLink().getId() + ", which is " + qLinkImpl.getLink().getLength() +
-								" long.");
-					}
+					//					if(tEarliestExit > 60*3600){
+					//						log.debug("At time " + context.getSimTimer().getTimeOfDay() + " cyclist " + qCyc.getId() + 
+					//								" got a tEarliestExit = " + tEarliestExit + " at sublink " + i + " of link " +
+					//								qLinkImpl.getLink().getId() + ", which is " + qLinkImpl.getLink().getLength() +
+					//								" long.");
+					//					}
 
 
 					// Increasing the occupied space on link:
@@ -336,25 +336,25 @@ class QCycleLaneWithSublinks implements QLaneI{
 
 
 	@Override public void clearVehicles() {
-
-		//for(Sublink sublink : fffLinkArray){
-		for(int i = 0; i < fffLinkArray.length; i++){
-			Sublink sublink = fffLinkArray[i];
-			while(!sublink.getQ().isEmpty()){
-				QVehicle veh = sublink.getQ().poll();
-				log.debug("When ending the simulation vehicle " + veh.getId() + 
-						" was found at sublink " + i + " of link " +
-						qLinkImpl.getLink().getId() + " with tEarliestExit =" +
-						((QCycle) veh).getCyclist().getTEarliestExit() +
-						". Length is " + qLinkImpl.getLink().getLength() +
-						". Speed is " + ((QCycle) veh).getCyclist().getSpeed() +
-						". Destination is " + veh.getDriver().getDestinationLinkId() +
-						". Next link is + " + veh.getDriver().chooseNextLinkId() +
-						". Current number of cyclists is " + numberOfCyclistsOnLink);
-			}
+		numberOfCyclistsOnLink.set(0);
+		for(Sublink sublink : fffLinkArray){
 			sublink.getQ().clear();
 		}
-		numberOfCyclistsOnLink.set(0);
+		//			for(int i = 0; i < fffLinkArray.length; i++){
+		//				Sublink sublink = fffLinkArray[i];
+		//				while(!sublink.getQ().isEmpty()){
+		//					QVehicle veh = sublink.getQ().poll();
+		//					log.debug("When ending the simulation vehicle " + veh.getId() + 
+		//							" was found at sublink " + i + " of link " +
+		//							qLinkImpl.getLink().getId() + " with tEarliestExit =" +
+		//							((QCycle) veh).getCyclist().getTEarliestExit() +
+		//							". Length is " + qLinkImpl.getLink().getLength() +
+		//							". Speed is " + ((QCycle) veh).getCyclist().getSpeed() +
+		//							". Destination is " + veh.getDriver().getDestinationLinkId() +
+		//							". Next link is + " + veh.getDriver().chooseNextLinkId() +
+		//							". Current number of cyclists is " + numberOfCyclistsOnLink);
+		//			}
+		//		}
 	}
 
 	@Override public Collection<MobsimVehicle> getAllVehicles() {

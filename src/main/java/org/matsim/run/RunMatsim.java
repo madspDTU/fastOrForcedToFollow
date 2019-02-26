@@ -19,17 +19,16 @@
 package org.matsim.run;
 
 import java.math.BigInteger;
-import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
+import com.google.inject.Inject;
+import fastOrForcedToFollow.Cyclist;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
@@ -45,18 +44,18 @@ import org.matsim.api.core.v01.population.PlanElement;
 import org.matsim.api.core.v01.population.Population;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
-import org.matsim.core.config.groups.PlanCalcScoreConfigGroup;
-import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ActivityParams;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ModeParams;
 import org.matsim.core.config.groups.QSimConfigGroup;
 import org.matsim.core.config.groups.ControlerConfigGroup.RoutingAlgorithmType;
-import org.matsim.core.config.groups.FacilitiesConfigGroup.FacilitiesSource;
 import org.matsim.core.config.groups.QSimConfigGroup.VehicleBehavior;
 import org.matsim.core.config.groups.StrategyConfigGroup.StrategySettings;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
+import org.matsim.core.controler.events.StartupEvent;
+import org.matsim.core.controler.listener.StartupListener;
 import org.matsim.core.gbl.Gbl;
+import org.matsim.core.mobsim.framework.HasPerson;
 import org.matsim.core.mobsim.qsim.AbstractQSimModule;
 import org.matsim.core.mobsim.qsim.qnetsimengine.MadsQNetworkFactory;
 import org.matsim.core.mobsim.qsim.qnetsimengine.MadsQNetworkFactoryWithQFFFNodes;
@@ -64,15 +63,20 @@ import org.matsim.core.mobsim.qsim.qnetsimengine.MadsQNetworkFactoryWithoutConge
 import org.matsim.core.mobsim.qsim.qnetsimengine.MadsQVehicleFactory;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QNetworkFactory;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QVehicleFactory;
+import org.matsim.core.network.NetworkUtils;
+import org.matsim.core.network.algorithms.NetworkCleaner;
+import org.matsim.core.network.algorithms.TransportModeNetworkFilter;
 import org.matsim.core.replanning.strategies.DefaultPlanStrategiesModule.DefaultSelector;
 import org.matsim.core.replanning.strategies.DefaultPlanStrategiesModule.DefaultStrategy;
-import org.matsim.core.router.DesiredSpeedBicycleDijkstraFactory;
-import org.matsim.core.router.DesiredSpeedBicycleFastAStarLandmarksFactory;
+import org.matsim.core.router.DesiredSpeedBicycleDijkstra;
+import org.matsim.core.router.DesiredSpeedBicycleFastAStarLandmarks;
 import org.matsim.core.router.NetworkRoutingProviderWithCleaning;
+import org.matsim.core.router.SingleModeNetworksCache;
 import org.matsim.core.router.util.LeastCostPathCalculatorFactory;
+import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.scenario.ScenarioUtils;
-import org.matsim.core.utils.io.IOUtils;
-import org.matsim.examples.ExamplesUtils;
+import org.matsim.core.trafficmonitoring.TravelTimeCalculator;
+import org.matsim.vehicles.Vehicle;
 import org.matsim.vehicles.VehicleType;
 import org.matsim.vehicles.VehicleTypeImpl;
 
@@ -386,14 +390,38 @@ public class RunMatsim {
 				if(scenario.getConfig().controler().getRoutingAlgorithmType() ==
 						RoutingAlgorithmType.FastAStarLandmarks ){
 					this.bind(LeastCostPathCalculatorFactory.class).to(
-							DesiredSpeedBicycleFastAStarLandmarksFactory.class);
+							DesiredSpeedBicycleFastAStarLandmarks.Factory.class );
 				} else {
 					this.bind(LeastCostPathCalculatorFactory.class).to(
-							DesiredSpeedBicycleDijkstraFactory.class);	
+							DesiredSpeedBicycleDijkstra.Factory.class );
 				}
 				for(String mode : networkModes){
 					this.addRoutingModuleBinding(mode).toProvider(new NetworkRoutingProviderWithCleaning(mode));
 				}
+
+//				this.addTravelTimeBinding( TransportMode.bike ).toInstance( new TravelTime(){
+//					@Inject TravelTimeCalculator travelTimeCalculator ;
+//					@Override public double getLinkTravelTime( Link link, double time, Person person, Vehicle vehicle ){
+//						double congestedTravelTime = travelTimeCalculator.getLinkTravelTimes().getLinkTravelTime( link, time, person, vehicle );
+//						double freeSpeedTravelTime = link.getLength() / (double) person.getAttributes().getAttribute( FFFConfigGroup.DESIRED_SPEED );
+//						return Math.max( congestedTravelTime, freeSpeedTravelTime ) ;
+//					}
+//				} ) ;
+
+//				this.addControlerListenerBinding().toInstance( new StartupListener(){
+//					@Inject SingleModeNetworksCache singleModeNetworksCache ;
+//					@Inject Network network ;
+//					@Override public void notifyStartup( StartupEvent event ){
+//						String mode = TransportMode.bike
+//						TransportModeNetworkFilter filter = new TransportModeNetworkFilter(network);
+//						Set<String> modes = new HashSet<>(Arrays.asList(mode));
+//						Network filteredNetwork = NetworkUtils.createNetwork();
+//						filter.filter(filteredNetwork, modes);
+//						new NetworkCleaner().run(filteredNetwork ); // mads
+//						this.singleModeNetworksCache.getSingleModeNetworksCache().put(mode, filteredNetwork);
+//					}
+//				} );
+
 			}
 		} );
 		return controler;

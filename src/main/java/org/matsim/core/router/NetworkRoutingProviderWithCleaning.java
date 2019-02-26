@@ -17,10 +17,6 @@ import org.matsim.core.config.groups.PlansCalcRouteConfigGroup;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.algorithms.NetworkCleaner;
 import org.matsim.core.network.algorithms.TransportModeNetworkFilter;
-import org.matsim.core.router.DefaultRoutingModules;
-import org.matsim.core.router.FastAStarLandmarksFactory;
-import org.matsim.core.router.RoutingModule;
-import org.matsim.core.router.SingleModeNetworksCache;
 import org.matsim.core.router.costcalculators.TravelDisutilityFactory;
 import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.router.util.LeastCostPathCalculatorFactory;
@@ -117,8 +113,8 @@ public class NetworkRoutingProviderWithCleaning implements Provider<RoutingModul
 						travelDisutilityFactory.createTravelDisutility(travelTime),
 						travelTime);
 		LeastCostPathCalculator routeAlgoBicycle = 
-				(leastCostPathCalculatorFactory instanceof DesiredSpeedBicycleFastAStarLandmarksFactory) ?
-					((DesiredSpeedBicycleFastAStarLandmarksFactory) leastCostPathCalculatorFactory).
+				(leastCostPathCalculatorFactory instanceof DesiredSpeedBicycleFastAStarLandmarks.Factory) ?
+					((DesiredSpeedBicycleFastAStarLandmarks.Factory) leastCostPathCalculatorFactory).
 							createDesiredSpeedPathCalculator(
 					filteredNetwork,
 					travelDisutilityFactory.createTravelDisutility(travelTime),

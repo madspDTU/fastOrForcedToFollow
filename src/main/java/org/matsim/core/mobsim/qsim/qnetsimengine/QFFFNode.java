@@ -40,32 +40,23 @@ import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.gbl.Gbl;
 import org.matsim.core.mobsim.framework.MobsimAgent;
 import org.matsim.core.mobsim.framework.PassengerAgent;
-import org.matsim.core.mobsim.qsim.qnetsimengine.DefaultTurnAcceptanceLogic;
-import org.matsim.core.mobsim.qsim.qnetsimengine.NetsimEngineContext;
-import org.matsim.core.mobsim.qsim.qnetsimengine.QLaneI;
-import org.matsim.core.mobsim.qsim.qnetsimengine.QLinkI;
-import org.matsim.core.mobsim.qsim.qnetsimengine.QNetsimEngine.NetsimInternalInterface;
-import org.matsim.core.mobsim.qsim.qnetsimengine.QNetwork;
-import org.matsim.core.mobsim.qsim.qnetsimengine.QNodeI;
-import org.matsim.core.mobsim.qsim.qnetsimengine.QVehicle;
-import org.matsim.core.mobsim.qsim.qnetsimengine.TurnAcceptanceLogic;
-import org.matsim.core.mobsim.qsim.qnetsimengine.TurnAcceptanceLogic.AcceptTurn;
 
 import fastOrForcedToFollow.Cyclist;
 import fastOrForcedToFollow.configgroups.FFFNodeConfigGroup;
+import org.matsim.core.mobsim.qsim.qnetsimengine.QNetsimEngine.NetsimInternalInterface;
 
 /**
  * Represents a node supporting right of way at intersections.
  */
-//final class QFFFNode extends AbstractQNode {
-final class QFFFNode implements QNodeI{
+final class QFFFNode extends AbstractQNode {
+//final class QFFFNode implements QNodeI{
 	public static class Builder {
 		private final NetsimInternalInterface netsimEngine;
 		private final NetsimEngineContext context;
 		private TurnAcceptanceLogic turnAcceptanceLogic = new DefaultTurnAcceptanceLogic() ;
 		private final FFFNodeConfigGroup fffNodeConfig;
 		public Builder( NetsimInternalInterface netsimEngine2, NetsimEngineContext context,
-				FFFNodeConfigGroup fffNodeConfig) {
+				    FFFNodeConfigGroup fffNodeConfig) {
 			this.netsimEngine = netsimEngine2;
 			this.context = context;
 			this.fffNodeConfig = fffNodeConfig;
@@ -81,22 +72,22 @@ final class QFFFNode implements QNodeI{
 
 	private static int wrnCnt = 0 ;
 
-	// TOBEDELETED
-	final AtomicBoolean active = new AtomicBoolean(false);
-
-	// TOBEDELETED
-	private final Node node;
-
-	// TOBEDELETED
-	private NetElementActivationRegistry activator = null;
-
-	// TOBEDELETED
-	private final Map<String, Object> customAttributes = new HashMap<>();
+//	// TOBEDELETED
+//	final AtomicBoolean active = new AtomicBoolean(false);
+//
+//	// TOBEDELETED
+//	private final Node node;
+//
+//	// TOBEDELETED
+//	private NetElementActivationRegistry activator = null;
+//
+//	// TOBEDELETED
+//	private final Map<String, Object> customAttributes = new HashMap<>();
 	
 	
 	private final NetsimEngineContext context;
 
-	private final NetsimInternalInterface netsimEngine; 
+	private final NetsimInternalInterface netsimEngine;
 	private QFFFAbstractNode nodeType;
 
 	private final TurnAcceptanceLogic turnAcceptanceLogic ;
@@ -105,9 +96,9 @@ final class QFFFNode implements QNodeI{
 
 	protected QFFFNode(final Node n, NetsimEngineContext context, NetsimInternalInterface netsimEngine2,
 			TurnAcceptanceLogic turnAcceptanceLogic, FFFNodeConfigGroup fffNodeConfig) {
-		//super(n);
+		super(n);
 		// TOBEDELETED
-		this.node = n;
+//		this.node = n;
 		this.netsimEngine = netsimEngine2 ;
 		this.context = context ;
 		this.turnAcceptanceLogic = turnAcceptanceLogic;
@@ -116,27 +107,27 @@ final class QFFFNode implements QNodeI{
 
 	
 	// TOBEDELETED
-	/**
-	 * This method is called from QueueWithBuffer.addToBuffer(...) which is triggered at 
-	 * some placed, but always initially by a QLink's doSomStep(...) method. I.e. QNodes
-	 * are only activated while moveNodes(...) is performed. However, multiple threads
-	 * could try to activate the same node at a time, therefore this has to be thread-safe.
-	 * cdobler, sep'14 
-	 */
-	/*package*/ final void activateNode() {
-		// yyyy I cannot say if this needs to be in QNodeI or not.  The mechanics of this are tricky to implement, so it would 
-		// not be a stable/robust API.  kai, jul'17
-
-		/*
-		 * this.active.compareAndSet(boolean expected, boolean update)
-		 * We expect the value to be false, i.e. the node is de-activated. If this is
-		 * true, the value is changed to true and the activator is informed.
-		 */
-
-		if (this.active.compareAndSet(false, true)) {
-			this.activator.registerNodeAsActive(this);
-		}
-	}
+//	/**
+//	 * This method is called from QueueWithBuffer.addToBuffer(...) which is triggered at
+//	 * some placed, but always initially by a QLink's doSomStep(...) method. I.e. QNodes
+//	 * are only activated while moveNodes(...) is performed. However, multiple threads
+//	 * could try to activate the same node at a time, therefore this has to be thread-safe.
+//	 * cdobler, sep'14
+//	 */
+//	/*package*/ final void activateNode() {
+//		// yyyy I cannot say if this needs to be in QNodeI or not.  The mechanics of this are tricky to implement, so it would
+//		// not be a stable/robust API.  kai, jul'17
+//
+//		/*
+//		 * this.active.compareAndSet(boolean expected, boolean update)
+//		 * We expect the value to be false, i.e. the node is de-activated. If this is
+//		 * true, the value is changed to true and the activator is informed.
+//		 */
+//
+//		if (this.active.compareAndSet(false, true)) {
+//			this.activator.registerNodeAsActive(this);
+//		}
+//	}
 
 
 	private double bundleEntryIfPossible(TreeMap<Double, LinkedList<Link>> bundleMap,
@@ -253,20 +244,20 @@ final class QFFFNode implements QNodeI{
 	public boolean doSimStep(double now) {
 		return nodeType.doSimStep(now);
 	}
-	@Override
-	public Map<String, Object> getCustomAttributes() {
-		return customAttributes;
-	}
+//	@Override
+//	public Map<String, Object> getCustomAttributes() {
+//		return customAttributes;
+//	}
 
 
 
 
 
 
-	@Override
-	public Node getNode() {
-		return this.node;
-	}
+//	@Override
+//	public Node getNode() {
+//		return this.node;
+//	}
 
 	/**
 	 * Loads the inLinks-array with the corresponding links.
@@ -360,12 +351,12 @@ final class QFFFNode implements QNodeI{
 		}
 	}
 
-	// TOBEDELETED
-	final boolean isActive() {
-		// yyyy I cannot say if this needs to be in QNodeI or not.  The mechanics of this are tricky to implement, so it would 
-		// not be a stable/robust API.  kai, jul'17
-		return this.active.get();
-	}
+//	// TOBEDELETED
+//	final boolean isActive() {
+//		// yyyy I cannot say if this needs to be in QNodeI or not.  The mechanics of this are tricky to implement, so it would
+//		// not be a stable/robust API.  kai, jul'17
+//		return this.active.get();
+//	}
 
 	/**
 	 * Moves vehicles from the inlinks' buffer to the outlinks where possible.<br>
@@ -511,16 +502,16 @@ final class QFFFNode implements QNodeI{
 		return count; 
 	}
 
-	/**
-	 * The ParallelQSim replaces the activator with the QSimEngineRunner 
-	 * that handles this node.
-	 */
-	public void setNetElementActivationRegistry(NetElementActivationRegistry activator) {
-		// yyyy I cannot say if this needs to be in QNodeI or not.  The mechanics of this are tricky to implement, so it would 
-		// not be a stable/robust API.  kai, jul'17
-
-		this.activator = activator;
-	}
+//	/**
+//	 * The ParallelQSim replaces the activator with the QSimEngineRunner
+//	 * that handles this node.
+//	 */
+//	public void setNetElementActivationRegistry(NetElementActivationRegistry activator) {
+//		// yyyy I cannot say if this needs to be in QNodeI or not.  The mechanics of this are tricky to implement, so it would
+//		// not be a stable/robust API.  kai, jul'17
+//
+//		this.activator = activator;
+//	}
 
 	private boolean vehicleIsStuck(final QLaneI fromLaneBuffer, final double now) {
 		//		final double stuckTime = network.simEngine.getStuckTime();

@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.events.ActivityStartEvent;
@@ -37,6 +38,7 @@ import org.matsim.api.core.v01.events.PersonArrivalEvent;
 import org.matsim.api.core.v01.events.PersonDepartureEvent;
 import org.matsim.api.core.v01.events.PersonEntersVehicleEvent;
 import org.matsim.api.core.v01.events.VehicleEntersTrafficEvent;
+import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.core.events.handler.BasicEventHandler;
 
@@ -52,11 +54,16 @@ public class MultiModalBicycleDoorToDoorHandler implements BasicEventHandler {
 	static int printCounter = 0;
 	final static int printHowOften = 60*15;
 	public double totalTravelTime = 0;
+	public double totalHighlightTravelTime;
+	public int totalHighlightTrips;
+	
+	private Coord[] highlightCoords = getVertices();
 
 	HashMap<String, int[]> flows = new HashMap<String, int[]>();
 	HashMap<String, LinkedList<Double>[]> speeds = new HashMap<String, LinkedList<Double>[]>();
 	HashMap<String, HashMap<String, Double>> entryTimes = new HashMap<String, HashMap<String,Double>>();
 	HashMap<String, Double> personLegStarts = new HashMap<String, Double>();
+	HashSet<String> highlightPersonLegStarts = new HashSet<String>();
 
 	HashSet<String> ignoredModes;
 	List<String> analysedModes;
@@ -133,6 +140,12 @@ public class MultiModalBicycleDoorToDoorHandler implements BasicEventHandler {
 			if(e.getLegMode().equals(TransportMode.access_walk)){
 				double now = e.getTime();
 				personLegStarts.put(e.getPersonId().toString(), now);
+				Link link = network.getLinks().get(e.getLinkId());
+				if( e.getTime() > 7*3600 && e.getTime() <= 8*3600 && (
+						isInHighlightArea(link.getFromNode().getCoord(), highlightCoords) ||
+								isInHighlightArea(link.getToNode().getCoord(), highlightCoords)) ){
+					highlightPersonLegStarts.add(e.getPersonId().toString());
+				}
 				createVehicleKeys(e.getPersonId().toString());
 			}
 		} else if(event instanceof ActivityStartEvent){
@@ -140,6 +153,7 @@ public class MultiModalBicycleDoorToDoorHandler implements BasicEventHandler {
 			String vehicleId = bestGuessVehicleId(e.getPersonId().toString());
 			if(personLegStarts.containsKey(vehicleId) && ignoredModes.contains(e.getActType())){
 				personLegStarts.remove(vehicleId);
+				highlightPersonLegStarts.remove(vehicleId);
 			}
 		}	else if(event instanceof PersonArrivalEvent){
 			PersonArrivalEvent e = (PersonArrivalEvent) event;
@@ -150,11 +164,58 @@ public class MultiModalBicycleDoorToDoorHandler implements BasicEventHandler {
 					double then = personLegStarts.get(vehicleId);
 					if(now > then){
 						totalTravelTime += now - then -1;
+						if(highlightPersonLegStarts.contains(vehicleId)){
+							totalHighlightTravelTime += now - then -1;
+							totalHighlightTrips++;
+							highlightPersonLegStarts.remove(vehicleId);
+						}
 					}
 				}
 			}
 		}
 	}
+	
+	
+	public static boolean isInHighlightArea(Coord c, Coord[] v){
+		int j  = v.length -1;
+		boolean oddNodes = false;
+		for(int i = 0; i< v.length; i++){
+			if((v[i].getY() < c.getY() && v[j].getY() >= c.getY()) ||
+					v[j].getY() < c.getY() && v[i].getY() >= c.getY() ){
+				if(v[i].getX() + (c.getY() - v[i].getY()) / (v[j].getY() - v[i].getY()) * (v[j].getX() - v[i].getX()) < c.getX() ){
+					oddNodes = !oddNodes;
+				}
+			}
+			j = i;
+		}
+		return oddNodes;
+	}
+
+
+
+	public static Coord[] getVertices() {
+		
+		LinkedList<Coord> coords = new LinkedList<Coord>();
+		// All sites from https://epsg.io/map#srs=32632
+		
+		coords.addLast(new Coord(725704.792574,	6169796.538738)); // Ørestad Syd - øst
+		coords.addLast(new Coord(724402.912291,6168994.395954)); // Ørestad Syd - vest
+		coords.addLast(new Coord(720752.041046, 6170926.423185)); // Frihedenish
+		coords.addLast(new Coord(718709.685939,	6173653.269510)); // Syd for Damhussøen
+		coords.addLast(new Coord(716708.184015,	6178214.948262)); // Motorring 3 v. Islev
+		coords.addLast(new Coord(718856.372724,	6181061.096926)); // Tingbjerg
+		coords.addLast(new Coord(728852.561565, 6181618.840032)); // Nordhavn
+		coords.addLast(new Coord(729605.453470, 6172658.247045)); // Amager Strandpark
+		coords.addLast(new Coord(725956.710891, 6171625.034203)); // Bygrænsen
+		
+		Coord[] output = new Coord[coords.size()];
+		for(int i = 0; i < output.length; i++){
+			output[i] = coords.pollFirst();
+		}
+		return output;
+	}
+	
+	
 
 	private void createVehicleKeys(String personId) {
 		for(String mode : analysedModes){

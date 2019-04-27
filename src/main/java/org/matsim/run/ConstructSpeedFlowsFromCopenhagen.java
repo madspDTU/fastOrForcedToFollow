@@ -8,11 +8,13 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
+import org.matsim.api.core.v01.population.Activity;
 import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.api.core.v01.population.Plan;
@@ -55,6 +57,7 @@ public class ConstructSpeedFlowsFromCopenhagen {
 		Network network = NetworkUtils.readNetwork(networkString);
 
 		double totalTravelTime = 0;
+		double totalHighlightTravelTime = 0;
 
 
 		MultiModalBicycleDoorToDoorHandler eventsHandler = new 
@@ -81,6 +84,9 @@ public class ConstructSpeedFlowsFromCopenhagen {
 		}
 
 		totalTravelTime = eventsHandler.totalTravelTime;
+		totalHighlightTravelTime = eventsHandler.totalHighlightTravelTime;
+		int highlightTrips = eventsHandler.totalHighlightTrips;
+		
 
 		eventsHandler = null;
 		eventsManager = null;
@@ -91,7 +97,7 @@ public class ConstructSpeedFlowsFromCopenhagen {
 		}
 
 		double[] measures = calculateCongestedTravelTimeAndTotalDistance(scenario.getPopulation(),
-				network, totalTravelTime, new HashSet<String>(analysedModes));
+				network, totalTravelTime, totalHighlightTravelTime, new HashSet<String>(analysedModes));
 		int nPop = 0;
 		for(Person person : scenario.getPopulation().getPersons().values()){
 			boolean analysed = false;
@@ -112,6 +118,15 @@ public class ConstructSpeedFlowsFromCopenhagen {
 		s += "Total distance is: " + measures[2]/1000. + " kilometres\n";
 		s += "That is " + (measures[2]/nPop/1000.) + " kilometres per person";
 		System.out.println(s);
+		String s2 = highlightTrips + " highlight trips in this study";
+		s2 += "Total highlight travel time is: " + measures[3]/60. + " minutes\n";
+		s2 += "That is " + (measures[3]/highlightTrips/60.) + " minutes per trip\n";
+		s2 += "Total congested travel time is: " + measures[4]/60. + " minutes\n";
+		s2 += "That is " + (measures[4]/highlightTrips/60.) + " minutes per trip\n";
+		s2 += "Total distance is: " + measures[5]/1000. + " kilometres\n";
+		s2 += "That is " + (measures[5]/highlightTrips/1000.) + " kilometres per trip";
+		System.out.println(s2);
+	
 		FileWriter writer;
 		if(it <0){
 			writer = new FileWriter(outDir + "/variousMeasures.txt");
@@ -119,25 +134,42 @@ public class ConstructSpeedFlowsFromCopenhagen {
 			writer = new FileWriter(outDir + "/ITERS/it." + it + "/variousMeasures.txt");
 		}
 		writer.append(s);
+		writer.append(s2);
 		writer.flush();
 		writer.close();
 
 	}
 
 	private static double[] calculateCongestedTravelTimeAndTotalDistance(Population pop, Network network, 
-			double totalTravelTime, HashSet<String> relevantModes){
+			double totalTravelTime, double totalHighlightTravelTime,  HashSet<String> relevantModes){
 		double totalFreeFlowTime= 0.;
 		double totalDistance = 0.;
+		double totalHighlightFreeFlowTime= 0.;
+		double totalHighlightDistance = 0.;
+		
+		
+		Coord[] highlightCoords = MultiModalBicycleDoorToDoorHandler.getVertices();
 
 
 		for(Person person : pop.getPersons().values()){
 			HashSet<Integer> relevantLegs = new HashSet<Integer>();
+			HashSet<Integer> relevantHighlightLegs = new HashSet<Integer>();
+			
 			int i = 0;
 			for(PlanElement pe : person.getSelectedPlan().getPlanElements()){
 				if(pe instanceof Leg && relevantModes.contains(((Leg) pe).getMode()) ){
 					relevantLegs.add(i-2); // access
 					relevantLegs.add(i);
 					relevantLegs.add(i+2); // egress
+					
+					Leg leg = (Leg) person.getSelectedPlan().getPlanElements().get(i-2);
+					Activity act = (Activity) person.getSelectedPlan().getPlanElements().get(i-3);
+					if(leg.getDepartureTime() > 7*3600 && leg.getDepartureTime() <= 8*3600 &&
+						MultiModalBicycleDoorToDoorHandler.isInHighlightArea(act.getCoord(), highlightCoords) ){
+						relevantHighlightLegs.add(i-2); // access
+						relevantHighlightLegs.add(i);
+						relevantHighlightLegs.add(i+2); // egress
+					}
 				}
 				i++;
 			}
@@ -185,12 +217,19 @@ public class ConstructSpeedFlowsFromCopenhagen {
 					}
 					totalFreeFlowTime += freeFlowTravelTime;
 					totalDistance += distance;
+					if(relevantHighlightLegs.contains(i)){
+						totalHighlightFreeFlowTime += freeFlowTravelTime;
+						totalHighlightDistance += distance;
+					}
 				}
 				i++;
 			}
 		}
 		double totalCongestedTravelTime = totalTravelTime - totalFreeFlowTime;
-		return new double[]{totalTravelTime, totalCongestedTravelTime, totalDistance};
+		double totalHighlightCongestedTravelTime = totalHighlightTravelTime - totalHighlightFreeFlowTime;
+		
+		return new double[]{totalTravelTime, totalCongestedTravelTime, totalDistance,
+							totalHighlightTravelTime, totalHighlightCongestedTravelTime, totalHighlightDistance};
 	}
 
 }

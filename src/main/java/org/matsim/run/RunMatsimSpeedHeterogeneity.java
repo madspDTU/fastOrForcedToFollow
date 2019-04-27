@@ -41,6 +41,7 @@ import org.matsim.api.core.v01.population.Population;
 import org.matsim.api.core.v01.population.PopulationFactory;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
+import org.matsim.core.config.groups.ControlerConfigGroup.RoutingAlgorithmType;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup;
 import org.matsim.core.config.groups.StrategyConfigGroup.StrategySettings;
 import org.matsim.core.config.groups.FacilitiesConfigGroup.FacilitiesSource;
@@ -66,18 +67,10 @@ public class RunMatsimSpeedHeterogeneity {
 	final static int lastIteration = 1;
 
 	public static void main(String[] args) {
-		String scenarioExample;
-
-		scenarioExample = "equil";
-
-
-		Config config = RunMatsim.createConfigFromExampleName(scenarioExample,
-				Arrays.asList(TransportMode.bike));	
+		Config config = RunMatsim.createConfigFromExampleName(Arrays.asList(TransportMode.bike));	
 		config.controler().setLastIteration(lastIteration);
 		config.controler().setOutputDirectory("./output/SpeedHeterogeneity/");
-		config.facilities().setFacilitiesSource(FacilitiesSource.none);
-		
-		
+	
 		Scenario scenario = ScenarioUtils.createScenario(config);
 
 		createNetwork(scenario);

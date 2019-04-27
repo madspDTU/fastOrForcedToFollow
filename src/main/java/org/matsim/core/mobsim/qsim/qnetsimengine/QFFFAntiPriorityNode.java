@@ -67,7 +67,7 @@ public class QFFFAntiPriorityNode extends QFFFAbstractNode {
 			}
 
 		if(primaryInLinkOrder.isEmpty() && secondaryInLinkOrder.isEmpty()){
-			this.qNode.active.set(false);
+			this.qNode.setActive(false) ;
 			return false;
 		}
 

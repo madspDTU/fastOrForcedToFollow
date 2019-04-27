@@ -19,17 +19,16 @@
 package org.matsim.run;
 
 import java.math.BigInteger;
-import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
+import com.google.inject.Inject;
+import fastOrForcedToFollow.Cyclist;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
@@ -45,7 +44,6 @@ import org.matsim.api.core.v01.population.PlanElement;
 import org.matsim.api.core.v01.population.Population;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
-import org.matsim.core.config.groups.PlanCalcScoreConfigGroup;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ModeParams;
 import org.matsim.core.config.groups.QSimConfigGroup;
 import org.matsim.core.config.groups.ControlerConfigGroup.RoutingAlgorithmType;
@@ -54,6 +52,10 @@ import org.matsim.core.config.groups.StrategyConfigGroup.StrategySettings;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
+import org.matsim.core.controler.events.StartupEvent;
+import org.matsim.core.controler.listener.StartupListener;
+import org.matsim.core.gbl.Gbl;
+import org.matsim.core.mobsim.framework.HasPerson;
 import org.matsim.core.mobsim.qsim.AbstractQSimModule;
 import org.matsim.core.mobsim.qsim.qnetsimengine.MadsQNetworkFactory;
 import org.matsim.core.mobsim.qsim.qnetsimengine.MadsQNetworkFactoryWithQFFFNodes;
@@ -61,18 +63,26 @@ import org.matsim.core.mobsim.qsim.qnetsimengine.MadsQNetworkFactoryWithoutConge
 import org.matsim.core.mobsim.qsim.qnetsimengine.MadsQVehicleFactory;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QNetworkFactory;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QVehicleFactory;
+import org.matsim.core.network.NetworkUtils;
+import org.matsim.core.network.algorithms.NetworkCleaner;
+import org.matsim.core.network.algorithms.TransportModeNetworkFilter;
 import org.matsim.core.replanning.strategies.DefaultPlanStrategiesModule.DefaultSelector;
 import org.matsim.core.replanning.strategies.DefaultPlanStrategiesModule.DefaultStrategy;
+import org.matsim.core.router.DesiredSpeedBicycleDijkstra;
+import org.matsim.core.router.DesiredSpeedBicycleFastAStarLandmarks;
+import org.matsim.core.router.NetworkRoutingProviderWithCleaning;
+import org.matsim.core.router.SingleModeNetworksCache;
+import org.matsim.core.router.util.LeastCostPathCalculatorFactory;
+import org.matsim.core.router.util.TravelTime;
 import org.matsim.core.scenario.ScenarioUtils;
-import org.matsim.core.utils.io.IOUtils;
-import org.matsim.examples.ExamplesUtils;
+import org.matsim.core.trafficmonitoring.TravelTimeCalculator;
+import org.matsim.vehicles.Vehicle;
 import org.matsim.vehicles.VehicleType;
 import org.matsim.vehicles.VehicleTypeImpl;
 
 import fastOrForcedToFollow.configgroups.FFFConfigGroup;
 import fastOrForcedToFollow.configgroups.FFFNodeConfigGroup;
 import fastOrForcedToFollow.configgroups.FFFScoringConfigGroup;
-import fastOrForcedToFollow.leastcostpathcalculators.NetworkRoutingProviderWithCleaning;
 import fastOrForcedToFollow.scoring.FFFModeUtilityParameters;
 import fastOrForcedToFollow.scoring.FFFScoringFactory;
 
@@ -92,7 +102,7 @@ public class RunMatsim {
 		double marketShareOfBicycles = 1.;
 		boolean useRandomActivityLocations = false;
 
-		Config config = createConfigFromExampleName(scenarioExample, Arrays.asList(TransportMode.bike));		
+		Config config = createConfigFromExampleName(Arrays.asList(TransportMode.bike));		
 
 		Scenario scenario = createScenario(config, lanesPerLink, useRandomActivityLocations, marketShareOfBicycles);
 		Controler controler = createControler(scenario);
@@ -110,20 +120,22 @@ public class RunMatsim {
 	 * 
 	 * @return A config based on a given example name.
 	 */
-	public static Config createConfigFromExampleName(String exampleName,
-			Collection<String> networkModes){
-		URL url = ExamplesUtils.getTestScenarioURL( exampleName);;
-		URL configUrl = IOUtils.newUrl( url, "config.xml" ) ;
-		Config config = ConfigUtils.loadConfig( configUrl ) ;
+	public static Config createConfigFromExampleName(Collection<String> networkModes){
+		Config config = ConfigUtils.createConfig( ) ;
 
 		config.controler().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists );
 		config.controler().setLastIteration( 25 );
-		config.controler().setWriteEventsInterval(25);
-		config.controler().setWritePlansInterval(25);
+		config.controler().setWriteEventsInterval(26);
+		config.controler().setWritePlansInterval(26);
+		config.counts().setWriteCountsInterval(-1);
+		config.linkStats().setWriteLinkStatsInterval(-1);
+
+		config.global().setRandomSeed(RANDOM_SEED);
+		config.controler().setRoutingAlgorithmType(RoutingAlgorithmType.FastAStarLandmarks);
 
 		config.qsim().setEndTime( 30.*3600. );
 		config.qsim().setVehiclesSource( QSimConfigGroup.VehiclesSource.modeVehicleTypesFromVehiclesData );
-	
+
 		config.strategy().clearStrategySettings();
 		StrategySettings reRoute = new StrategySettings();
 		reRoute.setStrategyName(DefaultStrategy.ReRoute);
@@ -143,7 +155,6 @@ public class RunMatsim {
 
 		config.qsim().setVehiclesSource( QSimConfigGroup.VehiclesSource.modeVehicleTypesFromVehiclesData);
 		config.qsim().setVehicleBehavior(VehicleBehavior.teleport);
-		config.global().setRandomSeed(RANDOM_SEED);
 
 		for(String mode : networkModes){
 			config.plansCalcRoute().removeModeRoutingParams(mode);
@@ -152,18 +163,21 @@ public class RunMatsim {
 		config.qsim().setMainModes(networkModes);
 		config.plansCalcRoute().setNetworkModes(networkModes);
 		config.plansCalcRoute().setInsertingAccessEgressWalk(true);
-		config.travelTimeCalculator().setAnalyzedModes(new HashSet<String>(networkModes));
-	
+		config.travelTimeCalculator().setAnalyzedModes(new HashSet<String>(networkModes)); //To avoid warning
+
+
 		//Possible changes to config
 		FFFConfigGroup fffConfig = ConfigUtils.addOrGetModule(config, FFFConfigGroup.class);
 		// fffConfig.setLMax(Double.MAX_VALUE); // To disable sublinks (faster computation, but lower realism)
 
 		FFFScoringConfigGroup fffScoringConfig = ConfigUtils.addOrGetModule(config, FFFScoringConfigGroup.class);
 		HashMap<String, FFFModeUtilityParameters> modeParams = new HashMap<String, FFFModeUtilityParameters>();
-		modeParams.put(TransportMode.access_walk, new FFFModeUtilityParameters(-1/60., 0., 0., 0.));
-		modeParams.put(TransportMode.egress_walk, new FFFModeUtilityParameters(-1/60., 0., 0., 0.));
-		modeParams.put(TransportMode.car, new FFFModeUtilityParameters(-1/60., -1/120., 0., 0.));
-		modeParams.put(TransportMode.bike, new FFFModeUtilityParameters(-1/60., -1/120., 0., 0.));
+		double ttUtility = -1./60.;
+		double congTTUtility = -1./120.;
+		modeParams.put(TransportMode.access_walk, new FFFModeUtilityParameters(ttUtility, 0., 0., 0.));
+		modeParams.put(TransportMode.egress_walk, new FFFModeUtilityParameters(ttUtility, 0., 0., 0.));
+		modeParams.put(TransportMode.car, new FFFModeUtilityParameters(ttUtility, congTTUtility, 0., 0.));
+		modeParams.put(TransportMode.bike, new FFFModeUtilityParameters(ttUtility, congTTUtility, 0., 0.));
 		fffScoringConfig.setScoringParameters(modeParams);
 
 
@@ -173,7 +187,6 @@ public class RunMatsim {
 	public static void addRoWModuleToConfig(Config config, boolean uneven){
 		FFFNodeConfigGroup fffNodeConfig = ConfigUtils.addOrGetModule(config, FFFNodeConfigGroup.class);
 		fffNodeConfig.setBicycleDelay(2.);
-		fffNodeConfig.setBundleTol(Math.PI/12.);
 		if(uneven){
 			config.qsim().setFlowCapFactor(0.1); // This has to be calibrated
 			config.qsim().setStorageCapFactor(0.24); // This has to be calibrated
@@ -200,8 +213,11 @@ public class RunMatsim {
 		final Population population= scenario.getPopulation() ;
 
 		for ( Person person : population.getPersons().values() ) {
-			double v_0 = uniformToJohnson(speedRandom.nextDouble(), fffConfig);
-			v_0 = Math.max(v_0, fffConfig.getMinimumAllowedDesiredSpeed());
+			double v_0 = 0;
+			while(v_0 < fffConfig.getMinimumAllowedDesiredSpeed() ||
+					v_0 > fffConfig.getMaximumAllowedDesiredSpeed() ){
+				v_0 = uniformToJohnson(speedRandom.nextDouble(), fffConfig);
+			}
 			double z_c = headwayRandom.nextDouble(); 
 			double theta_0 = fffConfig.getTheta_0() + z_c * fffConfig.getZeta_0();
 			double theta_1 = fffConfig.getTheta_1() + z_c * fffConfig.getZeta_1();
@@ -367,14 +383,45 @@ public class RunMatsim {
 	}
 
 	public static Controler addRoutingToControler(Controler controler, final Scenario scenario){
-		scenario.getConfig().controler().setRoutingAlgorithmType(RoutingAlgorithmType.FastAStarLandmarks);
 		Collection<String> networkModes = scenario.getConfig().plansCalcRoute().getNetworkModes();
 		controler.addOverridingModule( new AbstractModule(){
 			@Override public void install() {
 				this.bindScoringFunctionFactory().to( FFFScoringFactory.class ) ;
+				if(scenario.getConfig().controler().getRoutingAlgorithmType() ==
+						RoutingAlgorithmType.FastAStarLandmarks ){
+					this.bind(LeastCostPathCalculatorFactory.class).to(
+							DesiredSpeedBicycleFastAStarLandmarks.Factory.class );
+				} else {
+					this.bind(LeastCostPathCalculatorFactory.class).to(
+							DesiredSpeedBicycleDijkstra.Factory.class );
+				}
 				for(String mode : networkModes){
 					this.addRoutingModuleBinding(mode).toProvider(new NetworkRoutingProviderWithCleaning(mode));
 				}
+
+//				this.addTravelTimeBinding( TransportMode.bike ).toInstance( new TravelTime(){
+//					@Inject TravelTimeCalculator travelTimeCalculator ;
+//					@Override public double getLinkTravelTime( Link link, double time, Person person, Vehicle vehicle ){
+//						double congestedTravelTime = travelTimeCalculator.getLinkTravelTimes().getLinkTravelTime( link, time, person, vehicle );
+//						double freeSpeedTravelTime = link.getLength() / (double) person.getAttributes().getAttribute( FFFConfigGroup.DESIRED_SPEED );
+//						return Math.max( congestedTravelTime, freeSpeedTravelTime ) ;
+//					}
+//				} ) ;
+
+//				this.addControlerListenerBinding().toInstance( new StartupListener(){
+//					@Inject SingleModeNetworksCache singleModeNetworksCache ;
+//					@Inject Network network ;
+//					@Override public void notifyStartup( StartupEvent event ){
+//						String mode = TransportMode.bike
+//						TransportModeNetworkFilter filter = new TransportModeNetworkFilter(network);
+//						Set<String> modes = new HashSet<>(Arrays.asList(mode));
+//						Network filteredNetwork = NetworkUtils.createNetwork();
+//						filter.filter(filteredNetwork, modes);
+//						new NetworkCleaner().run(filteredNetwork ); // mads
+//						this.singleModeNetworksCache.getSingleModeNetworksCache().put(mode, filteredNetwork);
+//					}
+//				} );
+
 			}
 		} );
 		return controler;
@@ -522,9 +569,26 @@ public class RunMatsim {
 		}
 	}
 
-	static void cleanBicycleNetwork(Network network){
-		//removeRedundantNodes(network);
+	static void cleanBicycleNetwork(Network network, Config config){
+		//removeRedundantNodes(network); // This method does not work yet...
 		removeDuplicateLinks(network);
+		setFreespeed(network, config);
+	}
+
+
+
+
+	private static void setFreespeed(Network network, Config config) {
+		FFFConfigGroup fffConfigGroup = ConfigUtils.addOrGetModule(config, FFFConfigGroup.class);
+		System.out.print("Setting free speed of bicycle links to " + 
+				fffConfigGroup.getMaximumAllowedDesiredSpeed() + "... ");
+		for(Link link : network.getLinks().values()){
+			if(link.getAllowedModes().contains(TransportMode.bike)){
+				Gbl.assertIf(link.getAllowedModes().size() == 1); // Otherwise this is wrong
+				link.setFreespeed(fffConfigGroup.getMaximumAllowedDesiredSpeed());
+			}
+		}	
+		System.out.println(" Done!");
 	}
 
 
@@ -546,7 +610,14 @@ public class RunMatsim {
 				for(Link link : node.getOutLinks().values()){
 					outLink = link;
 				}
+
+				int inBranches = inLink.getFromNode().getInLinks().size() +
+						inLink.getFromNode().getOutLinks().size();
+				int outBranches = outLink.getToNode().getInLinks().size() +
+						outLink.getToNode().getOutLinks().size();
+
 				if(inLink.getFromNode() != outLink.getToNode() &&
+						inBranches <= 1 && outBranches <= 1 &&
 						inLink.getCapacity() == outLink.getCapacity() &&
 						inLink.getFreespeed() == outLink.getFreespeed() &&
 						inLink.getNumberOfLanes() == outLink.getNumberOfLanes() &&
@@ -575,9 +646,9 @@ public class RunMatsim {
 			node.removeInLink(inLink.getId());
 			node.removeOutLink(outLink.getId());
 			network.removeNode(node.getId());
-			outNode.addInLink(inLink);
 			outNode.removeInLink(outLink.getId());
 			network.removeLink(outLink.getId());
+			outNode.addInLink(inLink);
 
 			counter++;
 		}
@@ -608,15 +679,21 @@ public class RunMatsim {
 						bicycleOutLink = link;
 					}
 				}
-				if(carInLink != null && carOutLink != null && bicycleInLink != null && bicycleOutLink != null){
-					//Check of they have the same attributes per mode!!!;
+				if(carInLink != null && carInLink.getToNode() != carInLink.getFromNode() &&
+						carOutLink != null && carOutLink.getToNode() != carOutLink.getFromNode() &&
+						bicycleInLink != null && bicycleInLink.getToNode() != bicycleInLink.getFromNode() &&
+						bicycleOutLink != null && bicycleOutLink.getToNode() != bicycleOutLink.getFromNode() &&
+						carInLink.getFromNode() == bicycleInLink.getFromNode() &&
+						carOutLink.getToNode() == bicycleOutLink.getToNode()   &&
+						carInLink.getFromNode() != carInLink.getToNode()){
 
-					if(carInLink.getCapacity() == carOutLink.getCapacity() &&
+					//Check if they have the same attributes per mode
+					if( carInLink.getCapacity() == carOutLink.getCapacity() &&
 							carInLink.getFreespeed() == carOutLink.getFreespeed() &&
 							carInLink.getNumberOfLanes() == carOutLink.getNumberOfLanes() &&
 							bicycleInLink.getCapacity() == bicycleOutLink.getCapacity() &&
 							bicycleInLink.getFreespeed() == bicycleOutLink.getFreespeed() &&
-							bicycleInLink.getNumberOfLanes() == bicycleOutLink.getNumberOfLanes()){
+							bicycleInLink.getNumberOfLanes() == bicycleOutLink.getNumberOfLanes() ){
 						nodesToBeRemoved.addLast(node);
 					}
 				}
@@ -643,23 +720,28 @@ public class RunMatsim {
 				}
 			}
 
-			Node outNode = carOutLink.getToNode();
+			Node toNode = carOutLink.getToNode();
+
 			double carLength = carInLink.getLength() + carOutLink.getLength();
 			double bicycleLength = bicycleInLink.getLength() + bicycleOutLink.getLength();
 
+			toNode.removeInLink(carOutLink.getId());
+			toNode.removeInLink(bicycleOutLink.getId());
 			network.removeLink(carOutLink.getId());
 			network.removeLink(bicycleOutLink.getId());
 
-			carInLink.setToNode(outNode);
-			carInLink.setLength(carLength);
-			bicycleInLink.setToNode(outNode);
-			bicycleInLink.setLength(bicycleLength);
 
 			node.removeInLink(carInLink.getId());
 			node.removeInLink(bicycleInLink.getId());
-			outNode.addInLink(carInLink);
-			outNode.addInLink(bicycleInLink);
 			network.removeNode(node.getId());
+
+			carInLink.setToNode(toNode);
+			carInLink.setLength(carLength);
+			bicycleInLink.setToNode(toNode);
+			bicycleInLink.setLength(bicycleLength);
+
+			toNode.addInLink(carInLink);
+			toNode.addInLink(bicycleInLink);
 			counter++;
 		}
 		System.out.println(counter + " redundant bimodal nodes removed from the network");

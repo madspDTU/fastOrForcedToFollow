@@ -24,70 +24,68 @@ import org.matsim.facilities.ActivityFacility;
 import org.matsim.facilities.MatsimFacilitiesReader;
 
 public class ExtractEntirePopulation {
-
+	
 	static double bicycleProbability = 1.0;
 	static double carProbability = 0.1; 
-
-
-
+	
+	
+	
 	public static void main(String[] args) {
-
-
+		
+		
 		HashMap<String, Double> modeProbabilities = new HashMap<String, Double>();
 		modeProbabilities.put(TransportMode.car, carProbability);
 		modeProbabilities.put(TransportMode.bike, bicycleProbability);
-
-
-
-
-
+		
+		
+		
+		
+		
 		Config config = ConfigUtils.createConfig();
 		Scenario scenario = ScenarioUtils.createScenario(config);
 		Population population = scenario.getPopulation();
 		ActivityFacilities facilities = scenario.getActivityFacilities();
 		PopulationReader pr = new PopulationReader(scenario);
 		MatsimFacilitiesReader fr = new MatsimFacilitiesReader(scenario);
-
+		
 		Config newConfig = ConfigUtils.createConfig();
 		Scenario newScenario = ScenarioUtils.createScenario(newConfig);
 		Population newPopulation = newScenario.getPopulation();
 		PopulationFactory pf = newPopulation.getFactory();
 		PopulationWriter pw = new PopulationWriter(newPopulation);
 
-
+		
 		Config newUnevenConfig = ConfigUtils.createConfig();
 		Scenario newUnevenScenario = ScenarioUtils.createScenario(newUnevenConfig);
 		Population newUnevenPopulation = newUnevenScenario.getPopulation();
 		PopulationWriter unevenPW = new PopulationWriter(newUnevenPopulation);
 
-
+		
 		Config newSmallConfig = ConfigUtils.createConfig();
 		Scenario newSmallScenario = ScenarioUtils.createScenario(newSmallConfig);
 		Population newSmallPopulation = newSmallScenario.getPopulation();
 		PopulationWriter smallPW = new PopulationWriter(newSmallPopulation);
-
-
+		
+		
 		Random randomSmall = new Random(1);
 		Random randomUneven = new Random(137);
-
-
-
-
+		
+		
+		
+		
 		fr.readFile("C:/workAtHome/Berlin/Data/facilities_CPH.xml.gz");
 		pr.readFile("C:/workAtHome/Berlin/Data/plans_CPH.xml.gz");
-
+		
 		int totalNumberOfTrips = 0;
 		int unevenNumberOfTrips = 0;
-		int unevenNumberOfCarTrips = 0;
 		
-
-
+		
 		for(Person person : population.getPersons().values()){
 			Plan plan = person.getSelectedPlan();
 			int i = 0;
 			boolean[] keptElement = new boolean[plan.getPlanElements().size()];
 			boolean[] keptElementUneven = new boolean[plan.getPlanElements().size()];
-
+			
 			for(PlanElement pe : plan.getPlanElements()){
 				if(pe instanceof Leg){
 					Leg leg = (Leg) pe;
@@ -97,14 +95,11 @@ public class ExtractEntirePopulation {
 						keptElement[i+1] = true;
 						totalNumberOfTrips++;
 						double prob = modeProbabilities.get(leg.getMode());
-						if(prob >= 1 || randomUneven.nextDouble() < prob){
+						if(prob >= 1 || randomUneven.nextDouble() > prob){
 							keptElementUneven[i-1] = true;
 							keptElementUneven[i] = true;
 							keptElementUneven[i+1] = true;
 							unevenNumberOfTrips++;
-							if(leg.getMode().equals(TransportMode.car)){
-								unevenNumberOfCarTrips++;
-							}
 						}
 					} 
 				}
@@ -113,30 +108,29 @@ public class ExtractEntirePopulation {
 			i = 0;
 			Plan newPlan = PopulationUtils.createPlan();
 			Plan newPlanUneven = PopulationUtils.createPlan();
-			newPlan = addElementsToPlan(facilities, plan, keptElement, newPlan);
-			newPlanUneven = addElementsToPlan(facilities, plan, keptElementUneven, newPlanUneven);
-
+			newPlan = addElementsToPlan(facilities, plan, i, keptElement, newPlan);
+			newPlanUneven = addElementsToPlan(facilities, plan, i, keptElementUneven, newPlanUneven);
+			
 			Person newPerson = addPlanToPersonAndPopulation(newPopulation, pf, person, newPlan);
 			addPlanToPersonAndPopulation(newUnevenPopulation, pf, person, newPlanUneven);
 			if(newPerson != null && randomSmall.nextDouble() < 0.0001){
 				newSmallPopulation.addPerson(newPerson);
 			}
 		}
-
-
+		
+		
 		smallPW.write("./input/AllPlans_CPH_small.xml.gz");
 		unevenPW.write("./input/AllPlans_CPH_uneven.xml.gz");
 		pw.write("./input/AllPlans_CPH_full.xml.gz");
 
-
+		
 		System.out.println("Uneven number of agents: " + newUnevenPopulation.getPersons().size());
-		System.out.println("Uneven number of trips: " + unevenNumberOfTrips + " out of which " + 
-				unevenNumberOfCarTrips + " are car trips.");
+		System.out.println("Uneven number of trips: " + unevenNumberOfTrips);
 	
 		System.out.println("Total number of agents: " + newPopulation.getPersons().size());
 		System.out.println("Total number of trips: " + totalNumberOfTrips);
-
-
+		
+	
 	}
 
 
@@ -147,7 +141,6 @@ public class ExtractEntirePopulation {
 			//do nothing - the person has no valid trips, and thus not qualified for the new population.
 			return null;
 		} else {
-			System.out.println(newPlan.getPlanElements().size());
 			
 			Person newPerson = pf.createPerson(person.getId());
 			newPlan.setPerson(newPerson);
@@ -160,10 +153,9 @@ public class ExtractEntirePopulation {
 
 
 
-	private static Plan addElementsToPlan(ActivityFacilities facilities, Plan originalPlan, boolean[] keptElement,
+	private static Plan addElementsToPlan(ActivityFacilities facilities, Plan plan, int i, boolean[] keptElement,
 			Plan newPlan) {
-		for(PlanElement pe : originalPlan.getPlanElements()){
-			int i = 0;
+		for(PlanElement pe : plan.getPlanElements()){
 			if(keptElement[i]){
 				if(pe instanceof Leg){
 					Leg leg = (Leg) pe;
@@ -172,19 +164,16 @@ public class ExtractEntirePopulation {
 				} else {
 					Activity activity = (Activity) pe;
 					ActivityFacility facility = facilities.getFacilities().get(activity.getFacilityId());
-
-					//If facility is null, it is because it has already been removed in previous scenario (i.e. full, and now uneven)...
-					if(facility != null){
-						activity.setCoord(facility.getCoord());
-						activity.setFacilityId(null);
-						activity.setLinkId(null);
-					}
+					Coord coord = facility.getCoord();
+					activity.setFacilityId(null);
+					activity.setLinkId(null);
+					activity.setCoord(coord);
 					newPlan.addActivity((Activity) pe);
 				}
 			}
 			i++;
 		}
 
-		return newPlan;
+		return plan;
 	}
 }

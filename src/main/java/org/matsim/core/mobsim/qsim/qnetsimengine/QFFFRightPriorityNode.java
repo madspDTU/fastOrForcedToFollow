@@ -48,7 +48,7 @@ public class QFFFRightPriorityNode extends QFFFAbstractNode{
 			}
 
 		if(inLinkOrder.isEmpty()){
-			this.qNode.active.set(false);
+			this.qNode.setActive(false);
 			return false;
 		}
 

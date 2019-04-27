@@ -1,4 +1,4 @@
-package fastOrForcedToFollow.leastcostpathcalculators;
+package org.matsim.core.router;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -12,13 +12,11 @@ import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.population.PopulationFactory;
+import org.matsim.core.config.groups.GlobalConfigGroup;
 import org.matsim.core.config.groups.PlansCalcRouteConfigGroup;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.algorithms.NetworkCleaner;
 import org.matsim.core.network.algorithms.TransportModeNetworkFilter;
-import org.matsim.core.router.DefaultRoutingModules;
-import org.matsim.core.router.RoutingModule;
-import org.matsim.core.router.SingleModeNetworksCache;
 import org.matsim.core.router.costcalculators.TravelDisutilityFactory;
 import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.router.util.LeastCostPathCalculatorFactory;
@@ -39,6 +37,9 @@ public class NetworkRoutingProviderWithCleaning implements Provider<RoutingModul
 
 	@Inject
 	PlansCalcRouteConfigGroup plansCalcRouteConfigGroup;
+	
+	@Inject
+	GlobalConfigGroup globalConfigGroup;
 
 	@Inject
 	Network network;
@@ -111,12 +112,17 @@ public class NetworkRoutingProviderWithCleaning implements Provider<RoutingModul
 						filteredNetwork,
 						travelDisutilityFactory.createTravelDisutility(travelTime),
 						travelTime);
-		LeastCostPathCalculator routeAlgoBicycle =
-				new DesiredSpeedBicycleDijkstraFactory().createPathCalculator(
-						filteredNetwork,
-						travelDisutilityFactory.createTravelDisutility(travelTime),
-						travelTime);
+		LeastCostPathCalculator routeAlgoBicycle = 
+				(leastCostPathCalculatorFactory instanceof DesiredSpeedBicycleFastAStarLandmarks.Factory) ?
+					((DesiredSpeedBicycleFastAStarLandmarks.Factory) leastCostPathCalculatorFactory).
+							createDesiredSpeedPathCalculator(
+					filteredNetwork,
+					travelDisutilityFactory.createTravelDisutility(travelTime),
+					travelTime	) 			:    
+						routeAlgo;
 
+		
+		
 		// the following again refers to the (transport)mode, since it will determine the mode of the leg on the network:
 		if ( plansCalcRouteConfigGroup.isInsertingAccessEgressWalk() ) {
 			return DefaultRoutingModules.createAccessEgressNetworkRouter(mode, populationFactory, filteredNetwork, 

@@ -49,69 +49,29 @@ public class FFFTest {
 
 	
 	
-	@Test
-	public final void berlinTest_Max50_2() {
-		int lanesPerLink = 2;
-				
-		Config config = RunMatsim.createConfigFromExampleName("berlin", Arrays.asList(TransportMode.bike));
-		config.controler().setOutputDirectory(utils.getOutputDirectory());
-		
-		//Possible changes to config
-		FFFConfigGroup fffConfig = ConfigUtils.addOrGetModule(config, FFFConfigGroup.class);
-		fffConfig.setLMax(50.);
-		
-		Scenario scenario = RunMatsim.createScenario(config, lanesPerLink, false, 1.);
-		Controler controler = RunMatsim.createControler(scenario);
-		try {		
-			controler.run();
-		} catch ( Exception ee ) {
-			ee.printStackTrace();
-		}
-
-		testAux(scenario);
-
-	}
-
 	
 	
 	@Test @Ignore
 	public final void test_2() {
-		int lanesPerLink = 2;
-		
-
-		Config config = RunMatsim.createConfigFromExampleName("equil", Arrays.asList(TransportMode.bike));
-		config.controler().setOutputDirectory(utils.getOutputDirectory());
-		
-		Scenario scenario = RunMatsim.createScenario(config, lanesPerLink, true, 1.);
-		Controler controler = RunMatsim.createControler(scenario);
-		try {		
-			controler.run();
-		} catch ( Exception ee ) {
-			ee.printStackTrace();
-		}
-
-		testAux(scenario);
-	
+//		int lanesPerLink = 2;
+//		
+//
+//		Config config = RunMatsim.createConfigFromExampleName("equil", Arrays.asList(TransportMode.bike));
+//		config.controler().setOutputDirectory(utils.getOutputDirectory());
+//		
+//		Scenario scenario = RunMatsim.createScenario(config, lanesPerLink, true, 1.);
+//		Controler controler = RunMatsim.createControler(scenario);
+//		try {		
+//			controler.run();
+//		} catch ( Exception ee ) {
+//			ee.printStackTrace();
+//		}
+//
+//		testAux(scenario);
+//	
 	}
 
-	@Test @Ignore
-	public final void berlinTest_2() {
-		int lanesPerLink = 2;
 
-		Config config = RunMatsim.createConfigFromExampleName("berlin", Arrays.asList(TransportMode.bike));
-		config.controler().setOutputDirectory(utils.getOutputDirectory());
-		
-		Scenario scenario = RunMatsim.createScenario(config, lanesPerLink, false, 1.);
-		Controler controler = RunMatsim.createControler(scenario);
-		try {		
-			controler.run();
-		} catch ( Exception ee ) {
-			ee.printStackTrace();
-		}
-
-		testAux(scenario);
-
-	}
 	
 
 	private void testAux(Scenario scenario){

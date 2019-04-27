@@ -11,14 +11,15 @@ import fastOrForcedToFollow.scoring.FFFScoringParameters;
 public class FFFScoringConfigGroup extends ReflectiveConfigGroup {
 
 	static final String GROUP_NAME = "fastOrForcedToFollowScoring";
-	
+		
 	private FFFScoringParameters scoringParameters;
 	
 //	@StringGetter( "scoringParameters" )
 	public FFFScoringParameters getMyScoringParameters() {
 		return this.scoringParameters;
 	}
-	
+
+//	@StringSetter( "scoringParameters" )
 	public void setScoringParameters(Map<String, FFFModeUtilityParameters> modeParams){
 		FFFScoringParameters.Builder builder = new FFFScoringParameters.Builder();
 		builder.setModeParameters(modeParams);

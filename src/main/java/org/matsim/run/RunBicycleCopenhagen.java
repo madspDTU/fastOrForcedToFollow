@@ -24,6 +24,7 @@ import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.replanning.strategies.DefaultPlanStrategiesModule.DefaultSelector;
 import org.matsim.core.replanning.strategies.DefaultPlanStrategiesModule.DefaultStrategy;
+import org.matsim.core.router.NetworkRoutingProviderWithCleaning;
 import org.matsim.core.router.TripStructureUtils;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.vehicles.VehicleType;
@@ -32,13 +33,12 @@ import org.matsim.vehicles.VehicleTypeImpl;
 import fastOrForcedToFollow.configgroups.FFFConfigGroup;
 import fastOrForcedToFollow.configgroups.FFFNodeConfigGroup;
 import fastOrForcedToFollow.configgroups.FFFScoringConfigGroup;
-import fastOrForcedToFollow.leastcostpathcalculators.NetworkRoutingProviderWithCleaning;
 import fastOrForcedToFollow.scoring.FFFModeUtilityParameters;
 import fastOrForcedToFollow.scoring.FFFScoringFactory;
 
 public class RunBicycleCopenhagen {
 
-	public final static int numberOfThreads = 20;
+	public static int numberOfGlobalThreads = 20;
 	public static int numberOfQSimThreads = 20;
 	public static Collection<String> networkModes = null;
 
@@ -59,6 +59,7 @@ public class RunBicycleCopenhagen {
 		boolean mixed = false;
 		boolean uneven = false;
 		double qSimEndTime = 100*3600;
+		
 		if(args.length > 0){
 			scenarioType = args[0];
 			if(scenarioType.contains("NoCongestion")){
@@ -100,7 +101,7 @@ public class RunBicycleCopenhagen {
 		}
 	
 		
-		Config config = RunMatsim.createConfigFromExampleName("berlin", networkModes);
+		Config config = RunMatsim.createConfigFromExampleName(networkModes);
 		config.controler().setOutputDirectory(outputBaseDir + scenarioType);
 
 		String size = null;
@@ -108,6 +109,7 @@ public class RunBicycleCopenhagen {
 			size = "full";
 		} else if(scenarioType.substring(0,5).equals("small")){
 			size = "small";
+			numberOfGlobalThreads = 1;
 		}
 		config.controler().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists);
 		config.controler().setLastIteration(lastIteration);
@@ -117,12 +119,8 @@ public class RunBicycleCopenhagen {
 
 		config.controler().setWritePlansInterval(config.controler().getLastIteration()+1);
 		config.controler().setWriteEventsInterval(config.controler().getLastIteration()+1);
-		config.controler().setCreateGraphs(true);
-		config.linkStats().setWriteLinkStatsInterval(-1);
-		config.counts().setWriteCountsInterval(-1);
-		config.controler().setDumpDataAtEnd(true);
-
-		config.global().setNumberOfThreads(numberOfThreads);
+	
+		config.global().setNumberOfThreads(numberOfGlobalThreads);
 		config.qsim().setNumberOfThreads(numberOfQSimThreads);
 		config.parallelEventHandling().setNumberOfThreads(numberOfQSimThreads);
 
@@ -156,26 +154,7 @@ public class RunBicycleCopenhagen {
 		
 			
 		Scenario scenario = ScenarioUtils.loadScenario( config ) ;
-		
-		int carTrips = 0;
-		int carPersons = 0;
-		for(Person person : scenario.getPopulation().getPersons().values()){
-			boolean bool = false;
-			for(Leg leg : TripStructureUtils.getLegs(person.getSelectedPlan())){
-				if(leg.getMode().equals(TransportMode.car)){
-					carTrips++;
-					bool = true;
-				}
-			}
-			if(bool){
-				carPersons++;
-			}
-		}
-		
-		
-		System.out.println("A total of " + carTrips + " car trips spread on " + carPersons + " agents.");
-		System.exit(-1);
-		RunMatsim.cleanBicycleNetwork(scenario.getNetwork());
+		RunMatsim.cleanBicycleNetwork(scenario.getNetwork(), config);
 
 		if(!mixed || size.equals("small")){
 			removeSouthWesternPart(scenario.getNetwork());

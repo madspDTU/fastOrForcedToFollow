@@ -12,6 +12,7 @@ public class FFFConfigGroup extends ReflectiveConfigGroup {
 	public static final String BICYCLE_LENGTH = "lambda_c";
 
 	
+	
 	/**
 	 * Excess travel time factor forced onto tReady and tEnd. 
 	 */
@@ -79,6 +80,11 @@ public class FFFConfigGroup extends ReflectiveConfigGroup {
 	private double minimumAllowedDesiredSpeed = 2.;
 	
 	/**
+	 * The maximum allowed desired speed (upper bound for truncation).
+	 */
+	private double maximumAllowedDesiredSpeed = 50./3.6;
+	
+	/**
 	 * Additional width needed to gain another efficient lane. Based on Buch & Greibe (2015).
 	 */
 	private double efficientLaneWidth = 1.25; 
@@ -111,6 +117,14 @@ public class FFFConfigGroup extends ReflectiveConfigGroup {
 
 	public void setMinimumAllowedDesiredSpeed(double minimumAllowedDesiredSpeed) {
 		this.minimumAllowedDesiredSpeed = minimumAllowedDesiredSpeed;
+	}
+	
+	public void setMaximumAllowedDesiredSpeed(double maximumAllowedDesiredSpeed) {
+		this.maximumAllowedDesiredSpeed = maximumAllowedDesiredSpeed;
+	}
+	
+	public double getMaximumAllowedDesiredSpeed() {
+		return maximumAllowedDesiredSpeed;
 	}
 
 	public double getJohnsonGamma() {

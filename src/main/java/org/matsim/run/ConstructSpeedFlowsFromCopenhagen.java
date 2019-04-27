@@ -88,7 +88,7 @@ public class ConstructSpeedFlowsFromCopenhagen {
 		int highlightTrips = eventsHandler.totalHighlightTrips;
 		
 
-		eventsHandler = null;
+		eventsHandler = null; 
 		eventsManager = null;
 		if(it < 0){
 			pr.readFile(outDir + "/output_plans.xml.gz");

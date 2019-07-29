@@ -42,7 +42,7 @@ public class RunBicycleCopenhagen {
 	public static int numberOfQSimThreads = 20;
 	public static Collection<String> networkModes = null;
 
-	public static String outputBaseDir = "/work1/s103232/ABMTRANS2019/"; //With final /
+	public static String outputBaseDir = "/work1/s103232/ABMTRANS2019/withNodeModelling/"; //With final /
 	//public static String outputBaseDir = "./output/ABMTRANS2019/"; //With final / 
 	//public static String outputBaseDir = "C:/Users/madsp/git/fastOrForcedToFollowMaven/output/Copenhagen/";
 
@@ -151,11 +151,11 @@ public class RunBicycleCopenhagen {
 			config.plans().setInputFile(inputBaseDir + "BicyclePlans_CPH_" + size + ".xml.gz");
 		}
 
-		
 			
 		Scenario scenario = ScenarioUtils.loadScenario( config ) ;
 		RunMatsim.cleanBicycleNetwork(scenario.getNetwork(), config);
 
+		System.out.println(size);
 		if(!mixed || size.equals("small")){
 			removeSouthWesternPart(scenario.getNetwork());
 		}

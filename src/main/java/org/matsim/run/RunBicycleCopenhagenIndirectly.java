@@ -8,13 +8,13 @@ import org.matsim.api.core.v01.TransportMode;
 public class RunBicycleCopenhagenIndirectly {
 
 	public static void main(String[] args) throws IOException{
-		String[] arguments = new String[]{"smallRoWMixed", "1"};
-		RunBicycleCopenhagen.main(arguments);
+		args = new String[]{"smallRoWUneven100", "-1", "car,bike"};
+		RunBicycleCopenhagen.main(args);
 
 
 
 
-		//			ConstructSpeedFlowsFromCopenhagen.run(
+		//		 	ConstructSpeedFlowsFromCopenhagen.run(
 		//	"/work1/s103232/ABMTRANS2019/withNodeModelling/smallRoWMixedQSimEndsAt100/", 
 		//			"small", 0, Arrays.asList(),Arrays.asList(TransportMode.bike, TransportMode.car));
 	}

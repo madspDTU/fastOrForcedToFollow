@@ -34,7 +34,13 @@ import fastOrForcedToFollow.eventhandlers.MultiModalBicycleDoorToDoorHandler;
 
 public class ConstructSpeedFlowsFromCopenhagen {
 
+	public static double highlightStartTime = 7*3600;
+	public static double highlightEndTime = 8*3600;
 
+	public static void main(String[] args) throws NumberFormatException, IOException{
+		run(args[0], args[1], Integer.valueOf(args[2]), Arrays.asList(TransportMode.car), Arrays.asList(TransportMode.bike));
+	}
+	
 	public static void run(String outDir, String type, int it, 
 			List<String> ignoredModes, List<String> analysedModes) throws IOException {
 		String inputBaseDir = RunBicycleCopenhagen.inputBaseDir;
@@ -116,9 +122,9 @@ public class ConstructSpeedFlowsFromCopenhagen {
 		s += "Total congested travel time is: " + measures[1]/60. + " minutes\n";
 		s += "That is " + (measures[1]/nPop/60.) + " minutes per person\n";
 		s += "Total distance is: " + measures[2]/1000. + " kilometres\n";
-		s += "That is " + (measures[2]/nPop/1000.) + " kilometres per person";
+		s += "That is " + (measures[2]/nPop/1000.) + " kilometres per person\n";
 		System.out.println(s);
-		String s2 = highlightTrips + " highlight trips in this study";
+		String s2 = highlightTrips + " highlight trips in this study\n";
 		s2 += "Total highlight travel time is: " + measures[3]/60. + " minutes\n";
 		s2 += "That is " + (measures[3]/highlightTrips/60.) + " minutes per trip\n";
 		s2 += "Total congested travel time is: " + measures[4]/60. + " minutes\n";
@@ -164,7 +170,7 @@ public class ConstructSpeedFlowsFromCopenhagen {
 					
 					Leg leg = (Leg) person.getSelectedPlan().getPlanElements().get(i-2);
 					Activity act = (Activity) person.getSelectedPlan().getPlanElements().get(i-3);
-					if(leg.getDepartureTime() > 7*3600 && leg.getDepartureTime() <= 8*3600 &&
+					if(leg.getDepartureTime() > highlightStartTime && leg.getDepartureTime() <= highlightEndTime &&
 						MultiModalBicycleDoorToDoorHandler.isInHighlightArea(act.getCoord(), highlightCoords) ){
 						relevantHighlightLegs.add(i-2); // access
 						relevantHighlightLegs.add(i);

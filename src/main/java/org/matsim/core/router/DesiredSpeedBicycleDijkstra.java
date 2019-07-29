@@ -24,12 +24,12 @@ import javax.inject.Singleton;
 
 public class DesiredSpeedBicycleDijkstra extends Dijkstra{
 
-	private DesiredSpeedBicycleDijkstra( Network network, TravelDisutility costFunction,
+	DesiredSpeedBicycleDijkstra( Network network, TravelDisutility costFunction,
 							 TravelTime timeFunction, PreProcessDijkstra preProcessData ) {
 		super(network, costFunction, timeFunction, preProcessData);
 	}
 
-	private DesiredSpeedBicycleDijkstra( final Network network, final TravelDisutility costFunction,
+	DesiredSpeedBicycleDijkstra( final Network network, final TravelDisutility costFunction,
 							 final TravelTime timeFunction ) {
 		this(network, costFunction, timeFunction, null);
 	}

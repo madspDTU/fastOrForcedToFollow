@@ -1,5 +1,6 @@
 package org.matsim.core.router;
 
+import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
@@ -8,7 +9,9 @@ import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Provider;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.population.PopulationFactory;
@@ -41,6 +44,9 @@ public class NetworkRoutingProviderWithCleaning implements Provider<RoutingModul
 	@Inject
 	GlobalConfigGroup globalConfigGroup;
 
+	@Inject
+	Scenario scenario;
+	
 	@Inject
 	Network network;
 
@@ -122,11 +128,10 @@ public class NetworkRoutingProviderWithCleaning implements Provider<RoutingModul
 						routeAlgo;
 
 		
-		
 		// the following again refers to the (transport)mode, since it will determine the mode of the leg on the network:
 		if ( plansCalcRouteConfigGroup.isInsertingAccessEgressWalk() ) {
-			return DefaultRoutingModules.createAccessEgressNetworkRouter(mode, populationFactory, filteredNetwork, 
-					mode.equals(TransportMode.bike) ? routeAlgoBicycle : routeAlgo, plansCalcRouteConfigGroup);
+			return DefaultRoutingModules.createAccessEgressNetworkRouter(mode, 	mode.equals(TransportMode.bike) ? routeAlgoBicycle : routeAlgo, 
+					scenario, filteredNetwork);
 		} else {
 			return DefaultRoutingModules.createPureNetworkRouter(mode, populationFactory, filteredNetwork,
 					mode.equals(TransportMode.bike) ? routeAlgoBicycle : routeAlgo);

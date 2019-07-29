@@ -219,11 +219,9 @@ class QCycleLaneWithSublinks implements QLaneI{
 
 
 					final QNodeI toNode = qLinkImpl.getToNode();
-					if ( toNode instanceof QNodeImpl ) {
-						((QNodeImpl) toNode).activateNode();
-					} else if( toNode instanceof QFFFNode) {
-						((QFFFNode) toNode).activateNode();
-					}
+					if ( toNode instanceof AbstractQNode ) {
+						((AbstractQNode) toNode).activateNode();
+					} 
 				}
 			}
 		}
@@ -304,7 +302,7 @@ class QCycleLaneWithSublinks implements QLaneI{
 	@Override public QVehicle getVehicle( final Id<Vehicle> vehicleId ) {
 		for(Sublink sublink : fffLinkArray){
 			for(QCycle cqo : sublink.getQ()){
-				if( cqo.getVehicle().getId().equals( vehicleId.toString() ) ){
+				if( cqo.getVehicle().getId().equals( vehicleId) ){
 					return cqo;
 				}
 			}

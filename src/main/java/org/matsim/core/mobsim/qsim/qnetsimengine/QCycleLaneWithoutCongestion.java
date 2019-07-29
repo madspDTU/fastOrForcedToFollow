@@ -182,7 +182,7 @@ class QCycleLaneWithoutCongestion implements QLaneI{
 
 @Override public QVehicle getVehicle( final Id<Vehicle> vehicleId ) {
 	for(QCycle cqo : globalQ){
-		if( cqo.getVehicle().getId().equals( vehicleId.toString() ) ){
+		if( cqo.getVehicle().getId().equals( vehicleId ) ){
 			return cqo;
 		}
 	}

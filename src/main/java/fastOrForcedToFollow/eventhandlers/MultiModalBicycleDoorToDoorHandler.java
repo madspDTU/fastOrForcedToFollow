@@ -22,6 +22,7 @@ package fastOrForcedToFollow.eventhandlers;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -30,6 +31,7 @@ import java.util.List;
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.TransportMode;
+import org.matsim.api.core.v01.events.ActivityEndEvent;
 import org.matsim.api.core.v01.events.ActivityStartEvent;
 import org.matsim.api.core.v01.events.Event;
 import org.matsim.api.core.v01.events.LinkEnterEvent;
@@ -40,7 +42,16 @@ import org.matsim.api.core.v01.events.PersonEntersVehicleEvent;
 import org.matsim.api.core.v01.events.VehicleEntersTrafficEvent;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
+import org.matsim.api.core.v01.population.Activity;
+import org.matsim.api.core.v01.population.Leg;
+import org.matsim.api.core.v01.population.Person;
+import org.matsim.api.core.v01.population.Plan;
+import org.matsim.api.core.v01.population.PlanElement;
+import org.matsim.api.core.v01.population.Population;
+import org.matsim.core.api.experimental.events.TeleportationArrivalEvent;
+import org.matsim.core.api.internal.HasPersonId;
 import org.matsim.core.events.handler.BasicEventHandler;
+import org.matsim.core.population.routes.NetworkRoute;
 import org.matsim.run.ConstructSpeedFlowsFromCopenhagen;
 
 
@@ -49,26 +60,36 @@ public class MultiModalBicycleDoorToDoorHandler implements BasicEventHandler {
 	Network network;
 
 	final static double timeStepSize = 3600;
-	final static double endTime = 32*3600;
-	final static int numberOfSlots = (int) Math.ceil(endTime/ timeStepSize) +1 ;
+	final static double endTime = 25*3600;  // From 0-1 it is necessary to add 1 and 25 probably.
+	final static int numberOfSlots = (int) Math.ceil(endTime/ timeStepSize);
 	static double currentTime = 0;
 	static int printCounter = 0;
 	final static int printHowOften = 60*15;
-	public double totalTravelTime = 0;
-	public double totalHighlightTravelTime;
+	public HashMap<String,Double> totalTravelTimes = new HashMap<String,Double>();
+	public HashMap<String,Double> totalHighlightTravelTimes = new HashMap<String,Double>();
 	public int totalHighlightTrips;
-	
+
 	private Coord[] highlightCoords = getVertices();
 
-	HashMap<String, int[]> flows = new HashMap<String, int[]>();
+	HashMap<String, int[]> flows;
 	HashMap<String, LinkedList<Double>[]> speeds = new HashMap<String, LinkedList<Double>[]>();
 	HashMap<String, HashMap<String, Double>> entryTimes = new HashMap<String, HashMap<String,Double>>();
 	HashMap<String, Double> personLegStarts = new HashMap<String, Double>();
+	HashMap<String, String> personLegModes = new HashMap<String, String>();
 	HashSet<String> highlightPersonLegStarts = new HashSet<String>();
 
-	HashSet<String> ignoredModes;
-	List<String> analysedModes;
+	HashSet<String> ignoredActivities;
 	HashMap<String,String> vehicleToPerson = new HashMap<String,String>();
+	LinkedList<String> detailedOutput = new LinkedList<String>();
+
+	private final String TELEPORTATION_MODE = "teleportation";
+
+	private Population population;
+
+	private HashMap<String, Integer> populationCurrentLeg;
+
+	private boolean fetchHourlyLinkFlows = false; //default is false - can be set to true.
+
 
 
 
@@ -76,18 +97,57 @@ public class MultiModalBicycleDoorToDoorHandler implements BasicEventHandler {
 
 	}
 
-	public void setNetwork(Network network){
-		this.network = network;
-	}
-
-	public void setIgnoredModes(List<String> ignoredModes){
-		this.ignoredModes = new HashSet<String>();
-		for(String s : ignoredModes){
-			this.ignoredModes.add(s + " interaction");
+	public void initiateFlowsMap(){
+		flows = new HashMap<String, int[]>();
+		for(Id<Link> linkId : network.getLinks().keySet()){
+			flows.put(linkId.toString(), new int[numberOfSlots]);
 		}
 	}
+
+	public void setNetwork(Network network){
+		this.network = network;
+		if(fetchHourlyLinkFlows){
+			initiateFlowsMap();
+		}
+	}
+
+	public void setFetchHourlyLinkFlows(boolean fetchHourlyLinkFlows){
+		this.fetchHourlyLinkFlows = fetchHourlyLinkFlows; 
+		if(this.fetchHourlyLinkFlows && network != null){
+			initiateFlowsMap();
+		}
+	}
+
+	public void setPopulation(Population population){
+		this.population = population;
+		populationCurrentLeg = new HashMap<String, Integer>();
+		for(Person person : this.population.getPersons().values()){
+			populationCurrentLeg.put(person.getId().toString(), 0); 
+		}
+	}
+
 	public void setAnalysedModes(List<String> analysedModes){
-		this.analysedModes = analysedModes;
+		this.ignoredActivities = new HashSet<String>();
+		for(String mode : analysedModes){
+			totalTravelTimes.put(mode, 0.);
+			totalHighlightTravelTimes.put(mode, 0.);
+			this.ignoredActivities.add(mode + " interaction");
+		}
+	}
+
+	public void writeDetailedOutput(String fileName){
+		try {
+			FileWriter writer = new FileWriter(fileName);
+			writer.append("Person;Trip;Mode;StartTime;TravelTime;PlannedDuration\n");
+			for(String s : detailedOutput){
+				writer.append(s + "\n");
+			}
+			writer.flush();
+			writer.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
 	}
 
 	private String bestGuessVehicleId(String vehicleId){
@@ -102,82 +162,161 @@ public class MultiModalBicycleDoorToDoorHandler implements BasicEventHandler {
 	@Override
 	public void handleEvent(Event event) {
 		if(event instanceof LinkEnterEvent){
-			LinkEnterEvent e = (LinkEnterEvent) event;
-			String vehicleId = bestGuessVehicleId(e.getVehicleId().toString());
-			if(personLegStarts.containsKey(vehicleId)){
-				double now = e.getTime();
-				String linkId = e.getLinkId().toString();
-				if(!flows.containsKey(linkId)){
-					flows.put(linkId, new int[numberOfSlots]);
-					LinkedList<Double>[] newLinkedListArray = new LinkedList[numberOfSlots];
-					for(int i = 0; i < newLinkedListArray.length; i++){
-						newLinkedListArray[i] = new LinkedList<Double>();
-					}
-					speeds.put(linkId, newLinkedListArray);
-					entryTimes.put(linkId, new HashMap<String, Double>());
-				}
-				entryTimes.get(linkId).put(vehicleId, now);
-				print(now);
-			} 
-		} else if(event instanceof LinkLeaveEvent){
+			// These are ignored for now. Can be used to collect speeds and flows.
+			//		LinkEnterEvent e = (LinkEnterEvent) event;
+			//		String vehicleId = bestGuessVehicleId(e.getVehicleId().toString());
+			//		if(personLegStarts.containsKey(vehicleId)){
+			//			double now = e.getTime();
+			//			String linkId = e.getLinkId().toString();
+			//			if(!flows.containsKey(linkId)){
+			//				flows.put(linkId, new int[numberOfSlots]);
+			//				LinkedList<Double>[] newLinkedListArray = new LinkedList[numberOfSlots];
+			//				for(int i = 0; i < newLinkedListArray.length; i++){
+			//					newLinkedListArray[i] = new LinkedList<Double>();
+			//				}
+			//				speeds.put(linkId, newLinkedListArray);
+			//				entryTimes.put(linkId, new HashMap<String, Double>());
+			//			}
+			//			entryTimes.get(linkId).put(vehicleId, now);
+			//			print(now);
+			//		} 
+		} else if(event instanceof LinkLeaveEvent && fetchHourlyLinkFlows){
 			LinkLeaveEvent e = (LinkLeaveEvent) event;
-			String vehicleId = bestGuessVehicleId(e.getVehicleId().toString());
-			if(personLegStarts.containsKey(vehicleId)){
-				double now = e.getTime();
+			double now = e.getTime();
+			if(now < endTime){
 				int slot = timeToSlot(now);
 				String linkId = e.getLinkId().toString();
-				if(entryTimes.containsKey(linkId) && entryTimes.get(linkId).containsKey(vehicleId)){
-					flows.get(linkId)[slot]++;
-					double speed = network.getLinks().get(Id.createLinkId(linkId)).getLength() / 
-							(now - entryTimes.get(linkId).get(vehicleId));
-					speeds.get(linkId)[slot].add(speed);
-
-					//To safe memory
-					entryTimes.get(linkId).remove(vehicleId);
-				}
-			} 
-		} else if(event instanceof PersonDepartureEvent){
-			PersonDepartureEvent e = (PersonDepartureEvent) event;
-			if(e.getLegMode().equals(TransportMode.access_walk)){
-				double now = e.getTime();
-				personLegStarts.put(e.getPersonId().toString(), now);
-				Link link = network.getLinks().get(e.getLinkId());
-				if( e.getTime() > ConstructSpeedFlowsFromCopenhagen.highlightStartTime && 
-						e.getTime() <= ConstructSpeedFlowsFromCopenhagen.highlightEndTime && (
-						isInHighlightArea(link.getFromNode().getCoord(), highlightCoords) ||
-								isInHighlightArea(link.getToNode().getCoord(), highlightCoords)) ){
-					highlightPersonLegStarts.add(e.getPersonId().toString());
-				}
-				createVehicleKeys(e.getPersonId().toString());
+				flows.get(linkId)[slot]++;
 			}
 		} else if(event instanceof ActivityStartEvent){
 			ActivityStartEvent e = (ActivityStartEvent) event;
-			String vehicleId = bestGuessVehicleId(e.getPersonId().toString());
-			if(personLegStarts.containsKey(vehicleId) && ignoredModes.contains(e.getActType())){
-				personLegStarts.remove(vehicleId);
-				highlightPersonLegStarts.remove(vehicleId);
-			}
-		}	else if(event instanceof PersonArrivalEvent){
-			PersonArrivalEvent e = (PersonArrivalEvent) event;
-			String vehicleId = bestGuessVehicleId(e.getPersonId().toString());
-			if(personLegStarts.containsKey(vehicleId)){
-				if(e.getLegMode().equals(TransportMode.egress_walk)){
+			String actType = e.getActType();
+
+			//If the acttype is non-trivial (i.e. not an interaction).
+			if(!ignoredActivities.contains(actType)){
+				String personId = e.getPersonId().toString();
+
+				//If we have not picked up a mode yet, it is because no vehicle has ever entered traffic.
+				// Thus, it must be a teleportation. 
+				String mode = personLegModes.containsKey(personId) ? personLegModes.get(personId) : TransportMode.walk;
+				// It doesn't contain the TELEPORTATION_MODE and the TransportMode.walk - as such, these are ignored.
+				if(totalTravelTimes.containsKey(mode)){
 					double now = e.getTime();
-					double then = personLegStarts.get(vehicleId);
+					double then = personLegStarts.get(personId);
 					if(now > then){
-						totalTravelTime += now - then -1;
-						if(highlightPersonLegStarts.contains(vehicleId)){
-							totalHighlightTravelTime += now - then -1;
+						double TT = now - then - 1;
+
+						double plannedDuration = getPlannedDuration(personId, mode);
+						if(totalTravelTimes.containsKey(mode)){
+							//Not interesting if the mode was teleported.
+							detailedOutput.add(personId + ";" + populationCurrentLeg.get(personId) + ";" +
+									mode + ";" + then + ";" + TT + ";" + plannedDuration);
+						}
+
+						double before = totalTravelTimes.get(mode);
+						totalTravelTimes.put(mode, before + TT);
+						if(highlightPersonLegStarts.contains(personId)){
+							before = totalHighlightTravelTimes.get(mode);
+							totalHighlightTravelTimes.put(mode, before + TT);
 							totalHighlightTrips++;
-							highlightPersonLegStarts.remove(vehicleId);
+							highlightPersonLegStarts.remove(personId);
 						}
 					}
+					print(now);
 				}
+				personLegStarts.remove(personId);
+				personLegModes.remove(personId);
 			}
-		}
+		} else if(event instanceof ActivityEndEvent){
+			ActivityEndEvent e = (ActivityEndEvent) event;
+			String actType = e.getActType();
+
+			//If non-trivial activity (i.e. not an interaction).
+			if(!ignoredActivities.contains(actType)){
+				String personId = e.getPersonId().toString();
+				double now = e.getTime();
+				personLegStarts.put(personId, now);
+				Link link = network.getLinks().get(e.getLinkId());
+				if( now > ConstructSpeedFlowsFromCopenhagen.highlightStartTime && 
+						now <= ConstructSpeedFlowsFromCopenhagen.highlightEndTime && (
+								isInHighlightArea(link.getFromNode().getCoord(), highlightCoords) ||
+								isInHighlightArea(link.getToNode().getCoord(), highlightCoords)) ){
+					highlightPersonLegStarts.add(personId);
+				}
+				print(now);
+			}
+		} else if(event instanceof VehicleEntersTrafficEvent){
+			// This is only used for determining the (network) mode of the leg.
+
+			VehicleEntersTrafficEvent e = (VehicleEntersTrafficEvent) event;
+			String personId = e.getPersonId().toString();
+			if(personLegStarts.containsKey(personId)){ //Have to check, could be PT-driver.
+				personLegModes.put(personId,e.getNetworkMode());
+			} else {
+				System.out.println("This shouldn't be able to happen with pt disabled."
+						+ " Vehicle entered but no leg has started");
+			}
+			//} else if (event instanceof TeleportationArrivalEvent){
+			//TeleportationArrivalEvent e = (TeleportationArrivalEvent) event;
+			//String personId = e.getPersonId().toString();
+			//personLegModes.put(personId, TELEPORTATION_MODE );
+			// It turned out that actual teleporting is done in a different way,
+			// and does not produce an event. The TeleportationArrivalEvent is 
+			// for non-network travel (e.g. non_network_walk.
+			// The teleportation caused by removing parts of the day, can
+			// be fully ignored when processing the events file.
+		} 
 	}
-	
-	
+
+
+	private double getPlannedDuration(String personId, String mode) {
+		Person person = this.population.getPersons().get(Id.create(personId, Person.class));
+		Plan plan = person.getSelectedPlan();
+		int index = populationCurrentLeg.get(personId) + 1;
+		PlanElement pe = plan.getPlanElements().get(index);
+		while(!(pe instanceof Leg) || !((Leg) pe).getMode().equals(mode)){
+			index++;
+			if(index >= plan.getPlanElements().size()){
+				System.err.println("This is an error. No index satisfied the mode");
+				System.exit(-1);
+			}
+			pe = plan.getPlanElements().get(index);
+		}
+		populationCurrentLeg.put(personId, index);
+
+		if(!totalTravelTimes.containsKey(mode)){
+			//Teleported, and thus not interesting.
+			return ((Leg) plan.getPlanElements().get(index)).getTravelTime();
+		} // else
+
+		double plannedDuration = 0;
+		Leg leg;
+		for(int i = index - 2; i <= index + 2; i += 4){
+			leg = ((Leg) plan.getPlanElements().get(i));
+			plannedDuration += leg.getTravelTime();
+		}
+
+		leg = ((Leg) plan.getPlanElements().get(index));
+		double freeFlowTravelTime = 0;
+		if(mode.equals(TransportMode.bike)){
+			double distance = ((Leg) plan.getPlanElements().get(index)).getRoute().getDistance();
+			double freeSpeed = (double) person.getAttributes().getAttribute("v_0");
+			freeFlowTravelTime = Math.ceil(distance / freeSpeed) ;
+		} else if (mode.equals(TransportMode.car)){
+			NetworkRoute route = (NetworkRoute) leg.getRoute();
+			Link link;
+			for(Id<Link> id : route.getLinkIds()){
+				link = network.getLinks().get(id);
+				freeFlowTravelTime += Math.ceil(link.getLength() / link.getFreespeed());
+			}
+			link = network.getLinks().get(leg.getRoute().getEndLinkId());
+			freeFlowTravelTime += Math.ceil(link.getLength() / link.getFreespeed());
+		}
+		plannedDuration += freeFlowTravelTime;
+
+		return plannedDuration;
+	}
+
 	public static boolean isInHighlightArea(Coord c, Coord[] v){
 		int j  = v.length -1;
 		boolean oddNodes = false;
@@ -196,10 +335,10 @@ public class MultiModalBicycleDoorToDoorHandler implements BasicEventHandler {
 
 
 	public static Coord[] getVertices() {
-		
+
 		LinkedList<Coord> coords = new LinkedList<Coord>();
 		// All sites from https://epsg.io/map#srs=32632
-		
+
 		coords.addLast(new Coord(725704.792574,	6169796.538738)); // Ørestad Syd - øst
 		coords.addLast(new Coord(724402.912291,6168994.395954)); // Ørestad Syd - vest
 		coords.addLast(new Coord(720752.041046, 6170926.423185)); // Frihedenish
@@ -209,21 +348,16 @@ public class MultiModalBicycleDoorToDoorHandler implements BasicEventHandler {
 		coords.addLast(new Coord(728852.561565, 6181618.840032)); // Nordhavn
 		coords.addLast(new Coord(729605.453470, 6172658.247045)); // Amager Strandpark
 		coords.addLast(new Coord(725956.710891, 6171625.034203)); // Bygrænsen
-		
+
 		Coord[] output = new Coord[coords.size()];
 		for(int i = 0; i < output.length; i++){
 			output[i] = coords.pollFirst();
 		}
 		return output;
 	}
-	
-	
 
-	private void createVehicleKeys(String personId) {
-		for(String mode : analysedModes){
-			vehicleToPerson.put(personId + "_" + mode, personId);
-		}
-	}
+
+
 
 	private void print(double now){
 		if(now > currentTime){
@@ -277,6 +411,35 @@ public class MultiModalBicycleDoorToDoorHandler implements BasicEventHandler {
 		writer.flush();
 		writer.close();
 	}
+
+	public void writeAllFlows(String outDir) throws IOException{
+		String outFile = outDir + "AllFlows.csv";
+		String outFile2 = outDir + "LinkGeometry.csv";
+		FileWriter writer = new FileWriter(outFile);
+		FileWriter writer2 = new FileWriter(outFile2);
+		writer.append("LinkId;ToHour;Flow\n");
+		writer2.append("LinkId;FromX;FromY;ToX;ToY\n");
+		for(String linkId : flows.keySet()){
+			Link link = network.getLinks().get(Id.create(linkId,Link.class));
+			Coord fromCoord = link.getFromNode().getCoord(); 
+			Coord toCoord = link.getToNode().getCoord();
+			double fromX = fromCoord.getX();
+			double fromY = fromCoord.getY();
+			double toX = toCoord.getX();
+			double toY = toCoord.getY();
+			writer2.append(linkId + ";" + fromX + ";" + fromY + ";" + toX + ";" + toY + "\n");
+			int toHour = 1;
+			for(int flow : flows.get(linkId)){
+				writer.append(linkId + ";" + toHour + ";" + flow + "\n");
+				toHour++;
+			}
+		}
+		writer.flush();
+		writer.close();
+		writer2.flush();
+		writer2.close();
+	}
+
 
 	public void writeFlows(String outDir, int timeSlotId) throws IOException{
 		String outFile = outDir + "flows" + (timeSlotId - 1) + "to" + timeSlotId + ".csv";

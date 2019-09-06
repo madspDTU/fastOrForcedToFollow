@@ -9,10 +9,11 @@ public class RightPriorityBicycleTimeoutModifier implements TimeoutModifier {
 		int n = bicycleTimeouts[0].length;
 		for(int i = 0; i < n; i++){ // All bicycle movements to out direction except from indirection
 			if(i != inDirection){
-				bicycleTimeouts[i][outDirection] = nowish;
+				updateEntry(bicycleTimeouts, i, outDirection, nowish);
 			}
 		}
 
+		// If indirection = "outdirection + 1". _Rightest_ possible turn.
 		if(inDirection == QFFFNodeUtils.decreaseInt(outDirection, n)){
 			return;
 		} 
@@ -22,11 +23,11 @@ public class RightPriorityBicycleTimeoutModifier implements TimeoutModifier {
 		while(j != outDirection){
 
 			for(int i = 0; i < n; i++){
-				carTimeouts[i][j] = nowish; // all car movements to a road to the right of the movement
-				carTimeouts[j][i] = nowish; // all car movements from the right of the movement 
-				bicycleTimeouts[j][i] = nowish; // all bicycle movements from the right of the movement
+				updateEntry(carTimeouts,i,j,nowish); // all car movements to a road to the right of the movement
+				updateEntry(carTimeouts,j,i,nowish); // all car movements from the right of the movement 
+				updateEntry(bicycleTimeouts,j,i, nowish); // all bicycle movements from the right of the movement
 				if(i != inDirection){	
-					bicycleTimeouts[i][j] = nowish; // all bicycle movements to the right of the movement (except from indirection)
+					updateEntry(bicycleTimeouts,i,j,nowish); // all bicycle movements to the right of the movement (except from indirection)
 				}
 			}
 

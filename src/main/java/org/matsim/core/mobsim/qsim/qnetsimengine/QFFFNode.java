@@ -49,14 +49,14 @@ import org.matsim.core.mobsim.qsim.qnetsimengine.QNetsimEngine.NetsimInternalInt
  * Represents a node supporting right of way at intersections.
  */
 final class QFFFNode extends AbstractQNode {
-//final class QFFFNode implements QNodeI{
+
 	public static class Builder {
 		private final NetsimInternalInterface netsimEngine;
 		private final NetsimEngineContext context;
 		private TurnAcceptanceLogic turnAcceptanceLogic = new DefaultTurnAcceptanceLogic() ;
 		private final FFFNodeConfigGroup fffNodeConfig;
 		public Builder( NetsimInternalInterface netsimEngine2, NetsimEngineContext context,
-				    FFFNodeConfigGroup fffNodeConfig) {
+				FFFNodeConfigGroup fffNodeConfig) {
 			this.netsimEngine = netsimEngine2;
 			this.context = context;
 			this.fffNodeConfig = fffNodeConfig;
@@ -72,19 +72,19 @@ final class QFFFNode extends AbstractQNode {
 
 	private static int wrnCnt = 0 ;
 
-//	// TOBEDELETED
-//	final AtomicBoolean active = new AtomicBoolean(false);
-//
-//	// TOBEDELETED
-//	private final Node node;
-//
-//	// TOBEDELETED
-//	private NetElementActivationRegistry activator = null;
-//
-//	// TOBEDELETED
-//	private final Map<String, Object> customAttributes = new HashMap<>();
-	
-	
+	//	// TOBEDELETED
+	//	final AtomicBoolean active = new AtomicBoolean(false);
+	//
+	//	// TOBEDELETED
+	//	private final Node node;
+	//
+	//	// TOBEDELETED
+	//	private NetElementActivationRegistry activator = null;
+	//
+	//	// TOBEDELETED
+	//	private final Map<String, Object> customAttributes = new HashMap<>();
+
+
 	private final NetsimEngineContext context;
 
 	private final NetsimInternalInterface netsimEngine;
@@ -98,36 +98,12 @@ final class QFFFNode extends AbstractQNode {
 			TurnAcceptanceLogic turnAcceptanceLogic, FFFNodeConfigGroup fffNodeConfig) {
 		super(n);
 		// TOBEDELETED
-//		this.node = n;
+		//		this.node = n;
 		this.netsimEngine = netsimEngine2 ;
 		this.context = context ;
 		this.turnAcceptanceLogic = turnAcceptanceLogic;
 		this.fffNodeConfig = fffNodeConfig;
 	}
-
-	
-	// TOBEDELETED
-//	/**
-//	 * This method is called from QueueWithBuffer.addToBuffer(...) which is triggered at
-//	 * some placed, but always initially by a QLink's doSomStep(...) method. I.e. QNodes
-//	 * are only activated while moveNodes(...) is performed. However, multiple threads
-//	 * could try to activate the same node at a time, therefore this has to be thread-safe.
-//	 * cdobler, sep'14
-//	 */
-//	/*package*/ final void activateNode() {
-//		// yyyy I cannot say if this needs to be in QNodeI or not.  The mechanics of this are tricky to implement, so it would
-//		// not be a stable/robust API.  kai, jul'17
-//
-//		/*
-//		 * this.active.compareAndSet(boolean expected, boolean update)
-//		 * We expect the value to be false, i.e. the node is de-activated. If this is
-//		 * true, the value is changed to true and the activator is informed.
-//		 */
-//
-//		if (this.active.compareAndSet(false, true)) {
-//			this.activator.registerNodeAsActive(this);
-//		}
-//	}
 
 
 	private double bundleEntryIfPossible(TreeMap<Double, LinkedList<Link>> bundleMap,
@@ -244,20 +220,12 @@ final class QFFFNode extends AbstractQNode {
 	public boolean doSimStep(double now) {
 		return nodeType.doSimStep(now);
 	}
-//	@Override
-//	public Map<String, Object> getCustomAttributes() {
-//		return customAttributes;
-//	}
+	//	@Override
+	//	public Map<String, Object> getCustomAttributes() {
+	//		return customAttributes;
+	//	}
 
 
-
-
-
-
-//	@Override
-//	public Node getNode() {
-//		return this.node;
-//	}
 
 	/**
 	 * Loads the inLinks-array with the corresponding links.
@@ -282,10 +250,6 @@ final class QFFFNode extends AbstractQNode {
 				Gbl.assertIf(!carInThetaMap.containsKey(theta));
 				carInThetaMap.put(theta, link);
 			} else if(link.getAllowedModes().contains(TransportMode.bike)){
-				if(bicycleInThetaMap.containsKey(theta)){
-					System.out.println(bicycleInThetaMap.get(theta).getFromNode().getId());
-					System.out.println(link.getFromNode().getId());
-				}
 				Gbl.assertIf(!bicycleInThetaMap.containsKey(theta));
 				bicycleInThetaMap.put(theta, link);
 			}
@@ -301,14 +265,38 @@ final class QFFFNode extends AbstractQNode {
 			}
 		}
 
+		//Cannot be tested later since the thetamaps are emptied during the creation of bundleMap.
+		boolean isLargeRoadsMerging = false;
+		if(carOutThetaMap.size() == 1 && carInThetaMap.size() == 2
+				&& bicycleOutThetaMap.size() == 0 && bicycleInThetaMap.size() == 0){
+			boolean allCapacitiesAreHighEnough = true;
+			for(Link inLink : carInThetaMap.values()){
+				if(inLink.getCapacity() < 1000 ){
+					allCapacitiesAreHighEnough = false;
+					break;
+				}
+			}
+			if(allCapacitiesAreHighEnough){
+				isLargeRoadsMerging = true;
+			}
+		}
+
+
 		TreeMap<Double, LinkedList<Link>> bundleMap = createBundleMap(bicycleOutThetaMap, carOutThetaMap, carInThetaMap,
 				bicycleInThetaMap);
+
+		if(isLargeRoadsMerging){
+			this.nodeType = new QFFFLargeRoadsMergingNode(this, bundleMap, network);
+			return;
+		}
+
 
 		if(bundleMap.size() >= 3){ // Determine if capacities are different: We now allow larger intersection types.
 
 			TreeMap<Double, LinkedList<Integer>> carCapacities = new TreeMap<Double, LinkedList<Integer>>();
 			TreeMap<Double, LinkedList<Integer>> bicycleCapacities = new TreeMap<Double, LinkedList<Integer>>();
 			calculateCapacities(bundleMap, carCapacities, bicycleCapacities);
+
 
 
 			boolean areCarCapacitiesEqual = carCapacities.tailMap(Double.MIN_VALUE).size() <= 1 &&
@@ -351,12 +339,12 @@ final class QFFFNode extends AbstractQNode {
 		}
 	}
 
-//	// TOBEDELETED
-//	final boolean isActive() {
-//		// yyyy I cannot say if this needs to be in QNodeI or not.  The mechanics of this are tricky to implement, so it would
-//		// not be a stable/robust API.  kai, jul'17
-//		return this.active.get();
-//	}
+	//	// TOBEDELETED
+	//	final boolean isActive() {
+	//		// yyyy I cannot say if this needs to be in QNodeI or not.  The mechanics of this are tricky to implement, so it would
+	//		// not be a stable/robust API.  kai, jul'17
+	//		return this.active.get();
+	//	}
 
 	/**
 	 * Moves vehicles from the inlinks' buffer to the outlinks where possible.<br>
@@ -447,7 +435,8 @@ final class QFFFNode extends AbstractQNode {
 	 */
 
 
-	protected boolean moveVehicleOverNode( final QVehicle veh, QLinkI fromLink, final QLaneI fromLane, final double now, final boolean pop ) {
+	protected boolean moveVehicleOverNode( final QVehicle veh, QLinkI fromLink, final QLaneI fromLane,
+			final double now, final boolean pop ) {
 		Id<Link> nextLinkId = veh.getDriver().chooseNextLinkId();
 		Link currentLink = veh.getCurrentLink();   // Takes it from QVehicle, so temporary link does not enter here...
 
@@ -459,8 +448,18 @@ final class QFFFNode extends AbstractQNode {
 		//			return false;
 		//		}
 
-		QLinkI nextQueueLink = this.netsimEngine.getNetsimNetwork().getNetsimLinks().get(nextLinkId);
-		QLaneI nextQueueLane = nextQueueLink.getAcceptingQLane() ;
+	QLinkI nextQueueLink = this.netsimEngine.getNetsimNetwork().getNetsimLinks().get(nextLinkId);
+
+	//		QLaneI nextQueueLane = null;
+//		try{
+			QLaneI
+			nextQueueLane = nextQueueLink.getAcceptingQLane() ;
+//		} catch(Exception e) {
+//			System.out.println("NextLinkId " + nextLinkId);
+//			System.out.println("NextQueueLink " + nextQueueLink);		
+//			e.printStackTrace();
+//		}
+
 		if (nextQueueLane.isAcceptingFromUpstream()) {
 			moveVehicleFromInlinkToOutlink(veh, currentLink.getId(), fromLane, nextLinkId, nextQueueLane, pop);
 			return true;
@@ -502,16 +501,16 @@ final class QFFFNode extends AbstractQNode {
 		return count; 
 	}
 
-//	/**
-//	 * The ParallelQSim replaces the activator with the QSimEngineRunner
-//	 * that handles this node.
-//	 */
-//	public void setNetElementActivationRegistry(NetElementActivationRegistry activator) {
-//		// yyyy I cannot say if this needs to be in QNodeI or not.  The mechanics of this are tricky to implement, so it would
-//		// not be a stable/robust API.  kai, jul'17
-//
-//		this.activator = activator;
-//	}
+	//	/**
+	//	 * The ParallelQSim replaces the activator with the QSimEngineRunner
+	//	 * that handles this node.
+	//	 */
+	//	public void setNetElementActivationRegistry(NetElementActivationRegistry activator) {
+	//		// yyyy I cannot say if this needs to be in QNodeI or not.  The mechanics of this are tricky to implement, so it would
+	//		// not be a stable/robust API.  kai, jul'17
+	//
+	//		this.activator = activator;
+	//	}
 
 	private boolean vehicleIsStuck(final QLaneI fromLaneBuffer, final double now) {
 		//		final double stuckTime = network.simEngine.getStuckTime();

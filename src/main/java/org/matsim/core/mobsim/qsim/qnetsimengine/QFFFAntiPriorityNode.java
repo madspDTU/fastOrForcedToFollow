@@ -14,7 +14,7 @@ import org.matsim.core.mobsim.qsim.qnetsimengine.QNetwork;
 import fastOrForcedToFollow.timeoutmodifiers.RightPriorityBicycleTimeoutModifier;
 import fastOrForcedToFollow.timeoutmodifiers.RightPriorityCarTimeoutModifier;
 
-// Intersection type with "anti priority" links. Corresponding to links with full stop, and all links handled with right priority.
+// Intersection type with "anti priority" links. Corresponding to links with full stop, and all other links handled with right priority.
 
 public class QFFFAntiPriorityNode extends QFFFAbstractNode {
 

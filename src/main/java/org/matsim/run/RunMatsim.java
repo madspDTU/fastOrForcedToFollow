@@ -174,8 +174,7 @@ public class RunMatsim {
 		HashMap<String, FFFModeUtilityParameters> modeParams = new HashMap<String, FFFModeUtilityParameters>();
 		double ttUtility = -1./60.;
 		double congTTUtility = -1./120.;
-		modeParams.put(TransportMode.access_walk, new FFFModeUtilityParameters(ttUtility, 0., 0., 0.));
-		modeParams.put(TransportMode.egress_walk, new FFFModeUtilityParameters(ttUtility, 0., 0., 0.));
+		modeParams.put(TransportMode.non_network_walk, new FFFModeUtilityParameters(ttUtility, 0., 0., 0.));
 		modeParams.put(TransportMode.car, new FFFModeUtilityParameters(ttUtility, congTTUtility, 0., 0.));
 		modeParams.put(TransportMode.bike, new FFFModeUtilityParameters(ttUtility, congTTUtility, 0., 0.));
 		fffScoringConfig.setScoringParameters(modeParams);
@@ -187,10 +186,12 @@ public class RunMatsim {
 	public static void addRoWModuleToConfig(Config config, boolean uneven){
 		FFFNodeConfigGroup fffNodeConfig = ConfigUtils.addOrGetModule(config, FFFNodeConfigGroup.class);
 		fffNodeConfig.setBicycleDelay(2.);
+		config.qsim().setStuckTime(30); // This has to be calibrated
 		if(uneven){
-			config.qsim().setFlowCapFactor(0.1); // This has to be calibrated
-			config.qsim().setStorageCapFactor(0.24); // This has to be calibrated
+			config.qsim().setFlowCapFactor(0.2); // This has to be calibrated
+			config.qsim().setStorageCapFactor(0.2); // This has to be calibrated
 			fffNodeConfig.setCarDelay(10.);
+			config.qsim().setStuckTime(60); // This has to be calibrated
 		}
 	}
 

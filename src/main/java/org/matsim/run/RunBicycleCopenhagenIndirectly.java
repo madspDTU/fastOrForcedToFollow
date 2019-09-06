@@ -8,7 +8,7 @@ import org.matsim.api.core.v01.TransportMode;
 public class RunBicycleCopenhagenIndirectly {
 
 	public static void main(String[] args) throws IOException{
-		args = new String[]{"smallRoWUneven100", "-1", "car,bike"};
+	//	args = new String[]{"fullRoWUneven100", "-1", "car,bike"};
 		RunBicycleCopenhagen.main(args);
 
 

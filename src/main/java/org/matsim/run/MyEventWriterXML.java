@@ -21,6 +21,8 @@
 package org.matsim.run;
 
 import org.matsim.api.core.v01.events.Event;
+import org.matsim.api.core.v01.events.PersonEntersVehicleEvent;
+import org.matsim.api.core.v01.events.PersonLeavesVehicleEvent;
 import org.matsim.core.events.algorithms.EventWriter;
 import org.matsim.core.events.handler.BasicEventHandler;
 import org.matsim.core.utils.io.IOUtils;
@@ -39,17 +41,12 @@ public class MyEventWriterXML implements EventWriter, BasicEventHandler {
 	private HashSet<String> interestingPersons;
 	private HashSet<String> interestingVehicles;
 
-	
+
 	public void setInterestingPersons(HashSet<String> interestingPersons){
 		this.interestingPersons = interestingPersons;
 		this.interestingVehicles = new HashSet<String>();
-		for(String key : interestingPersons){
-			this.interestingVehicles.add(key);
-			this.interestingVehicles.add(key + "_bike");
-		}
-		// Create new interesting vehicle from persons. \\TODO;
 	}
-	
+
 	public MyEventWriterXML(final String outfilename) {
 		this.out = IOUtils.getBufferedWriter(outfilename);
 		this.writeHeader();
@@ -93,6 +90,20 @@ public class MyEventWriterXML implements EventWriter, BasicEventHandler {
 
 	@Override
 	public void handleEvent(final Event event) {
+		//Adds and removes interesting vehicles.
+		if(event instanceof PersonEntersVehicleEvent){
+			PersonEntersVehicleEvent e = (PersonEntersVehicleEvent) event;
+			if(interestingPersons.contains(e.getPersonId().toString())){
+				interestingVehicles.add(e.getVehicleId().toString());
+			}
+		} else if(event instanceof PersonLeavesVehicleEvent){
+			PersonLeavesVehicleEvent e = (PersonLeavesVehicleEvent) event;
+			if(interestingPersons.contains(e.getPersonId().toString())){
+				interestingVehicles.remove(e.getVehicleId().toString());
+			}
+		}
+		
+		//Handles relevant events.
 		if(event.getAttributes().containsKey("person")){
 			String person = event.getAttributes().get("person");
 			if(interestingPersons.contains(person)){
@@ -105,7 +116,7 @@ public class MyEventWriterXML implements EventWriter, BasicEventHandler {
 			}
 		}
 	}
-	
+
 	private void originalHandleEvent(final Event event){
 		try {
 			this.out.append("\t<event ");
@@ -170,7 +181,7 @@ public class MyEventWriterXML implements EventWriter, BasicEventHandler {
 					bf.append(ch);
 				}
 			}
-			
+
 			return bf.toString();
 		}
 		return attributeValue;

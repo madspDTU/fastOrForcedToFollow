@@ -57,10 +57,8 @@ public class RunMatsimWithRoW {
 	
 	public static boolean omitEastLinks = false;
 	public static boolean useEqualCapacities = false;
-
 	private static double bicycleMarketShare = 0.5;
 	private static int numberOfAgents = 499;
-
 	private static boolean useToyNetwork = true;
 
 	public static void main(String[] args) {
@@ -76,21 +74,18 @@ public class RunMatsimWithRoW {
 
 		config.controler().setOutputDirectory("./output/RoW/");
 
-
 		config.facilities().setFacilitiesSource(FacilitiesSource.onePerActivityLocationInPlansFile);
 
+		RunMatsim.addRoWModuleToConfig(config, false);
+		
 
 		Scenario scenario;
 		if(useToyNetwork){
-
 			scenario = ScenarioUtils.createScenario(config);
-
 			createNetwork(scenario);
-
 			createPopulation(scenario, numberOfAgents);
 			scenario = RunMatsim.addCyclistAttributes(config, scenario);
 			scenario.getVehicles().addVehicleType(  new VehicleTypeImpl( Id.create( TransportMode.car, VehicleType.class  ) ) );
-
 		} else {
 			scenario = RunMatsim.createScenario(config, 2, false, bicycleMarketShare);
 		}

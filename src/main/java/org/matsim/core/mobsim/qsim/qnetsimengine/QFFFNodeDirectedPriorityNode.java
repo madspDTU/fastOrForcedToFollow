@@ -216,107 +216,6 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode{
 					//   since secondary to tertiary violates more with this implementation;
 					this.outPriority = ((this.inPriority + 1) % 4);
 				}
-				//					
-				//					//Seems to be the optimal way to do it.
-				//					int guess = (this.inPriority + 1) % 3;
-				//					int other = (this.inPriority + 2) % 3;
-				//					boolean guessInCar = carInLinks[guess] != null;
-				//					boolean guessInBicycle = bicycleInLinks[guess] != null;
-				//
-				//					boolean guessOutCar = carOutTransformations.containsValue(guess);
-				//					boolean guessOutBicycle = bicycleOutTransformations.containsValue(guess);
-				//
-				//					boolean otherInCar = carInLinks[other] != null;
-				//					boolean otherInBicycle = bicycleInLinks[other] != null;
-				//
-				//					boolean otherOutCar = carOutTransformations.containsValue(other);
-				//					boolean otherOutBicycle = bicycleOutTransformations.containsValue(other);
-				//
-				//					if(!(guessInCar || guessOutCar || otherInCar || otherOutCar) || 
-				//							(guessInCar && guessOutCar && otherInCar && otherOutCar) ){
-				//						if(!(guessInBicycle || guessOutBicycle || otherInBicycle || otherOutBicycle) || 
-				//								(guessInBicycle && guessOutBicycle && otherInBicycle && otherOutBicycle) ){
-				//							System.err.println("Probably an anti-priority node");
-				//						}
-				//					}
-				//					
-				//					if(priorityInCar || priorityOutCar){
-				//						if(priorityInCar  && priorityOutCar){
-				//							if(guessOutCar){
-				//								if(!guessInCar && otherOutCar && otherInCar){
-				//									this.outPriority = other;
-				//								} else {
-				//									this.outPriority = guess;
-				//								}
-				//							} else {
-				//								this.outPriority = other;
-				//							}
-				//						} else if(!priorityInCar  && priorityOutCar){
-				//							if(guessOutCar){
-				//								this.outPriority = guess;
-				//							} else {
-				//								this.outPriority = other;
-				//							}
-				//						} else if (priorityInCar  && !priorityOutCar){
-				//							if(otherInCar){
-				//								this.outPriority = other;
-				//							} else {
-				//								this.outPriority = guess;
-				//							}
-				//						} 
-				//					} else if(priorityInBicycle || priorityOutBicycle) {
-				//						if(priorityInBicycle  && priorityOutBicycle){
-				//							if(guessOutBicycle){
-				//								if(!guessInBicycle && otherOutBicycle && otherInBicycle){
-				//									this.outPriority = other;
-				//								} else {
-				//									this.outPriority = guess;
-				//								}
-				//							} else {
-				//								this.outPriority = other;
-				//							}
-				//						} else if(!priorityInBicycle  && priorityOutBicycle){
-				//							if(guessOutCar){
-				//								this.outPriority = guess;
-				//							} else {
-				//								this.outPriority = other;
-				//							}
-				//						} else if (priorityInBicycle  && !priorityOutBicycle){
-				//							if(otherInCar){
-				//								this.outPriority = other;
-				//							} else {
-				//								this.outPriority = guess;
-				//							}
-				//						} 
-				//
-				//					} else {
-				//						System.err.println("Fatal error, large capacity has no valid links...");
-				//					}
-				//
-				//				} else if(carInLinks.length == 6){
-				//					System.out.println("6: Not an optimal way to do it.");
-				//					int guess = (this.inPriority + 3) % 6;
-				//					if(entry.getValue().contains(guess)){
-				//						this.outPriority = guess;
-				//					} else {
-				//						System.out.println("Rethink this 6");
-				//						System.exit(-1);
-				//					}
-				//				} else if(carInLinks.length == 5){
-				//					int guess = (this.inPriority + 2) % 5;
-				//					if(entry.getValue().contains(guess)){
-				//						//5: Not an optimal way to do it...
-				//						this.outPriority = guess;
-				//					} else {
-				//						guess = (this.inPriority + 3) % 5;
-				//						if(entry.getValue().contains(guess)){
-				//							//"5: Even less optimal way to do it.
-				//							this.outPriority = guess;
-				//						} else {
-				//							System.out.println("Rethink this 5");
-				//							System.exit(-1);
-				//						}
-				//					}
 			}
 		} else { //cumCount > 2
 			if(carInLinks.length == 4){ //cumCount must be 3 then - we thus determine capacity based on the lowest
@@ -392,7 +291,7 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode{
 		if(!primaryInLinkOrder.isEmpty()){
 
 			int n = primaryInLinkOrder.size();
-			int i = (n == 0) ? 1 : random.nextInt(n);
+			int i = (n == 1) ? 0 : random.nextInt(n);
 
 			//1 ) priorityMovesForBicycles
 			for(int count = 0; count < n; count++){
@@ -497,7 +396,9 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode{
 					Id<Link> nextLinkId = veh.getDriver().chooseNextLinkId();
 					int outDirection = carOutTransformations.get(nextLinkId);
 					if(carTimeouts[inDirection][outDirection] <= now){
+						// No conflicting move is making the move impossible.
 						if (! this.qNode.moveVehicleOverNode(veh, inLink, lane, now, false )) {
+							//vehicle wasn't moved.
 							break;
 						}
 						lane.removeFirstGeneralVehicle();

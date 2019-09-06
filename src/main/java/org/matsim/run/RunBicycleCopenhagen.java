@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -18,6 +19,7 @@ import org.matsim.api.core.v01.population.Person;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.ControlerConfigGroup.RoutingAlgorithmType;
+import org.matsim.core.config.groups.QSimConfigGroup.VehiclesSource;
 import org.matsim.core.config.groups.StrategyConfigGroup.StrategySettings;
 import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
@@ -42,7 +44,7 @@ public class RunBicycleCopenhagen {
 	public static int numberOfQSimThreads = 20;
 	public static Collection<String> networkModes = null;
 
-	public static String outputBaseDir = "/work1/s103232/ABMTRANS2019/withNodeModelling/"; //With final /
+	public static String outputBaseDir = "/work1/s103232/ABMTRANS2019/"; //With final /
 	//public static String outputBaseDir = "./output/ABMTRANS2019/"; //With final / 
 	//public static String outputBaseDir = "C:/Users/madsp/git/fastOrForcedToFollowMaven/output/Copenhagen/";
 
@@ -57,13 +59,26 @@ public class RunBicycleCopenhagen {
 		boolean oneLane = false;
 		boolean roW = false;
 		boolean mixed = false;
-		boolean uneven = false;
+		boolean tenPercentCars = false;
+		boolean carOnly = false;
+		boolean berlin = false;
+		boolean runMatsim = true;
 		double qSimEndTime = 100*3600;
-		
+
+		List<String> analysedModes = Arrays.asList(TransportMode.bike);
+
+
 		if(args.length > 0){
 			scenarioType = args[0];
 			if(scenarioType.contains("NoCongestion")){
 				congestion = false;
+			}
+			if(scenarioType.contains("DasAuto")){
+				carOnly = true;
+				mixed = false;
+			}
+			if(scenarioType.contains("Berlin")){
+				berlin = true;
 			}
 			if(args.length > 1){
 				lastIteration = Integer.valueOf(args[1]);
@@ -81,26 +96,35 @@ public class RunBicycleCopenhagen {
 				oneLane = false; // We don't have a one-lane mixed network yet...
 			}
 			if(scenarioType.contains("Uneven")){
-				uneven = true;
+				tenPercentCars = true;
 				mixed = true;
 				oneLane = false;
 			}
 			if(scenarioType.contains("QSimEndsAt")){
 				qSimEndTime = Double.valueOf(
 						scenarioType.substring(scenarioType.lastIndexOf("QSimEndsAt") + 10,
-						scenarioType.length())) * 3600;
+								scenarioType.length())) * 3600;
 			}
-		}
+			if(args.length>=3){
+				analysedModes = Arrays.asList(args[2].split(","));
+			}
+			if(args.length>=4){
+				runMatsim = Boolean.parseBoolean(args[3]);
+			}
 		
+		}
+
 		System.out.println("Running " + scenarioType);
 
-		if(mixed){
+		if(carOnly){
+			networkModes = Arrays.asList(TransportMode.car);
+		} else if(mixed){
 			networkModes = Arrays.asList( TransportMode.car, TransportMode.bike );
 		} else {
 			networkModes = Arrays.asList( TransportMode.bike );
 		}
-	
-		
+
+
 		Config config = RunMatsim.createConfigFromExampleName(networkModes);
 		config.controler().setOutputDirectory(outputBaseDir + scenarioType);
 
@@ -119,7 +143,7 @@ public class RunBicycleCopenhagen {
 
 		config.controler().setWritePlansInterval(config.controler().getLastIteration()+1);
 		config.controler().setWriteEventsInterval(config.controler().getLastIteration()+1);
-	
+
 		config.global().setNumberOfThreads(numberOfGlobalThreads);
 		config.qsim().setNumberOfThreads(numberOfQSimThreads);
 		config.parallelEventHandling().setNumberOfThreads(numberOfQSimThreads);
@@ -127,13 +151,25 @@ public class RunBicycleCopenhagen {
 		config.global().setCoordinateSystem("EPSG:32632");   ///EPSG:32632 is WGS84 UTM32N
 
 
+
 		config.qsim().setEndTime(qSimEndTime);
-		
+
 		if(roW){
-			RunMatsim.addRoWModuleToConfig(config, uneven);
+			RunMatsim.addRoWModuleToConfig(config, tenPercentCars);
+		} else if(tenPercentCars){
+			config.qsim().setFlowCapFactor(0.2); // This has to be calibrated
+			config.qsim().setStorageCapFactor(0.2); // This has to be calibrated
+			config.qsim().setStuckTime(60); // This has to be calibrated
 		}
-		
-		if(mixed){
+
+
+		if(berlin){
+			config.network().setInputFile(
+					"/zhome/81/e/64390/MATSim/input/Berlin/simplifiedNetwork.xml.gz");
+//		} else if(carOnly){
+//			config.network().setInputFile(
+//					inputBaseDir + "MATSimCopenhagenNetwork_CarsOnly.xml.gz");
+		} else if(mixed){
 			config.network().setInputFile(
 					inputBaseDir + "MATSimCopenhagenNetwork_WithBicycleInfrastructure.xml.gz");
 		} else if(oneLane){
@@ -143,7 +179,10 @@ public class RunBicycleCopenhagen {
 			config.network().setInputFile(
 					inputBaseDir + "MATSimCopenhagenNetwork_BicyclesOnly.xml.gz");
 		}
-		if(uneven){
+		if(berlin){
+			config.plans().setInputFile(
+					"/zhome/81/e/64390/MATSim/input/Berlin/AllPlans_CPH_uneven_Berlin.xml.gz");
+		} else if(tenPercentCars){
 			config.plans().setInputFile(inputBaseDir + "AllPlans_CPH_uneven.xml.gz");		
 		} else if(mixed){
 			config.plans().setInputFile(inputBaseDir + "AllPlans_CPH_" + size + ".xml.gz");
@@ -151,22 +190,26 @@ public class RunBicycleCopenhagen {
 			config.plans().setInputFile(inputBaseDir + "BicyclePlans_CPH_" + size + ".xml.gz");
 		}
 
-			
+
 		Scenario scenario = ScenarioUtils.loadScenario( config ) ;
-		RunMatsim.cleanBicycleNetwork(scenario.getNetwork(), config);
+		if(!berlin){
+			RunMatsim.cleanBicycleNetwork(scenario.getNetwork(), config);
+		}
 
 		System.out.println(size);
 		if(!mixed || size.equals("small")){
-			removeSouthWesternPart(scenario.getNetwork());
+			if(!berlin){
+				removeSouthWesternPart(scenario.getNetwork());
+			}
 		}
 
 		scenario = RunMatsim.addCyclistAttributes(config, scenario);
 		//RunMatsim.reducePopulationToN(0, scenario.getPopulation());
-	//	if(mixed){
-			VehicleType vehicleType = new VehicleTypeImpl( 
-					Id.create( TransportMode.car, VehicleType.class  ) ) ;
-			scenario.getVehicles().addVehicleType( vehicleType);
-//		}
+		//	if(mixed){
+		VehicleType vehicleType = new VehicleTypeImpl( 
+				Id.create( TransportMode.car, VehicleType.class  ) ) ;
+		scenario.getVehicles().addVehicleType( vehicleType);
+		//		}
 
 
 		Controler controler;
@@ -180,21 +223,32 @@ public class RunBicycleCopenhagen {
 		} else {
 			controler = RunMatsim.createControlerWithoutCongestion(scenario);
 		}
-		
 
 
 
-		try {			
-			controler.run();
-		} catch ( Exception ee ) {
-			ee.printStackTrace();
+		if(runMatsim){
+			try {			
+				controler.run();
+			} catch ( Exception ee ) {
+				ee.printStackTrace();
+			}
 		}
 
 		List<String> ignoredModes = new LinkedList<String>();
-		if(mixed){
-			ignoredModes.add(TransportMode.car);
+		for(String mode : Arrays.asList(TransportMode.car, TransportMode.bike)){
+			if(!analysedModes.contains(mode)){
+				ignoredModes.add(mode);
+			}
 		}
-		List<String> analysedModes = Arrays.asList(TransportMode.bike);
+		System.out.print("\nIgnored modes are: ");
+		for(String s : ignoredModes){
+			System.out.print(s + ", ");
+		}
+		System.out.print("\nAnalysed modes are: ");
+		for(String s : analysedModes){
+			System.out.print(s + ", ");
+		}
+		System.out.println();
 		String outDir = config.controler().getOutputDirectory();
 		ConstructSpeedFlowsFromCopenhagen.run(outDir, scenarioType, -1,	
 				ignoredModes, analysedModes); 
@@ -205,6 +259,8 @@ public class RunBicycleCopenhagen {
 			//PostProcessing first iteration
 		}
 
+		
+	
 
 	}
 

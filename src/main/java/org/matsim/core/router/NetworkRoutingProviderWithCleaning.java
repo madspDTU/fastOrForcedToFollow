@@ -1,6 +1,5 @@
 package org.matsim.core.router;
 
-import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
@@ -13,6 +12,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
+import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.population.PopulationFactory;
 import org.matsim.core.config.groups.GlobalConfigGroup;
@@ -40,13 +40,13 @@ public class NetworkRoutingProviderWithCleaning implements Provider<RoutingModul
 
 	@Inject
 	PlansCalcRouteConfigGroup plansCalcRouteConfigGroup;
-	
+
 	@Inject
 	GlobalConfigGroup globalConfigGroup;
 
 	@Inject
 	Scenario scenario;
-	
+
 	@Inject
 	Network network;
 
@@ -101,6 +101,18 @@ public class NetworkRoutingProviderWithCleaning implements Provider<RoutingModul
 				filter.filter(filteredNetwork, modes);
 				new NetworkCleaner().run(filteredNetwork); // mads
 				this.singleModeNetworksCache.getSingleModeNetworksCache().put(mode, filteredNetwork);
+				
+				// mads. this is highly temporary! //TODO.
+				if(mode.equals(TransportMode.car)){
+					for(Link link : filteredNetwork.getLinks().values()){
+						if(link.getFreespeed() > 100){
+							log.warn("Link too fast: " + link.getId() + " speed " + link.getFreespeed());
+						}
+						if(link.getLength() <= 0){
+							log.warn("Link too short: " + link.getId() + " length " + link.getLength());
+						}
+					}
+				}
 			}
 		}
 
@@ -120,21 +132,21 @@ public class NetworkRoutingProviderWithCleaning implements Provider<RoutingModul
 						travelTime);
 		LeastCostPathCalculator routeAlgoBicycle = 
 				(leastCostPathCalculatorFactory instanceof DesiredSpeedBicycleFastAStarLandmarks.Factory) ?
-					((DesiredSpeedBicycleFastAStarLandmarks.Factory) leastCostPathCalculatorFactory).
-							createDesiredSpeedPathCalculator(
-					filteredNetwork,
-					travelDisutilityFactory.createTravelDisutility(travelTime),
-					travelTime	) 			:    
-						routeAlgo;
+						((DesiredSpeedBicycleFastAStarLandmarks.Factory) leastCostPathCalculatorFactory).
+						createDesiredSpeedPathCalculator(
+								filteredNetwork,
+								travelDisutilityFactory.createTravelDisutility(travelTime),
+								travelTime	) 			:    
+									routeAlgo;
 
-		
-		// the following again refers to the (transport)mode, since it will determine the mode of the leg on the network:
-		if ( plansCalcRouteConfigGroup.isInsertingAccessEgressWalk() ) {
-			return DefaultRoutingModules.createAccessEgressNetworkRouter(mode, 	mode.equals(TransportMode.bike) ? routeAlgoBicycle : routeAlgo, 
-					scenario, filteredNetwork);
-		} else {
-			return DefaultRoutingModules.createPureNetworkRouter(mode, populationFactory, filteredNetwork,
-					mode.equals(TransportMode.bike) ? routeAlgoBicycle : routeAlgo);
-		}
+
+								// the following again refers to the (transport)mode, since it will determine the mode of the leg on the network:
+								if ( plansCalcRouteConfigGroup.isInsertingAccessEgressWalk() ) {
+									return DefaultRoutingModules.createAccessEgressNetworkRouter(mode, 	mode.equals(TransportMode.bike) ? routeAlgoBicycle : routeAlgo, 
+											scenario, filteredNetwork);
+								} else {
+									return DefaultRoutingModules.createPureNetworkRouter(mode, populationFactory, filteredNetwork,
+											mode.equals(TransportMode.bike) ? routeAlgoBicycle : routeAlgo);
+								}
 	}
 }

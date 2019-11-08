@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeMap;
 
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
@@ -36,8 +38,8 @@ import fastOrForcedToFollow.eventhandlers.MultiModalBicycleDoorToDoorHandler;
 
 public class ConstructSpeedFlowsFromCopenhagen {
 
-	public static double highlightStartTime = 7*3600;
-	public static double highlightEndTime = 8*3600;
+	public static double highlightStartTime = 7.5*3600;
+	public static double highlightEndTime = 8.5*3600;
 	private static List<String> interestingPersonsList = 
 			Arrays.asList("98075_1_Person","135460_1_Person","116357_1_Person","226582_1_Person","355440_1_Person","336045_1_Person",
 					"74274_1_Person","57223_1_Person","313082_2_Person","417066_2_Person","167114_1_Person","238307_4_Person",
@@ -104,8 +106,9 @@ public class ConstructSpeedFlowsFromCopenhagen {
 
 	public static void main(String[] args) throws NumberFormatException, IOException{
 
-		run(args[0], args[1], Integer.valueOf(args[2]), Arrays.asList(), 
-				Arrays.asList(TransportMode.car,TransportMode.bike));
+
+		ConstructSpeedFlowsFromCopenhagen.run("/work1/s103232/ABMTRANS2019/withNodeModelling/fullRoWUneven",
+				"full", -1, Arrays.asList(""), Arrays.asList(TransportMode.bike,TransportMode.car));
 	}
 
 	public static void run(String outDir, String type, int it, 
@@ -178,7 +181,9 @@ public class ConstructSpeedFlowsFromCopenhagen {
 
 		HashMap<String, Double> totalTravelTimes = eventsHandler.totalTravelTimes;
 		HashMap<String, Double> totalHighlightTravelTimes = eventsHandler.totalHighlightTravelTimes;
-		int highlightTrips = eventsHandler.totalHighlightTrips;
+		HashMap<String, Integer> highlightTripsPerMode = eventsHandler.highlightTrips;
+		HashMap<String, HashMap<String, LinkedList<Double>>> everyTravelTime = eventsHandler.everyTravelTime;
+
 
 
 
@@ -186,6 +191,8 @@ public class ConstructSpeedFlowsFromCopenhagen {
 		eventsHandler = null; 
 		eventsManager = null;
 
+		createAndWriteTravelTimeTable(outDirWithIt + "/TravelTimesTable.csv", scenario.getPopulation(), network, everyTravelTime);
+		
 
 		FileWriter writer = new FileWriter(outDirWithIt + "/variousMeasures.txt");
 
@@ -203,6 +210,8 @@ public class ConstructSpeedFlowsFromCopenhagen {
 					}
 				}
 			}
+			int highlightTrips = highlightTripsPerMode.get(mode);
+
 			System.out.println("\n" + nTrips + " " + mode + " trips in this study");
 			String s = "\nTotal " + mode + " travel time is: " + measures[0]/60. + " minutes\n";
 			s += "That is " + (measures[0]/nTrips/60.) + " minutes per trip\n";
@@ -227,6 +236,116 @@ public class ConstructSpeedFlowsFromCopenhagen {
 		writer.close();
 	}
 
+	private static void createAndWriteTravelTimeTable(String outputFilename, Population pop, Network network,
+			HashMap<String, HashMap<String, LinkedList<Double>>> everyTravelTime){
+
+		FileWriter writer;
+		try {
+			writer = new FileWriter(outputFilename);
+			writer.append("PersonId;Mode;TripNumber;ActualTravelTime;FreeFlowTravelTime;Distance;"
+					+ "OriginTime;DestinationTime;OriginWithinCC;DestinationWithinCC\n");
+			for(Person person : pop.getPersons().values()){
+				String personId = person.getId().toString();
+				if(everyTravelTime.containsKey(personId)){
+					Set<String> relevantModes = everyTravelTime.get(personId).keySet();
+					TreeMap<Integer,String> relevantLegs = new TreeMap<Integer,String>();
+					HashSet<Integer> relevantHighlightLegs = new HashSet<Integer>();
+					HashMap<String,Integer> tripCounter = new HashMap<String,Integer>();
+
+					//Extracting relevant sublegs.
+					int i = 0;
+					for(PlanElement pe : person.getSelectedPlan().getPlanElements()){
+						if(pe instanceof Leg){
+							String mode = ((Leg) pe).getMode();
+							if(relevantModes.contains(mode)){
+								if(!tripCounter.containsKey(mode)){
+									tripCounter.put(mode, 0);
+								}
+								relevantLegs.put(i,mode);
+								Leg leg = (Leg) pe;			
+								if(MultiModalBicycleDoorToDoorHandler.isHighlightTrip(leg)){
+									relevantHighlightLegs.add(i);
+								}
+							}
+						}
+						i++;
+					}
+
+					Object[] planElements = person.getSelectedPlan().getPlanElements().toArray();
+					for(int j  : relevantLegs.keySet()){
+						String mode = relevantLegs.get(j);
+						Leg mainLeg = (Leg) planElements[j];
+						Leg accessLeg = (Leg) planElements[j-2];
+						Leg egressLeg = (Leg) planElements[j+2];
+
+						double distance = 0;
+						double freeFlowTravelTime = 0;
+
+						for(Leg leg : Arrays.asList(accessLeg,mainLeg,egressLeg)){
+							double legDistance = leg.getRoute().getDistance();
+							double legFreeFlowTravelTime = leg.getTravelTime();
+
+							// The router bases distance of entire trip, but travel time without the last link!
+							// This means, that when comparing leg by leg, the numbers differ. But since we have
+							// taken the actual travel time from the events file, the aggregated numbers are in
+							// fact correct without subtract the distance of the last link.. 'Mads.
+
+							//For cars the distance does NOT include the last link...
+
+							// So it makes no sense to compare the free flow travel time with the (route-)travel times,
+							// only with the travel times extracted from the events file.
+
+							if(mode.equals(leg.getMode()) && legDistance > 0){
+								if(leg.getMode().equals(TransportMode.bike)){
+									double freeSpeed = (double) person.getAttributes().getAttribute("v_0");
+									legFreeFlowTravelTime = Math.ceil(legDistance / freeSpeed) ;
+								} else if(leg.getMode().equals(TransportMode.car)) {
+									NetworkRoute route = (NetworkRoute) leg.getRoute();
+									legFreeFlowTravelTime = 0;
+									Link link;
+									for(Id<Link> id : route.getLinkIds()){
+										link = network.getLinks().get(id);
+										legFreeFlowTravelTime += Math.ceil(link.getLength() / link.getFreespeed());
+									}
+									link = network.getLinks().get(leg.getRoute().getEndLinkId());
+									legFreeFlowTravelTime += Math.ceil(link.getLength() / link.getFreespeed());
+								}
+							}
+							freeFlowTravelTime += legFreeFlowTravelTime;
+							distance += legDistance;			
+						}
+						tripCounter.put(mode, tripCounter.get(mode) + 1);
+						int tripNumber = tripCounter.get(mode);
+						if(everyTravelTime.get(personId).get(mode).isEmpty()){
+							System.out.println("No more trips for " + personId + " using " + mode + 
+									". Trip number: " + tripNumber); 
+						} else {
+							double actualTravelTime = everyTravelTime.get(personId).get(mode).pollFirst();
+							double originTime = mainLeg.getDepartureTime();
+							double destinationTime = mainLeg.getDepartureTime() + actualTravelTime - 
+									accessLeg.getTravelTime() - egressLeg.getTravelTime();
+							Coord originCoord = network.getLinks().get(mainLeg.getRoute().getStartLinkId()).getCoord();
+							Coord destinationCoord = network.getLinks().get(mainLeg.getRoute().getEndLinkId()).getCoord();
+							int originGeo = MultiModalBicycleDoorToDoorHandler.isInHighlightArea(originCoord) ? 1 : 0;
+							int destinationGeo = MultiModalBicycleDoorToDoorHandler.isInHighlightArea(destinationCoord) ? 1 : 0;
+
+							writer.append(personId + ";" + mode + ";" + tripNumber + ";" +  actualTravelTime + ";" +
+									freeFlowTravelTime + ";" + distance + ";" + originTime + ";" + destinationTime + ";" +
+									originGeo + ";" + destinationGeo + "\n");
+						}
+					}
+
+				}
+
+			}
+			writer.flush();
+			writer.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+	}
+
 	private static double[] calculateCongestedTravelTimeAndTotalDistance(Population pop, Network network, 
 			double totalTravelTime, double totalHighlightTravelTime, String analysedMode){
 		double totalFreeFlowTime= 0.;
@@ -234,8 +353,6 @@ public class ConstructSpeedFlowsFromCopenhagen {
 		double totalHighlightFreeFlowTime= 0.;
 		double totalHighlightDistance = 0.;
 
-
-		Coord[] highlightCoords = MultiModalBicycleDoorToDoorHandler.getVertices();
 
 
 		for(Person person : pop.getPersons().values()){
@@ -249,11 +366,8 @@ public class ConstructSpeedFlowsFromCopenhagen {
 					relevantLegs.add(i-2); // access
 					relevantLegs.add(i);
 					relevantLegs.add(i+2); // egress
-
-					Leg leg = (Leg) person.getSelectedPlan().getPlanElements().get(i-2);
-					Activity act = (Activity) person.getSelectedPlan().getPlanElements().get(i-3);
-					if(leg.getDepartureTime() > highlightStartTime && leg.getDepartureTime() <= highlightEndTime &&
-							MultiModalBicycleDoorToDoorHandler.isInHighlightArea(act.getCoord(), highlightCoords) ){
+					Leg leg = (Leg) pe;			
+					if(MultiModalBicycleDoorToDoorHandler.isHighlightTrip(leg)){
 						relevantHighlightLegs.add(i-2); // access
 						relevantHighlightLegs.add(i);
 						relevantHighlightLegs.add(i+2); // egress

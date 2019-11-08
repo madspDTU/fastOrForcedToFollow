@@ -57,7 +57,7 @@ import org.matsim.run.ConstructSpeedFlowsFromCopenhagen;
 
 public class MultiModalBicycleDoorToDoorHandler implements BasicEventHandler {
 
-	Network network;
+	static Network network;
 
 	final static double timeStepSize = 3600;
 	final static double endTime = 25*3600;  // From 0-1 it is necessary to add 1 and 25 probably.
@@ -67,17 +67,16 @@ public class MultiModalBicycleDoorToDoorHandler implements BasicEventHandler {
 	final static int printHowOften = 60*15;
 	public HashMap<String,Double> totalTravelTimes = new HashMap<String,Double>();
 	public HashMap<String,Double> totalHighlightTravelTimes = new HashMap<String,Double>();
-	public int totalHighlightTrips;
-
-	private Coord[] highlightCoords = getVertices();
+	public HashMap<String,Integer> highlightTrips = new HashMap<String,Integer>();
+	public HashMap<String,HashMap<String,LinkedList<Double>>> everyTravelTime = 
+			new HashMap<String,HashMap<String,LinkedList<Double>>>();
 
 	HashMap<String, int[]> flows;
 	HashMap<String, LinkedList<Double>[]> speeds = new HashMap<String, LinkedList<Double>[]>();
 	HashMap<String, HashMap<String, Double>> entryTimes = new HashMap<String, HashMap<String,Double>>();
 	HashMap<String, Double> personLegStarts = new HashMap<String, Double>();
 	HashMap<String, String> personLegModes = new HashMap<String, String>();
-	HashSet<String> highlightPersonLegStarts = new HashSet<String>();
-
+	
 	HashSet<String> ignoredActivities;
 	HashMap<String,String> vehicleToPerson = new HashMap<String,String>();
 	LinkedList<String> detailedOutput = new LinkedList<String>();
@@ -89,6 +88,9 @@ public class MultiModalBicycleDoorToDoorHandler implements BasicEventHandler {
 	private HashMap<String, Integer> populationCurrentLeg;
 
 	private boolean fetchHourlyLinkFlows = false; //default is false - can be set to true.
+
+	private HashSet<String> highlightPersonOriginTime = new HashSet<String>();
+	private HashSet<String> highlightPersonOriginGeography = new HashSet<String>();
 
 
 
@@ -131,6 +133,7 @@ public class MultiModalBicycleDoorToDoorHandler implements BasicEventHandler {
 		for(String mode : analysedModes){
 			totalTravelTimes.put(mode, 0.);
 			totalHighlightTravelTimes.put(mode, 0.);
+			highlightTrips.put(mode, 0);
 			this.ignoredActivities.add(mode + " interaction");
 		}
 	}
@@ -215,12 +218,35 @@ public class MultiModalBicycleDoorToDoorHandler implements BasicEventHandler {
 
 						double before = totalTravelTimes.get(mode);
 						totalTravelTimes.put(mode, before + TT);
-						if(highlightPersonLegStarts.contains(personId)){
+						
+						boolean originWithinHighlightGeography = highlightPersonOriginGeography.contains(personId);
+						boolean originWithinHighlightTime = highlightPersonOriginTime.contains(personId);
+						highlightPersonOriginGeography.remove(personId);
+						highlightPersonOriginTime.remove(personId);
+						Coord coord = network.getLinks().get(e.getLinkId()).getFromNode().getCoord();
+						
+						boolean destinationWithinHighlightGeography = isInHighlightArea(coord);
+						boolean destinationWithinHighlightTime = isInHighlightTime(now);
+							
+						boolean isHighlightTrip = isHighlightTrip(
+								originWithinHighlightTime,
+								destinationWithinHighlightTime,
+								originWithinHighlightGeography,
+								destinationWithinHighlightGeography);
+						
+						if(isHighlightTrip){
 							before = totalHighlightTravelTimes.get(mode);
+							int beforeTrips = highlightTrips.get(mode);
 							totalHighlightTravelTimes.put(mode, before + TT);
-							totalHighlightTrips++;
-							highlightPersonLegStarts.remove(personId);
+							highlightTrips.put(mode, beforeTrips + 1);
 						}
+						if(!everyTravelTime.containsKey(personId)){
+							everyTravelTime.put(personId, new HashMap<String,LinkedList<Double>>());
+						}
+						if(!everyTravelTime.get(personId).containsKey(mode)){
+							everyTravelTime.get(personId).put(mode, new LinkedList<Double>());
+						}
+						everyTravelTime.get(personId).get(mode).addLast(TT);
 					}
 					print(now);
 				}
@@ -236,12 +262,12 @@ public class MultiModalBicycleDoorToDoorHandler implements BasicEventHandler {
 				String personId = e.getPersonId().toString();
 				double now = e.getTime();
 				personLegStarts.put(personId, now);
-				Link link = network.getLinks().get(e.getLinkId());
-				if( now > ConstructSpeedFlowsFromCopenhagen.highlightStartTime && 
-						now <= ConstructSpeedFlowsFromCopenhagen.highlightEndTime && (
-								isInHighlightArea(link.getFromNode().getCoord(), highlightCoords) ||
-								isInHighlightArea(link.getToNode().getCoord(), highlightCoords)) ){
-					highlightPersonLegStarts.add(personId);
+				Coord coord = getCoord(e.getLinkId());
+				if(isInHighlightArea(coord)){
+					highlightPersonOriginGeography.add(personId);
+				}
+				if(isInHighlightTime(now)){
+					highlightPersonOriginTime.add(personId);
 				}
 				print(now);
 			}
@@ -268,6 +294,31 @@ public class MultiModalBicycleDoorToDoorHandler implements BasicEventHandler {
 		} 
 	}
 
+	private Coord getCoord(Id<Link> linkId) {
+		return network.getLinks().get(linkId).getCoord();
+	}
+
+	public static boolean isInHighlightTime(double now) {
+		return now >= ConstructSpeedFlowsFromCopenhagen.highlightStartTime &&
+				now <= ConstructSpeedFlowsFromCopenhagen.highlightEndTime;
+	}
+
+	public static boolean isHighlightTrip(Leg leg){
+		double originTime = leg.getDepartureTime();
+		double destinationTime = originTime + leg.getTravelTime();
+		Coord originCoord = network.getLinks().get(leg.getRoute().getStartLinkId()).getCoord();
+		Coord destinationCoord = network.getLinks().get(leg.getRoute().getEndLinkId()).getCoord();
+		boolean originTimeBool = isInHighlightTime(originTime);
+		boolean destinationTimeBool = isInHighlightTime(destinationTime);
+		boolean originGeo = isInHighlightArea(originCoord);
+		boolean destinationGeo = isInHighlightArea(destinationCoord);
+		return isHighlightTrip(originTimeBool, destinationTimeBool, originGeo, destinationGeo);
+	}
+	
+	public static boolean isHighlightTrip(boolean originTime, boolean destinationTime,
+			boolean originGeography, boolean destinationGeography) {
+		return destinationGeography && originTime  && originGeography;
+	}
 
 	private double getPlannedDuration(String personId, String mode) {
 		Person person = this.population.getPersons().get(Id.create(personId, Person.class));
@@ -317,7 +368,8 @@ public class MultiModalBicycleDoorToDoorHandler implements BasicEventHandler {
 		return plannedDuration;
 	}
 
-	public static boolean isInHighlightArea(Coord c, Coord[] v){
+	public static boolean isInHighlightArea(Coord c){
+		Coord[] v = getVertices();
 		int j  = v.length -1;
 		boolean oddNodes = false;
 		for(int i = 0; i< v.length; i++){

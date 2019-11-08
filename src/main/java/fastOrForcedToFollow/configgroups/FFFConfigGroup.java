@@ -38,21 +38,31 @@ public class FFFConfigGroup extends ReflectiveConfigGroup {
 	private double lMax = 60.;
 	
 	/**
-	 * Constant term in the square root model for headway distance.
+	 * Beta-parameter from Paulsen et al. (2019), regarding the beta distribution.
 	 */
-	private double theta_0 = -4.220641337789;
+	
+	private double beta_alpha =   1.8647308191839824;
+	
+	/**
+	 * Constant term in the square root model for headway distance. 
+	 * From Paulsen et al. (2019), the beta distribution.
+	 */
+	private double theta_0 = -4.3570197635081049;
 	/**
 	 * Square root term in the square root model for headway distance.
+	 * From Paulsen et al. (2019), the beta distribution.
 	 */
-	private double theta_1 =  4.602161217943;
+	private double theta_1 =  4.7128195220959830;
 	/**
 	 * Constant term in the square root model for standard deviation of headway distance.
+	 * From Paulsen et al. (2019), the beta distribution.
 	 */
-	private double zeta_0 =  -4.3975231775567600;
+	private double zeta_0 =  -9.6741585958330667;
 	/**
 	 * Square root term in the square root model for standard deviation of headway distance.
+	 * From Paulsen et al. (2019), the beta distribution.
 	 */
-	private double zeta_1 =  3.1095184592753986;
+	private double zeta_1 =  6.8406631453876896;
 
 	/**
 	 * One of the parameters for Johnson's SU-distribution, as estimated based on data from COWI.
@@ -214,6 +224,14 @@ public class FFFConfigGroup extends ReflectiveConfigGroup {
 
 	public FFFConfigGroup() {
 		super( GROUP_NAME );
+	}
+
+	public double getBeta_alpha() {
+		return beta_alpha;
+	}
+
+	public void setBeta_alpha(final double beta_alpha) {
+		this.beta_alpha = beta_alpha;
 	}
 	
 }

@@ -11,8 +11,8 @@ import org.matsim.core.gbl.MatsimRandom;
 public class QFFFLargeRoadsMergingNode extends QFFFAbstractNode{
 
 
-	private int majorInLink = -1;
-	private int minorInLink = -1;
+	private int leftInLink = -1;
+	private int rightInLink = -1;
 	private double minorProb = 0;
 	final HashMap<Id<Link>, Integer> carInTransformations;
 
@@ -20,14 +20,21 @@ public class QFFFLargeRoadsMergingNode extends QFFFAbstractNode{
 	QFFFLargeRoadsMergingNode(final QFFFNode qNode, final TreeMap<Double, LinkedList<Link>> thetaMap, QNetwork qNetwork){
 		super(qNode, thetaMap, qNetwork);
 		this.carInTransformations = new HashMap<Id<Link>, Integer>();
+		int outLink = -1;
 		for(int i = 0; i < carInLinks.length; i++){
 			if(carInLinks[i] != null){
 				this.carInTransformations.put(carInLinks[i].getLink().getId(), i);
+			} else {
+				outLink = i;
 			}
 		}
-		determineLinks();
+		this.leftInLink = (outLink + 1)  % carInLinks.length;
+		this.rightInLink = (this.leftInLink + 1) % carInLinks.length;
+		this.minorProb = carInLinks[rightInLink].getLink().getCapacity() / 
+				(carInLinks[rightInLink].getLink().getCapacity() + carInLinks[leftInLink].getLink().getCapacity() );
 	}
 
+	/*
 	protected void determineLinks(){
 		double highestCapacity = -1;
 		for( int k : carInTransformations.values()){
@@ -47,14 +54,15 @@ public class QFFFLargeRoadsMergingNode extends QFFFAbstractNode{
 
 		double minorCap = 	carInLinks[minorInLink].getLink().getCapacity();
 		double majorCap = carInLinks[majorInLink].getLink().getCapacity();
-		this.minorProb = minorCap / (minorCap + majorCap);
-		//Gbl.assertIf(this.inPriority != this.outPriority);
+		
+		Gbl.assertIf(this.inPriority != this.outPriority);
 	}
+	*/
 
 	protected boolean doSimStep(final double now){
 
 		boolean highwayInLinkMoves = false;
-		QLinkI qLink = carInLinks[majorInLink];
+		QLinkI qLink = carInLinks[leftInLink];
 		if(qLink != null){
 			for(QLaneI qLane : qLink.getOfferingQLanes()){
 				if(!qLane.isNotOfferingVehicle()){
@@ -65,7 +73,7 @@ public class QFFFLargeRoadsMergingNode extends QFFFAbstractNode{
 		}
 
 		boolean rampInLinkMoves = false;
-		qLink = carInLinks[minorInLink];
+		qLink = carInLinks[rightInLink];
 		if(qLink != null){
 			for(QLaneI qLane : qLink.getOfferingQLanes()){
 				if(!qLane.isNotOfferingVehicle()){
@@ -80,23 +88,23 @@ public class QFFFLargeRoadsMergingNode extends QFFFAbstractNode{
 			return false;
 		}
 
-		QLaneI qLane = carInLinks[majorInLink].getAcceptingQLane();
+		QLaneI qLane = carInLinks[leftInLink].getAcceptingQLane();
 		if(rampInLinkMoves){ // Can be nullified if other lane is fully packed.
 		 rampInLinkMoves = qLane.getStorageCapacity() > qLane.getLoadIndicator();
 		}
 
 		if(highwayInLinkMoves && rampInLinkMoves){
 			if(random.nextDouble() < minorProb){
-				highwayMove(now, minorInLink);
-				highwayMove(now, majorInLink);
+				highwayMove(now, rightInLink);
+				highwayMove(now, leftInLink);
 			} else {
-				highwayMove(now, majorInLink);	
-				highwayMove(now, minorInLink);
+				highwayMove(now, leftInLink);	
+				highwayMove(now, rightInLink);
 			}
 		} else if(highwayInLinkMoves){
-			highwayMove(now, majorInLink);
+			highwayMove(now, leftInLink);
 		} else if(rampInLinkMoves){
-			highwayMove(now, minorInLink);		
+			highwayMove(now, rightInLink);		
 		}
 
 		return true;

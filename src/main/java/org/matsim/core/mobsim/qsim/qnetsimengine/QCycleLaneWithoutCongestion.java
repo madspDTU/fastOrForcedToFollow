@@ -145,8 +145,14 @@ class QCycleLaneWithoutCongestion implements QLaneI{
 
 	// ensuring that the first provisional earliest link exit cannot be before now.
 	double now = context.getSimTimer().getTimeOfDay() ;
+	if(now == 0){
+		//TODO delete this.
+		System.err.println("Time of Day was 0 in addFromWait");
+	}
 	QCycle qCyc = (QCycle) veh;
-	qCyc.getCyclist().setTEarliestExit( now );
+	qCyc.setEarliestLinkExitTime( now );
+	qCyc.setEarliestLinkExitTime( now );
+	
 	
 	
 	if(qCyc.getDriver().isWantingToArriveOnCurrentLink()){

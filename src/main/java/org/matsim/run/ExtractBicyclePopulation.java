@@ -50,8 +50,7 @@ public class ExtractBicyclePopulation {
 		Random random = new Random(1);
 		
 		
-		fr.readFile("C:/workAtHome/Berlin/Data/facilities_CPH.xml.gz");
-		pr.readFile("C:/workAtHome/Berlin/Data/plans_CPH.xml.gz");
+		pr.readFile("/zhome/81/e/64390/MATSim/ABMTRANS2019/input/AllPlans_CPH_full.xml.gz");
 		
 		int totalNumberOfTrips = 0;
 		
@@ -81,8 +80,9 @@ public class ExtractBicyclePopulation {
 						newPlan.addLeg(leg);
 					} else {
 						Activity activity = (Activity) pe;
-						ActivityFacility facility = facilities.getFacilities().get(activity.getFacilityId());
-						Coord coord = facility.getCoord();
+					//	ActivityFacility facility = facilities.getFacilities().get(activity.getFacilityId());
+					//	Coord coord = facility.getCoord();
+						Coord coord = activity.getCoord();
 						activity.setFacilityId(null);
 						activity.setLinkId(null);
 						activity.setCoord(coord);
@@ -100,17 +100,17 @@ public class ExtractBicyclePopulation {
 				newPerson.addPlan(newPlan);
 				newPerson.setSelectedPlan(newPlan);
 				newPopulation.addPerson(newPerson);
-				if(random.nextDouble() < 0.0001){
+				if(random.nextDouble() < 0.02){
 					newSmallPopulation.addPerson(newPerson);
 				}
 			}
 		}
 		
-		smallPW.write("C:/workAtHome/Berlin/Data/BicyclePlans_CPH_1percent.xml.gz");
-		pw.write("C:/workAtHome/Berlin/Data/BicyclePlans_CPH.xml.gz");
+		smallPW.write("/zhome/81/e/64390/MATSim/ABMTRANS2019/input/BicyclePlans_CPH_small.xml.gz");
+		pw.write("/zhome/81/e/64390/MATSim/ABMTRANS2019/input/BicyclePlans_CPH_full.xml.gz");
 		
-		//System.out.println("Total number of agents: " + newPopulation.getPersons().size());
-		//System.out.println("Total number of trips: " + totalNumberOfTrips);
+		System.out.println("Total number of agents: " + newPopulation.getPersons().size());
+		System.out.println("Total number of trips: " + totalNumberOfTrips);
 		//Total number of agents: 547085
 		//Total number of trips: 1082958
 		

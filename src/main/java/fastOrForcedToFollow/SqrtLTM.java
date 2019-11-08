@@ -12,57 +12,65 @@ public final class SqrtLTM extends LinkTransmissionModel {
 	final double theta_0;
 	final double theta_1;
 	final double lambda_c;
-	
+
 	/* package */ SqrtLTM(final double theta_0, final double theta_1, final double lambda_c){
 		this.theta_0 = theta_0;
 		this.theta_1 = theta_1;
 		this.lambda_c = lambda_c;
 	}
-	
+
 	/* package */ double getBicycleLength(){
 		return this.lambda_c;
 	}
-	
-	/* package */ double getLaneVMax(final PseudoLane pseudoLane, final double time){
-		double constants = this.lambda_c + pseudoLane.getLength() - this.theta_0;
-		if(time >= pseudoLane.getTEnd() - this.theta_1*this.theta_1/4./constants){ 		
-			return 4*Math.pow((constants/this.theta_1),2); //Case 4 from paper
+
+	/* package */ double getLaneVMax(final PseudoLane pseudoLane, final double tStart){
+		double constants = lambda_c + pseudoLane.getLength() - this.theta_0;
+		if(tStart >= pseudoLane.getTEnd() + this.theta_1*this.theta_1/4./constants){ 
+			return 4*Math.pow((constants/this.theta_1),2); //Case 3 from paper
 		}
-		double speed = pseudoLane.getLength() / (pseudoLane.getTEnd() - pseudoLane.getTReady());
-		if ( time <= pseudoLane.getTReady() + getSafetyBufferTime(speed) ){ 
-			return speed; // Case 1 from paper
-		}
-		double timeDif = pseudoLane.getTEnd() - time;
+		double timeDif = pseudoLane.getTEnd() - tStart;
 		if(timeDif == 0){ 
-			return Math.pow(constants/this.theta_1, 2); // Case 3 from paper
+			return Math.pow(constants/this.theta_1, 2); // Case 2 from paper
 		}	
 		return (this.theta_1 * this.theta_1  + 2 * timeDif * constants - 
 				this.theta_1 * Math.sqrt( this.theta_1 * this.theta_1  + 4 * timeDif * constants))     /   
-				(2 * timeDif * timeDif); // Case 2 from paper;
+				(2 * timeDif * timeDif); // Case 1 from paper;
 	}
 
-	
+
 	/* package */ double getSafetyBufferDistance(final double speed) {
 		return this.theta_0  + this.theta_1 * Math.sqrt(speed);// 
 	}
 
-	
-	/* package */ PseudoLane selectPseudoLane(final Sublink receivingLink, final double desiredSpeed, final double time){
-		double maxSpeed = 0;
+
+	/* package */ void selectPseudoLaneAndUpdateSpeed(final Sublink receivingLink, final Cyclist cyclist){
+		final double tStart = cyclist.getTEarliestExit();	
+		double maxSpeed = 0.; //Should be slightly higher (e.g. 0.1= if maxSpeed theoretically can be zero or negative.
 		int maxLane = 0;
 		for(int i = 0; i < receivingLink.getNumberOfPseudoLanes(); i++){
-			double laneMaxSpeed = getLaneVMax(receivingLink.getPseudoLane(i), time);
-			
-			if(laneMaxSpeed >= desiredSpeed ){
-				return receivingLink.getPseudoLane(i);
-			}
+			double laneMaxSpeed = getLaneVMax(receivingLink.getPseudoLane(i), tStart);
 			if(laneMaxSpeed > maxSpeed){
 				maxLane = i;
 				maxSpeed = laneMaxSpeed;
+				if(maxSpeed >= cyclist.getDesiredSpeed()){
+					break;
+				}
 			}
 		}
-		// If no sufficient link was found, choose the fastest.
-		return receivingLink.getPseudoLane(maxLane);
+		double vTilde = Math.min(cyclist.getDesiredSpeed(), maxSpeed);
+		PseudoLane pseudoLane = receivingLink.getPseudoLane(maxLane);
+
+		// Updating cyclist
+		cyclist.setSpeed(vTilde);
+		cyclist.setTEarliestExit( tStart + pseudoLane.getLength() / vTilde);
+
+		// Updating pseudoLane
+		double tOneBicycleLength = cyclist.getBicycleLength() / vTilde;
+		pseudoLane.setTEnd(cyclist.getTEarliestExit() + tOneBicycleLength);
+
+		// Updating FFF(Sub)Link
+		receivingLink.increaseOccupiedSpace(cyclist, vTilde);
+
 	}
-	
+
 }

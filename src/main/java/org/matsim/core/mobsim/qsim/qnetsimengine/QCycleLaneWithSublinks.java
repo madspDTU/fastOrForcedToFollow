@@ -2,7 +2,6 @@ package org.matsim.core.mobsim.qsim.qnetsimengine;
 
 import fastOrForcedToFollow.Cyclist;
 import fastOrForcedToFollow.Sublink;
-import fastOrForcedToFollow.PseudoLane;
 
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
@@ -12,9 +11,6 @@ import org.matsim.vehicles.Vehicle;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.PriorityQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 class QCycleLaneWithSublinks implements QLaneI{
@@ -69,52 +65,14 @@ class QCycleLaneWithSublinks implements QLaneI{
 		// internal fff logic:
 		Sublink fffLink = fffLinkArray[0];
 
-		// Selecting the appropriate pseudoLane:
-		PseudoLane pseudoLane = cyclist.selectPseudoLane( fffLink);
 
-		// Assigning a provisional, maximum speed for this link:
-		double vTilde = cyclist.getVMax(pseudoLane);
-		vTilde = Math.min(cyclist.getDesiredSpeed(), vTilde);
-		cyclist.setSpeed(vTilde);
-
-		//					 printDelay(cyclist);
-
-
-		double tEarliestExit = cyclist.getTEarliestExit();
-
-
-		// The time at which the tip of the cyclist enters the beginning of the link:
-		double tStart = Double.max(pseudoLane.getTReady(), cyclist.getTEarliestExit()) ;
-
-		// Calculating earliest possible exit of the link:
-		tEarliestExit = tStart + pseudoLane.getLength() / vTilde;
-		cyclist.setTEarliestExit( tEarliestExit );
-
-		//		if(tEarliestExit > 60*3600){
-		//			log.debug("At time " + context.getSimTimer().getTimeOfDay() + " cyclist " + qCyc.getId() + 
-		//					" got a tEarliestExit = " + tEarliestExit + " at sublink " + 0 + " of link " +
-		//					qLinkImpl.getLink().getId() + ", which is " + qLinkImpl.getLink().getLength() +
-		//					" long.");
-		//		}
-
-		// Increasing the occupied space on link:
-		fffLink.increaseOccupiedSpace(cyclist, vTilde );
-
-		// Updating tReady and tExit of the link:
-		double tOneBicycleLength = cyclist.getBicycleLength() / vTilde;
-		pseudoLane.setTReady(tStart + tOneBicycleLength);
-		pseudoLane.setTEnd(cyclist.getTEarliestExit() + tOneBicycleLength);
-
-		//Only relevant when considering downscaled population
-		//		double surplus = pseudoLane.getLength() / vTilde * (correctionFactor-1);
-		//		pseudoLane.setTReady(tStart + tOneBicycleLength + surplus);
-		//		pseudoLane.setTEnd(cyclist.getTEarliestExit() + tOneBicycleLength + surplus);
-
+		doFFFStuff(cyclist, fffLink);
 
 		// Add qCycle to the downstream queue of the next link.
 		fffLinkArray[0].addToQ(qCyc);
 
 	}
+
 
 
 	/**
@@ -138,8 +96,7 @@ class QCycleLaneWithSublinks implements QLaneI{
 			QCycle qCyc;
 			while((qCyc = currentFFFLink.getQ().peek()) != null){
 
-				double tEarliestExit = qCyc.getEarliestLinkExitTime();
-				if( tEarliestExit > context.getSimTimer().getTimeOfDay()){
+				if( qCyc.getEarliestLinkExitTime() > context.getSimTimer().getTimeOfDay()){
 					break;
 				}
 
@@ -151,52 +108,14 @@ class QCycleLaneWithSublinks implements QLaneI{
 
 					// Selecting the appropriate pseudoLane:
 					Sublink receivingFFFLink = fffLinkArray[i+1];
-
 					if(receivingFFFLink.isLinkFull()){
 						break;
 					}
-
 					// qCyc can in fact leave current sublink
 					currentFFFLink.getQ().remove();
 					currentFFFLink.reduceOccupiedSpace(cyclist, cyclist.getSpeed() );			
 
-					// Selecting a pseudolane
-					PseudoLane pseudoLane = cyclist.selectPseudoLane( receivingFFFLink );
-
-					// Assigning a provisional, maximum speed for this link:
-					double vTilde = cyclist.getVMax(pseudoLane);
-					vTilde = Math.min(cyclist.getDesiredSpeed(), vTilde);
-					cyclist.setSpeed(vTilde);
-
-
-					// The time at which the tip of the cyclist enters the beginning of the link:
-					double tStart = Double.max(pseudoLane.getTReady(), cyclist.getTEarliestExit()) ;
-
-					// Calculating earliest possible exit of the link:
-					tEarliestExit = tStart + pseudoLane.getLength() / vTilde;
-					cyclist.setTEarliestExit( tEarliestExit );
-
-					//					if(tEarliestExit > 60*3600){
-					//						log.debug("At time " + context.getSimTimer().getTimeOfDay() + " cyclist " + qCyc.getId() + 
-					//								" got a tEarliestExit = " + tEarliestExit + " at sublink " + i + " of link " +
-					//								qLinkImpl.getLink().getId() + ", which is " + qLinkImpl.getLink().getLength() +
-					//								" long.");
-					//					}
-
-
-					// Increasing the occupied space on link:
-					receivingFFFLink.increaseOccupiedSpace(cyclist, vTilde );
-
-					// Updating tReady and tExit of the link:
-					double tOneBicycleLength = cyclist.getBicycleLength() / vTilde;
-
-					pseudoLane.setTReady(tStart + tOneBicycleLength);
-					pseudoLane.setTEnd(cyclist.getTEarliestExit() + tOneBicycleLength);
-
-					// ONLY RELEVANT WHEN USING DOWNSCALED POPULATION
-					//double surplus = pseudoLane.getLength() / vTilde * (correctionFactor-1);
-					//pseudoLane.setTReady(tStart + tOneBicycleLength + surplus);
-					//pseudoLane.setTEnd(cyclist.getTEarliestExit() + tOneBicycleLength + surplus);
+					doFFFStuff(cyclist, receivingFFFLink);
 
 					receivingFFFLink.addToQ(qCyc);
 
@@ -215,7 +134,7 @@ class QCycleLaneWithSublinks implements QLaneI{
 					//Auxiliary buffer created to fit the piece into MATSim.
 					currentFFFLink.addVehicleToLeavingVehicles(qCyc );
 					currentFFFLink.increaseOccupiedSpaceByBicycleLength(cyclist);
-					currentFFFLink.setLastTimeMoved(tEarliestExit);
+					currentFFFLink.setLastTimeMoved(qCyc.getEarliestLinkExitTime());
 
 
 					final QNodeI toNode = qLinkImpl.getToNode();
@@ -226,6 +145,15 @@ class QCycleLaneWithSublinks implements QLaneI{
 			}
 		}
 		return true;
+	}
+
+	private void doFFFStuff(Cyclist cyclist, Sublink fffLink) {
+		cyclist.selectPseudoLaneAndUpdateSpeed( fffLink);
+
+		//Only relevant when considering downscaled population
+		//		double surplus = pseudoLane.getLength() / vTilde * (correctionFactor-1);
+		//		pseudoLane.setTReady(tStart + tOneBicycleLength + surplus);
+		//		pseudoLane.setTEnd(cyclist.getTEarliestExit() + tOneBicycleLength + surplus);
 	}
 
 	@Override public boolean isNotOfferingVehicle() {
@@ -268,8 +196,7 @@ class QCycleLaneWithSublinks implements QLaneI{
 		lastSubLink.addVehicleToLeavingVehicles(qCyc );
 		lastSubLink.increaseOccupiedSpaceByBicycleLength(qCyc.getCyclist());
 		lastSubLink.setLastTimeMoved(now);
-		qCyc.getCyclist().setTEarliestExit( now );
-
+		qCyc.setEarliestLinkExitTime(now);
 		final QNodeI toNode = qLinkImpl.getToNode();
 		if ( toNode instanceof QNodeImpl ) {
 			((QNodeImpl) toNode).activateNode();
@@ -320,8 +247,12 @@ class QCycleLaneWithSublinks implements QLaneI{
 	}
 
 	@Override public void addTransitSlightlyUpstreamOfStop( final QVehicle veh ) {
-		this.addFromUpstream(veh);
-		//Not sure about that
+		//This is used instead of addFromWait, when the cyclist only has to move 1 link. 
+		// Because of this, it doesn't get the setEarliestLinkExitTime (that it normally
+		// gets from addFromWait), why it has to get it here.
+		//	((QCycle)veh).setEarliestLinkExitTime(context.getSimTimer().getTimeOfDay()); // fulltransit
+		//	this.addFromUpstream(veh);
+		this.addFromWait(veh); // fulltransit2
 	}
 
 	@Override public void changeUnscaledFlowCapacityPerSecond( final double val ) {

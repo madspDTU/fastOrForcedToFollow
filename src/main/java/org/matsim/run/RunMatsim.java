@@ -24,11 +24,14 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
 import com.google.inject.Inject;
+
 import fastOrForcedToFollow.Cyclist;
+
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
@@ -78,7 +81,6 @@ import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.core.trafficmonitoring.TravelTimeCalculator;
 import org.matsim.vehicles.Vehicle;
 import org.matsim.vehicles.VehicleType;
-import org.matsim.vehicles.VehicleTypeImpl;
 
 import fastOrForcedToFollow.configgroups.FFFConfigGroup;
 import fastOrForcedToFollow.configgroups.FFFNodeConfigGroup;
@@ -186,13 +188,14 @@ public class RunMatsim {
 	public static void addRoWModuleToConfig(Config config, boolean uneven){
 		FFFNodeConfigGroup fffNodeConfig = ConfigUtils.addOrGetModule(config, FFFNodeConfigGroup.class);
 		fffNodeConfig.setBicycleDelay(2.);
+		fffNodeConfig.setCarDelay(2.);
 		config.qsim().setStuckTime(30); // This has to be calibrated
 		if(uneven){
-			config.qsim().setFlowCapFactor(0.2); // This has to be calibrated
-			config.qsim().setStorageCapFactor(0.2); // This has to be calibrated
+			config.qsim().setFlowCapFactor(RunBicycleCopenhagen.capFactor); // This has to be calibrated
+			config.qsim().setStorageCapFactor(RunBicycleCopenhagen.capFactor); // This has to be calibrated
 			fffNodeConfig.setCarDelay(10.);
 			config.qsim().setStuckTime(60); // This has to be calibrated
-		}
+		} 
 	}
 
 	public static Scenario addCyclistAttributes(Config config, Scenario scenario){
@@ -206,39 +209,52 @@ public class RunMatsim {
 
 		final Random speedRandom = new Random(seed);
 		final Random headwayRandom = new Random(seed + 341);
+		final Random headwayRandom2 = new Random(seed + 732341);
+		
 		for(int i = 0; i <200; i++){
 			speedRandom.nextDouble();
 			headwayRandom.nextDouble();
+			headwayRandom2.nextDouble();
 		}
 
 		final Population population= scenario.getPopulation() ;
 
+		final List<String> attributeTypes = Arrays.asList(FFFConfigGroup.DESIRED_SPEED,
+				FFFConfigGroup.HEADWAY_DISTANCE_INTERCEPT, FFFConfigGroup.HEADWAY_DISTANCE_SLOPE,
+				FFFConfigGroup.BICYCLE_LENGTH);
 		for ( Person person : population.getPersons().values() ) {
-			double v_0 = 0;
-			while(v_0 < fffConfig.getMinimumAllowedDesiredSpeed() ||
-					v_0 > fffConfig.getMaximumAllowedDesiredSpeed() ){
-				v_0 = uniformToJohnson(speedRandom.nextDouble(), fffConfig);
+			if(!person.getAttributes().getAsMap().keySet().containsAll(attributeTypes)){
+				double v_0 = 0;
+				while(v_0 < fffConfig.getMinimumAllowedDesiredSpeed() ||
+						v_0 > fffConfig.getMaximumAllowedDesiredSpeed() ){
+					v_0 = uniformToJohnson(speedRandom.nextDouble(), fffConfig);
+				}
+				double z_beta;
+				while(true){
+					z_beta = headwayRandom.nextDouble();
+					double p = Math.pow(4*z_beta*(1-z_beta), fffConfig.getBeta_alpha()- 1);
+					double u = headwayRandom2.nextDouble();
+					if(u < p){
+						break;
+					}
+				}
+				double theta_0 = fffConfig.getTheta_0() + (2*z_beta-1) * fffConfig.getZeta_0();
+				double theta_1 = fffConfig.getTheta_1() + (2*z_beta-1) * fffConfig.getZeta_1();
+				
+				person.getAttributes().putAttribute(FFFConfigGroup.DESIRED_SPEED, v_0);
+				person.getAttributes().putAttribute(FFFConfigGroup.HEADWAY_DISTANCE_INTERCEPT, theta_0);
+				person.getAttributes().putAttribute(FFFConfigGroup.HEADWAY_DISTANCE_SLOPE, theta_1);
+				person.getAttributes().putAttribute(FFFConfigGroup.BICYCLE_LENGTH, fffConfig.getLambda_c());
 			}
-			double z_c = headwayRandom.nextDouble(); 
-			double theta_0 = fffConfig.getTheta_0() + z_c * fffConfig.getZeta_0();
-			double theta_1 = fffConfig.getTheta_1() + z_c * fffConfig.getZeta_1();
-
-			person.getAttributes().putAttribute(FFFConfigGroup.DESIRED_SPEED, v_0);
-			person.getAttributes().putAttribute(FFFConfigGroup.HEADWAY_DISTANCE_INTERCEPT, theta_0);
-			person.getAttributes().putAttribute(FFFConfigGroup.HEADWAY_DISTANCE_SLOPE, theta_1);
-			person.getAttributes().putAttribute(FFFConfigGroup.BICYCLE_LENGTH, fffConfig.getLambda_c());
-
 		}
 
-		VehicleType type = new VehicleTypeImpl( Id.create( TransportMode.bike, VehicleType.class  ) ) ;
-
+		VehicleType type = scenario.getVehicles().getFactory().createVehicleType(Id.create( TransportMode.bike, VehicleType.class  ) ) ;
 		scenario.getVehicles().addVehicleType( type );
 		return scenario;
 
 	}
 
 	public static Scenario createScenario(Config config, int lanesPerLink, boolean useRandomActivityLocations, double marketShare){
-
 
 		final Scenario scenario = ScenarioUtils.loadScenario( config ) ;
 		final long RANDOM_SEED = config.global().getRandomSeed();
@@ -257,25 +273,11 @@ public class RunMatsim {
 			modeRandom.nextDouble();
 		}
 
-		final FFFConfigGroup fffConfig = ConfigUtils.addOrGetModule(config, FFFConfigGroup.class);
 		final Population population= scenario.getPopulation() ;
 
 		int linkInt = 0;
 		for ( Person person : population.getPersons().values() ) {
 			if (modeRandom.nextDouble() < marketShare){
-				{
-					double v_0 = uniformToJohnson(speedRandom.nextDouble(), fffConfig);
-					v_0 = Math.max(v_0, fffConfig.getMinimumAllowedDesiredSpeed());
-					double z_c = headwayRandom.nextDouble(); 
-					double theta_0 = fffConfig.getTheta_0() + z_c * fffConfig.getZeta_0();
-					double theta_1 = fffConfig.getTheta_1() + z_c * fffConfig.getZeta_1();
-					person.getAttributes().putAttribute(FFFConfigGroup.DESIRED_SPEED, v_0);
-					person.getAttributes().putAttribute(FFFConfigGroup.HEADWAY_DISTANCE_INTERCEPT, theta_0);
-					person.getAttributes().putAttribute(FFFConfigGroup.HEADWAY_DISTANCE_SLOPE, theta_1);
-					person.getAttributes().putAttribute(FFFConfigGroup.BICYCLE_LENGTH, fffConfig.getLambda_c());
-
-				}
-
 				for ( PlanElement pe : person.getSelectedPlan().getPlanElements() ) {
 					if ( pe instanceof Leg ) {
 						( (Leg) pe ).setMode( TransportMode.bike );
@@ -309,6 +311,9 @@ public class RunMatsim {
 				}
 			}
 		}
+		
+		// Add bicycle attributes if not already present.
+		addCyclistAttributes(config, scenario);
 
 
 		// adjust network to bicycle stuff:
@@ -351,11 +356,11 @@ public class RunMatsim {
 		}
 
 		{
-			VehicleType type = new VehicleTypeImpl( Id.create( TransportMode.car, VehicleType.class  ) ) ;
+			VehicleType type = scenario.getVehicles().getFactory().createVehicleType(Id.create( TransportMode.car, VehicleType.class  ) );
 			scenario.getVehicles().addVehicleType( type );
 		}
 		{
-			VehicleType type = new VehicleTypeImpl( Id.create( TransportMode.bike, VehicleType.class  ) ) ;
+			VehicleType type = scenario.getVehicles().getFactory().createVehicleType( Id.create( TransportMode.bike, VehicleType.class ) );
 			scenario.getVehicles().addVehicleType( type );
 		}
 
@@ -400,28 +405,28 @@ public class RunMatsim {
 					this.addRoutingModuleBinding(mode).toProvider(new NetworkRoutingProviderWithCleaning(mode));
 				}
 
-//				this.addTravelTimeBinding( TransportMode.bike ).toInstance( new TravelTime(){
-//					@Inject TravelTimeCalculator travelTimeCalculator ;
-//					@Override public double getLinkTravelTime( Link link, double time, Person person, Vehicle vehicle ){
-//						double congestedTravelTime = travelTimeCalculator.getLinkTravelTimes().getLinkTravelTime( link, time, person, vehicle );
-//						double freeSpeedTravelTime = link.getLength() / (double) person.getAttributes().getAttribute( FFFConfigGroup.DESIRED_SPEED );
-//						return Math.max( congestedTravelTime, freeSpeedTravelTime ) ;
-//					}
-//				} ) ;
+				//				this.addTravelTimeBinding( TransportMode.bike ).toInstance( new TravelTime(){
+				//					@Inject TravelTimeCalculator travelTimeCalculator ;
+				//					@Override public double getLinkTravelTime( Link link, double time, Person person, Vehicle vehicle ){
+				//						double congestedTravelTime = travelTimeCalculator.getLinkTravelTimes().getLinkTravelTime( link, time, person, vehicle );
+				//						double freeSpeedTravelTime = link.getLength() / (double) person.getAttributes().getAttribute( FFFConfigGroup.DESIRED_SPEED );
+				//						return Math.max( congestedTravelTime, freeSpeedTravelTime ) ;
+				//					}
+				//				} ) ;
 
-//				this.addControlerListenerBinding().toInstance( new StartupListener(){
-//					@Inject SingleModeNetworksCache singleModeNetworksCache ;
-//					@Inject Network network ;
-//					@Override public void notifyStartup( StartupEvent event ){
-//						String mode = TransportMode.bike
-//						TransportModeNetworkFilter filter = new TransportModeNetworkFilter(network);
-//						Set<String> modes = new HashSet<>(Arrays.asList(mode));
-//						Network filteredNetwork = NetworkUtils.createNetwork();
-//						filter.filter(filteredNetwork, modes);
-//						new NetworkCleaner().run(filteredNetwork ); // mads
-//						this.singleModeNetworksCache.getSingleModeNetworksCache().put(mode, filteredNetwork);
-//					}
-//				} );
+				//				this.addControlerListenerBinding().toInstance( new StartupListener(){
+				//					@Inject SingleModeNetworksCache singleModeNetworksCache ;
+				//					@Inject Network network ;
+				//					@Override public void notifyStartup( StartupEvent event ){
+				//						String mode = TransportMode.bike
+				//						TransportModeNetworkFilter filter = new TransportModeNetworkFilter(network);
+				//						Set<String> modes = new HashSet<>(Arrays.asList(mode));
+				//						Network filteredNetwork = NetworkUtils.createNetwork();
+				//						filter.filter(filteredNetwork, modes);
+				//						new NetworkCleaner().run(filteredNetwork ); // mads
+				//						this.singleModeNetworksCache.getSingleModeNetworksCache().put(mode, filteredNetwork);
+				//					}
+				//				} );
 
 			}
 		} );

@@ -84,10 +84,10 @@ public final class Cyclist {
 	}
 
 	/**
-	 * See corresponding method in {@link fastOrForcedToFollow.LinkTransmissionModel#selectPseudoLane(Sublink, double, double) LinkTransmissionModel}
+	 * See corresponding method in {@link fastOrForcedToFollow.LinkTransmissionModel#selectPseudoLaneAndUpdateSpeed(Sublink, Cyclist) LinkTransmissionModel}
 	 */
-	public PseudoLane selectPseudoLane(final Sublink receivingLink) {
-		return this.ltm.selectPseudoLane(receivingLink, this.desiredSpeed, this.tEarliestExit);
+	public void selectPseudoLaneAndUpdateSpeed(final Sublink receivingLink) {
+		this.ltm.selectPseudoLaneAndUpdateSpeed(receivingLink, this);
 	}
 
 

@@ -53,7 +53,6 @@ final class QFFFNode extends AbstractQNode {
 	public static class Builder {
 		private final NetsimInternalInterface netsimEngine;
 		private final NetsimEngineContext context;
-		private TurnAcceptanceLogic turnAcceptanceLogic = new DefaultTurnAcceptanceLogic() ;
 		private final FFFNodeConfigGroup fffNodeConfig;
 		public Builder( NetsimInternalInterface netsimEngine2, NetsimEngineContext context,
 				FFFNodeConfigGroup fffNodeConfig) {
@@ -62,10 +61,7 @@ final class QFFFNode extends AbstractQNode {
 			this.fffNodeConfig = fffNodeConfig;
 		}
 		public QFFFNode build( Node n ) {
-			return new QFFFNode( n, context, netsimEngine, turnAcceptanceLogic, fffNodeConfig) ;
-		}
-		public final void setTurnAcceptanceLogic( TurnAcceptanceLogic turnAcceptanceLogic ) {
-			this.turnAcceptanceLogic = turnAcceptanceLogic ;
+			return new QFFFNode( n, context, netsimEngine, fffNodeConfig) ;
 		}
 	}
 	private static final Logger log = Logger.getLogger(QNodeImpl.class);
@@ -90,18 +86,14 @@ final class QFFFNode extends AbstractQNode {
 	private final NetsimInternalInterface netsimEngine;
 	private QFFFAbstractNode nodeType;
 
-	private final TurnAcceptanceLogic turnAcceptanceLogic ;
-
 	private final FFFNodeConfigGroup fffNodeConfig;
 
-	protected QFFFNode(final Node n, NetsimEngineContext context, NetsimInternalInterface netsimEngine2,
-			TurnAcceptanceLogic turnAcceptanceLogic, FFFNodeConfigGroup fffNodeConfig) {
+	protected QFFFNode(final Node n, NetsimEngineContext context, NetsimInternalInterface netsimEngine2, FFFNodeConfigGroup fffNodeConfig) {
 		super(n);
 		// TOBEDELETED
 		//		this.node = n;
 		this.netsimEngine = netsimEngine2 ;
 		this.context = context ;
-		this.turnAcceptanceLogic = turnAcceptanceLogic;
 		this.fffNodeConfig = fffNodeConfig;
 	}
 
@@ -269,16 +261,7 @@ final class QFFFNode extends AbstractQNode {
 		boolean isLargeRoadsMerging = false;
 		if(carOutThetaMap.size() == 1 && carInThetaMap.size() == 2
 				&& bicycleOutThetaMap.size() == 0 && bicycleInThetaMap.size() == 0){
-			boolean allCapacitiesAreHighEnough = true;
-			for(Link inLink : carInThetaMap.values()){
-				if(inLink.getCapacity() < 1000 ){
-					allCapacitiesAreHighEnough = false;
-					break;
-				}
-			}
-			if(allCapacitiesAreHighEnough){
 				isLargeRoadsMerging = true;
-			}
 		}
 
 
@@ -291,13 +274,14 @@ final class QFFFNode extends AbstractQNode {
 		}
 
 
-		if(bundleMap.size() >= 3){ // Determine if capacities are different: We now allow larger intersection types.
-
+		if(bundleMap.size() == 1){ // Determine if capacities are different: We now allow larger intersection types.
+			this.nodeType = new QFFFRightPriorityNode(this, bundleMap, network);
+		} else if(bundleMap.size() == 2){
+			this.nodeType = new QFFFNodeDirectedPriorityNode(this, bundleMap, network);
+		} else {
 			TreeMap<Double, LinkedList<Integer>> carCapacities = new TreeMap<Double, LinkedList<Integer>>();
 			TreeMap<Double, LinkedList<Integer>> bicycleCapacities = new TreeMap<Double, LinkedList<Integer>>();
 			calculateCapacities(bundleMap, carCapacities, bicycleCapacities);
-
-
 
 			boolean areCarCapacitiesEqual = carCapacities.tailMap(Double.MIN_VALUE).size() <= 1 &&
 					!(carCapacities.tailMap(Double.MIN_VALUE).size() == 1 &&  
@@ -307,17 +291,8 @@ final class QFFFNode extends AbstractQNode {
 					bicycleCapacities.ceilingEntry(Double.MIN_VALUE).getValue().size() <= 1);
 
 
-
-
-
 			if(areBicycleCapacitiesEqual && areCarCapacitiesEqual){
-				if(carCapacities.lastEntry().getValue().size() == 1 ){
-					// too small...
-					System.out.println("This is a problem, that I haven't thought about...");
-					System.exit(-1);
-				} else {
 					this.nodeType = new QFFFRightPriorityNode(this, bundleMap, network);
-				} 
 			} else {
 				TreeMap<Double, LinkedList<Integer>> capacities = carCapacities;
 				if(areCarCapacitiesEqual){
@@ -334,9 +309,7 @@ final class QFFFNode extends AbstractQNode {
 					this.nodeType = new QFFFAntiPriorityNode(this, bundleMap, network, capacities);		
 				}
 			}
-		} else {
-			this.nodeType = new QFFFRightPriorityNode(this, bundleMap, network);
-		}
+		} 
 	}
 
 	//	// TOBEDELETED
@@ -448,17 +421,17 @@ final class QFFFNode extends AbstractQNode {
 		//			return false;
 		//		}
 
-	QLinkI nextQueueLink = this.netsimEngine.getNetsimNetwork().getNetsimLinks().get(nextLinkId);
+		QLinkI nextQueueLink = this.netsimEngine.getNetsimNetwork().getNetsimLinks().get(nextLinkId);
 
-	//		QLaneI nextQueueLane = null;
-//		try{
-			QLaneI
-			nextQueueLane = nextQueueLink.getAcceptingQLane() ;
-//		} catch(Exception e) {
-//			System.out.println("NextLinkId " + nextLinkId);
-//			System.out.println("NextQueueLink " + nextQueueLink);		
-//			e.printStackTrace();
-//		}
+		//		QLaneI nextQueueLane = null;
+		//		try{
+		QLaneI
+		nextQueueLane = nextQueueLink.getAcceptingQLane() ;
+		//		} catch(Exception e) {
+		//			System.out.println("NextLinkId " + nextLinkId);
+		//			System.out.println("NextQueueLink " + nextQueueLink);		
+		//			e.printStackTrace();
+		//		}
 
 		if (nextQueueLane.isAcceptingFromUpstream()) {
 			moveVehicleFromInlinkToOutlink(veh, currentLink.getId(), fromLane, nextLinkId, nextQueueLane, pop);

@@ -45,7 +45,6 @@ import org.matsim.core.config.groups.FacilitiesConfigGroup.FacilitiesSource;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.vehicles.VehicleType;
-import org.matsim.vehicles.VehicleTypeImpl;
 
 import fastOrForcedToFollow.configgroups.FFFConfigGroup;
 
@@ -85,7 +84,7 @@ public class RunMatsimWithRoW {
 			createNetwork(scenario);
 			createPopulation(scenario, numberOfAgents);
 			scenario = RunMatsim.addCyclistAttributes(config, scenario);
-			scenario.getVehicles().addVehicleType(  new VehicleTypeImpl( Id.create( TransportMode.car, VehicleType.class  ) ) );
+			scenario.getVehicles().addVehicleType(  scenario.getVehicles().getFactory().createVehicleType( Id.create( TransportMode.car, VehicleType.class  ) ) );
 		} else {
 			scenario = RunMatsim.createScenario(config, 2, false, bicycleMarketShare);
 		}

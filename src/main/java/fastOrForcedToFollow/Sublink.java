@@ -115,7 +115,7 @@ public class Sublink{
 		this.queue = new PriorityQueue<>( new Comparator<QCycle>(){
 			@Override
 			public int compare( QCycle qc1, QCycle qc2 ){
-				return Double.compare(qc1.getCyclist().getTEarliestExit(), qc2.getCyclist().getTEarliestExit());
+				return Double.compare(qc1.getEarliestLinkExitTime(), qc2.getEarliestLinkExitTime());
 			}
 		} ) ;
 

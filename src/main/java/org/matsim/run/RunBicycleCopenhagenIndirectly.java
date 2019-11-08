@@ -8,7 +8,11 @@ import org.matsim.api.core.v01.TransportMode;
 public class RunBicycleCopenhagenIndirectly {
 
 	public static void main(String[] args) throws IOException{
-	//	args = new String[]{"fullRoWUneven100", "-1", "car,bike"};
+		if(args.length==0){
+			int iterations = 50;
+			System.out.println("Using " + iterations + " cores");
+			args = new String[]{"smallNoCongestion", "" + iterations, "bike",  "true"};
+		}
 		RunBicycleCopenhagen.main(args);
 
 

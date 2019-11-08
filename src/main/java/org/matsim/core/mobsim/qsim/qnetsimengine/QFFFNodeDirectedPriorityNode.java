@@ -45,6 +45,23 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode{
 			}
 		}
 	}
+	
+	QFFFNodeDirectedPriorityNode(final QFFFNode qNode, final TreeMap<Double, LinkedList<Link>> thetaMap, QNetwork qNetwork){
+		super(qNode, thetaMap, qNetwork);
+		Gbl.assertIf(carInLinks.length == 2); // This constructor must only be used, when node has exactly 2 bundles
+		this.inPriority = 0;
+		this.outPriority = 1;
+		this.carLeftTurns = createCarLeftTurns();
+		this.bicycleTurns = createBicycleTurns();
+		this.isSecondary = new boolean[carInLinks.length];
+		this.carInTransformations = new HashMap<Id<Link>, Integer>();
+		for(int i = 0; i < carInLinks.length; i++){
+			isSecondary[i] = false;
+			if(carInLinks[i] != null){
+				this.carInTransformations.put(carInLinks[i].getLink().getId(), i);
+			}
+		}
+	}
 
 	protected void bicycleMove(final int inDirection, final double now,
 			final double nowish, TimeoutModifier timeoutModifier) {

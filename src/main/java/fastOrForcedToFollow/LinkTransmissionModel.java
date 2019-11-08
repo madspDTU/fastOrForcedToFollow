@@ -33,13 +33,12 @@ abstract class LinkTransmissionModel {
 	 * Method for determining the most appropriate pseudolane of a link given a desired speed and an entrance time.
 	 * 
 	 * @param receivingLink The Link that the Cyclist is entering.
-	 * @param desiredSpeed The desired speed [m/s] of the Cyclist.
-	 * @param time The time at which the lane selection takes place.
+	 * @param Cyclist The cyclist for whom we are choosing a pseudolane.
 	 * 
 	 * @return The selected pseudolane, i.e. the right-most pseudolane to accomodate the desired speed,
 	 *         alternatively the pseudolane with the highest speed.
 	 */
-	abstract PseudoLane selectPseudoLane(final Sublink receivingLink, final double desiredSpeed, final double time);
+	abstract void selectPseudoLaneAndUpdateSpeed(final Sublink receivingLink, final Cyclist cyclist);
 	
 	
 	

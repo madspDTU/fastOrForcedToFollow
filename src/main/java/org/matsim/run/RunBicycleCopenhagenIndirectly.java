@@ -20,7 +20,7 @@ public class RunBicycleCopenhagenIndirectly {
 		//Anti-priority works!
 		if(args.length==0){
 			args = new String[]{
-					"fullRoW", "5", "bike,car",  "true", "20"};
+					"fullRoWUneven", "5", "bike,car",  "true", "20"};
 		}
 		RunBicycleCopenhagen.main(args);
 

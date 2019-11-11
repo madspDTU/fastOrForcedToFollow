@@ -68,7 +68,7 @@ import javax.inject.Inject;
  * @see ConfigurableQNetworkFactory
  */
 public class MadsQNetworkFactoryWithoutCongestion extends AbstractMadsQNetworkFactory {
-	MadsQNetworkFactoryWithoutCongestion(EventsManager events, Scenario scenario) {
+	@Inject MadsQNetworkFactoryWithoutCongestion(EventsManager events, Scenario scenario) {
 		super(events, scenario);
 	}
 
@@ -83,6 +83,8 @@ public class MadsQNetworkFactoryWithoutCongestion extends AbstractMadsQNetworkFa
 			return linkBuilder.build( link, toQueueNode );
 		} else {			
 			QLinkImpl.Builder linkBuilder = new QLinkImpl.Builder( context, netsimEngine );
+			linkBuilder.setLaneFactory(new QueueWithBuffer.Builder( context ));
+			
 			return linkBuilder.build( link, toQueueNode );
 		}
 	}

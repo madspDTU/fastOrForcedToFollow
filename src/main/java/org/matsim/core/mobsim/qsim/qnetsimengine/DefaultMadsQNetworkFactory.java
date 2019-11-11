@@ -1,5 +1,7 @@
 package org.matsim.core.mobsim.qsim.qnetsimengine;
 
+import javax.inject.Inject;
+
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
@@ -12,7 +14,7 @@ public class DefaultMadsQNetworkFactory extends AbstractMadsQNetworkFactory {
 
 	private static final Logger log = Logger.getLogger( DefaultMadsQNetworkFactory.class ) ;
 	
-	DefaultMadsQNetworkFactory(EventsManager events, Scenario scenario) {
+	@Inject DefaultMadsQNetworkFactory(EventsManager events, Scenario scenario) {
 		super(events, scenario);
 	}	
 	
@@ -25,6 +27,7 @@ public class DefaultMadsQNetworkFactory extends AbstractMadsQNetworkFactory {
 			return linkBuilder.build( link, toQueueNode );
 		} else {
 			QLinkImpl.Builder linkBuilder = new QLinkImpl.Builder( context, netsimEngine );
+			linkBuilder.setLaneFactory(new QueueWithBuffer.Builder( context ));
 			return linkBuilder.build( link, toQueueNode );
 		}
 

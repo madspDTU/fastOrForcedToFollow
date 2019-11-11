@@ -94,44 +94,56 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode{
 		// One link is "subtracted" before using it in a stepwise left turn move. 
 
 		int[][] turns = new int[bicycleInLinks.length][bicycleInLinks.length];
-		for(int inDirection = 0; inDirection < carInLinks.length; inDirection++){
-			for(int outDirection = 0; outDirection < carInLinks.length; outDirection++){
-				int t = increaseInt(inDirection);
-				while(t != outDirection && isSecondary[t]) {
-					t = increaseInt(t);
-				}
-				if(t != outDirection) { // Check to see if outDirection of the other priority is found first.
-					int s = decreaseInt(t);
-					while( s != inDirection && bicycleInLinks[s] == null) {
-						s = decreaseInt(s);
-					}
-					if(s != inDirection) {
-						t = s;
-					} else {// We are already waiting as close to the priority as possible.
 
-						// Determining whether to go next priority or the outdirection.
-						s = increaseInt(t);
-						while(s != outDirection && isSecondary[s]) {
-							s = increaseInt(s);
+		for(int inDirection = 0; inDirection < carInLinks.length; inDirection++){
+			if(bicycleInLinks[inDirection] != null) {
+				for(int outDirection = 0; outDirection < carInLinks.length; outDirection++){
+					int t = increaseInt(inDirection);
+					while(t != outDirection && isSecondary[t]) {
+						t = increaseInt(t);
+					}
+					if(t != outDirection) {
+						//Find the waiting point closes to the priority link
+						int s = decreaseInt(t);
+						while( s != inDirection && bicycleInLinks[s] == null) {
+							s = decreaseInt(s);
 						}
-						if(s == outDirection) {
-							t = s;
+						if(s != inDirection) {
+							t = s; // We managed to find a waiting point closer to the priority link.
 						} else {
-							t = decreaseInt(s);
-							while(bicycleInLinks[t] == null) {
-								t = decreaseInt(t);
+							// We are already waiting as close to the priority as possible.
+							// So we need to pass the priority links.
+
+							// Do we go to outdirection, or to next priority?
+							s = increaseInt(t);
+							while(s != outDirection && isSecondary[s]) {
+								s = increaseInt(s);
 							}
-							if(t == inDirection) {
-								t = outDirection;
+							if(s == outDirection) {
+								t = s; // We go directly to outDirection.
+							} else {
+								//We found the other priority link. Looking for nearest waiting point.
+								t = decreaseInt(s);
+								
+								//This can at most continue until the inDirection is found, as this is not null.
+								while(bicycleInLinks[t] == null) {
+									t = decreaseInt(t);
+								}
+								
+								//If all our strategies leads us to our origin,
+								// we have to go directly to outDirection.
+								if(t == inDirection) {
+									t = outDirection;
+								}
 							}
-						}
-					} 
+						} 
+					}
+					if(t != outDirection) {
+						t = increaseInt(t); //This might cause t to be outDirection. But that's okay,
+						// since that final part would be a trivial, short right-hand move anyway.
+					}
+					turns[inDirection][outDirection] = t;
 				}
-				if(t != outDirection) {
-					t = increaseInt(t); //This might cause t to be outDirection. But that's okay,
-					// since that final part was a trivial move anyway.
-				}
-				turns[inDirection][outDirection] = t;
 			}
 		}
 		return turns;

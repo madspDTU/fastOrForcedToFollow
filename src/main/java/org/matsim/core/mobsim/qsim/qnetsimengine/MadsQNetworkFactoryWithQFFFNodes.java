@@ -48,7 +48,7 @@ public class MadsQNetworkFactoryWithQFFFNodes extends AbstractMadsQNetworkFactor
 	private static final Logger log = Logger.getLogger( MadsQNetworkFactoryWithQFFFNodes.class ) ;
 	private FFFNodeConfigGroup fffNodeConfig;
 
-	MadsQNetworkFactoryWithQFFFNodes(EventsManager events, Scenario scenario) {
+	@Inject MadsQNetworkFactoryWithQFFFNodes(EventsManager events, Scenario scenario) {
 		super(events, scenario);
 		this.fffNodeConfig = ConfigUtils.addOrGetModule(scenario.getConfig(), FFFNodeConfigGroup.class);
 	}

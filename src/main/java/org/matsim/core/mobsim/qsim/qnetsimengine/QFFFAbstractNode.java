@@ -78,21 +78,22 @@ public abstract class QFFFAbstractNode { //Interface or abstract
 	protected void bicycleMoveWithFullLeftTurns(final int inDirection, final double now, 
 			final double nowish, TimeoutModifier timeoutModifier) {
 		QLinkI inLink = bicycleInLinks[inDirection];
-		Gbl.assertNotNull(inLink);
-		for(QLaneI lane : inLink.getOfferingQLanes()){
-			while(! lane.isNotOfferingVehicle()){
-				QVehicle veh = lane.getFirstVehicle();
-				Id<Link> nextLinkId = veh.getDriver().chooseNextLinkId();	
-				int outDirection = bicycleOutTransformations.get(nextLinkId);
-				if(bicycleTimeouts[inDirection][outDirection] <= now){
-					//Ignoring left turns when using right priority.
-					if (! this.qNode.moveVehicleOverNode(veh, inLink, lane, now, true )) {
+		if(inLink != null) {
+			for(QLaneI lane : inLink.getOfferingQLanes()){
+				while(! lane.isNotOfferingVehicle()){
+					QVehicle veh = lane.getFirstVehicle();
+					Id<Link> nextLinkId = veh.getDriver().chooseNextLinkId();	
+					int outDirection = bicycleOutTransformations.get(nextLinkId);
+					if(bicycleTimeouts[inDirection][outDirection] <= now){
+						//Ignoring left turns when using right priority.
+						if (! this.qNode.moveVehicleOverNode(veh, inLink, lane, now, true )) {
+							break;
+						}
+						timeoutModifier.updateTimeouts(bicycleTimeouts, carTimeouts, 
+								inDirection, outDirection, null, nowish);
+					} else {
 						break;
 					}
-					timeoutModifier.updateTimeouts(bicycleTimeouts, carTimeouts, 
-							inDirection, outDirection, null, nowish);
-				} else {
-					break;
 				}
 			}
 		}

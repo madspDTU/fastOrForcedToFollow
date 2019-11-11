@@ -10,14 +10,6 @@ public class RunBicycleCopenhagenIndirectly {
 	public static void main(String[] args) throws IOException{
 		
 		
-		
-
-		// test: placeVehicleAtFront no longer activates the link. 
-		
-		// Directed of size 2 works!
-		//Right-priority works!
-		// Merging works!
-		//Anti-priority works!
 		if(args.length==0){
 			args = new String[]{
 					"fullRoWUneven", "5", "bike,car",  "true", "20"}; 

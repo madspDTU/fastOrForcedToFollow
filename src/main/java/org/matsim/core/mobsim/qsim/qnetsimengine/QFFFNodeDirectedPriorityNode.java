@@ -60,26 +60,27 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode{
 	protected void bicycleMove(final int inDirection, final double now,
 			final double nowish, TimeoutModifier timeoutModifier) {
 		QLinkI inLink = bicycleInLinks[inDirection];
-		Gbl.assertNotNull(inLink);
-		for(QLaneI lane : inLink.getOfferingQLanes()){
-			while(! lane.isNotOfferingVehicle()){	
-				QVehicle veh = lane.getFirstVehicle();
-				Id<Link> nextLinkId = veh.getDriver().chooseNextLinkId();
-				int outDirection = bicycleOutTransformations.get(nextLinkId);
-				int t = bicycleTurns[inDirection][outDirection];
-				if(bicycleTimeouts[inDirection][t] <= now){
-					if(t == outDirection){ // Not a partial turn
-						if (! this.qNode.moveVehicleOverNode(veh, inLink, lane, now, true )) {
-							break;
+		if(inLink != null) { //This can easily be null - but that's okay.
+			for(QLaneI lane : inLink.getOfferingQLanes()){
+				while(! lane.isNotOfferingVehicle()){	
+					QVehicle veh = lane.getFirstVehicle();
+					Id<Link> nextLinkId = veh.getDriver().chooseNextLinkId();
+					int outDirection = bicycleOutTransformations.get(nextLinkId);
+					int t = bicycleTurns[inDirection][outDirection];
+					if(bicycleTimeouts[inDirection][t] <= now){
+						if(t == outDirection){ // Not a partial turn
+							if (! this.qNode.moveVehicleOverNode(veh, inLink, lane, now, true )) {
+								break;
+							}
+						} else { // a partial turn
+							t = decreaseInt(t);
+							moveLeftTurningBicyclePartiallyOverNode(veh, lane, t);
 						}
-					} else { // a partial turn
-						t = decreaseInt(t);
-						moveLeftTurningBicyclePartiallyOverNode(veh, lane, t);
+						timeoutModifier.updateTimeouts(bicycleTimeouts, carTimeouts, 
+								inDirection, t, isSecondary, nowish);
+					} else {
+						break;
 					}
-					timeoutModifier.updateTimeouts(bicycleTimeouts, carTimeouts, 
-							inDirection, t, isSecondary, nowish);
-				} else {
-					break;
 				}
 			}
 		}
@@ -98,51 +99,58 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode{
 		for(int inDirection = 0; inDirection < carInLinks.length; inDirection++){
 			if(bicycleInLinks[inDirection] != null) {
 				for(int outDirection = 0; outDirection < carInLinks.length; outDirection++){
-					int t = increaseInt(inDirection);
-					while(t != outDirection && isSecondary[t]) {
-						t = increaseInt(t);
-					}
-					if(t != outDirection) {
-						//Find the waiting point closes to the priority link
-						int s = decreaseInt(t);
-						while( s != inDirection && bicycleInLinks[s] == null) {
-							s = decreaseInt(s);
+					if(bicycleOutTransformations.values().contains(outDirection)) {
+						int t = increaseInt(inDirection);
+						while(t != outDirection && isSecondary[t]) {
+							t = increaseInt(t);
 						}
-						if(s != inDirection) {
-							t = s; // We managed to find a waiting point closer to the priority link.
-						} else {
-							// We are already waiting as close to the priority as possible.
-							// So we need to pass the priority links.
-
-							// Do we go to outdirection, or to next priority?
-							s = increaseInt(t);
-							while(s != outDirection && isSecondary[s]) {
-								s = increaseInt(s);
+						if(t != outDirection) {
+							//Find the waiting point closes to the priority link
+							int s = decreaseInt(t);
+							while( s != inDirection && bicycleInLinks[s] == null) {
+								s = decreaseInt(s);
 							}
-							if(s == outDirection) {
-								t = s; // We go directly to outDirection.
+							if(s != inDirection) {
+								t = s; // We managed to find a waiting point closer to the priority link.
 							} else {
-								//We found the other priority link. Looking for nearest waiting point.
-								t = decreaseInt(s);
-								
-								//This can at most continue until the inDirection is found, as this is not null.
-								while(bicycleInLinks[t] == null) {
-									t = decreaseInt(t);
+								// We are already waiting as close to the priority as possible.
+								// So we need to pass the priority links.
+
+								// Do we go to outdirection, or to next priority?
+								s = increaseInt(t);
+								while(s != outDirection && isSecondary[s]) {
+									s = increaseInt(s);
 								}
-								
-								//If all our strategies leads us to our origin,
-								// we have to go directly to outDirection.
-								if(t == inDirection) {
-									t = outDirection;
+								if(s == outDirection) {
+									t = s; // We go directly to outDirection.
+								} else {
+									//We found the other priority link. Looking for nearest waiting point.
+									s = decreaseInt(s);
+
+									//This can at most continue until the inDirection is found, as this is not null.
+									while(bicycleInLinks[s] == null) {
+										s = decreaseInt(s);
+									}
+
+									//If all our strategies leads us to our origin,
+									// we have to go directly to outDirection.
+									if(s == inDirection) {
+										t = outDirection;
+									} else {
+										t = s;
+									}
 								}
-							}
-						} 
+							} 
+						}
+						if(t != outDirection) {
+							t = increaseInt(t); //This might cause t to be outDirection. But that's okay,
+							// since that final part would be a trivial, short right-hand move anyway.
+						}
+						turns[inDirection][outDirection] = t;
+						Gbl.assertNotNull(decreaseInt(t));
+						Gbl.assertIf(turns[inDirection][outDirection] != inDirection || 
+								inDirection == outDirection);
 					}
-					if(t != outDirection) {
-						t = increaseInt(t); //This might cause t to be outDirection. But that's okay,
-						// since that final part would be a trivial, short right-hand move anyway.
-					}
-					turns[inDirection][outDirection] = t;
 				}
 			}
 		}

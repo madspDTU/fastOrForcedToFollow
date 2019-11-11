@@ -60,10 +60,11 @@ import org.matsim.core.controler.listener.StartupListener;
 import org.matsim.core.gbl.Gbl;
 import org.matsim.core.mobsim.framework.HasPerson;
 import org.matsim.core.mobsim.qsim.AbstractQSimModule;
-import org.matsim.core.mobsim.qsim.qnetsimengine.MadsQNetworkFactory;
+import org.matsim.core.mobsim.qsim.qnetsimengine.DefaultMadsQNetworkFactory;
 import org.matsim.core.mobsim.qsim.qnetsimengine.MadsQNetworkFactoryWithQFFFNodes;
 import org.matsim.core.mobsim.qsim.qnetsimengine.MadsQNetworkFactoryWithoutCongestion;
 import org.matsim.core.mobsim.qsim.qnetsimengine.MadsQVehicleFactory;
+import org.matsim.core.mobsim.qsim.qnetsimengine.NetsimEngine;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QNetworkFactory;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QVehicleFactory;
 import org.matsim.core.network.NetworkUtils;
@@ -377,7 +378,7 @@ public class RunMatsim {
 		controler.addOverridingQSimModule(new AbstractQSimModule() {
 			@Override
 			protected void configureQSim() {
-				this.bind( QNetworkFactory.class ).to( MadsQNetworkFactory.class );
+				this.bind( QNetworkFactory.class ).to( DefaultMadsQNetworkFactory.class );
 				this.bind( QVehicleFactory.class ).to( MadsQVehicleFactory.class ) ;
 			}
 
@@ -464,7 +465,7 @@ public class RunMatsim {
 			}
 
 		});
-
+	
 
 		controler = addRoutingToControler(controler, scenario);
 

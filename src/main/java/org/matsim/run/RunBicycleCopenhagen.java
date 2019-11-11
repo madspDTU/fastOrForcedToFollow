@@ -43,7 +43,9 @@ public class RunBicycleCopenhagen {
 	public static Collection<String> networkModes = null;
 	public static final double capFactor = 0.1;
 
-	public static String outputBaseDir = "/work1/s103232/ABMTRANS2019/"; // With
+	//public static String outputBaseDir = "/work1/s103232/ABMTRANS2019/"; // With
+	public static String outputBaseDir = "C:/Users/madsp/DTA/Output/"; // With
+
 	// final
 	// /
 	// public static String outputBaseDir = "./output/ABMTRANS2019/"; //With
@@ -51,9 +53,12 @@ public class RunBicycleCopenhagen {
 	// public static String outputBaseDir =
 	// "C:/Users/madsp/git/fastOrForcedToFollowMaven/output/Copenhagen/";
 
-	public final static String inputBaseDir = "/zhome/81/e/64390/MATSim/ABMTRANS2019/input/"; // With
-	public final static String inputResumeBaseDir = "/work1/s103232/ABMTRANS2019/input/"; // With
+	//public final static String inputBaseDir = "/zhome/81/e/64390/MATSim/ABMTRANS2019/input/"; // With
+	//public final static String inputResumeBaseDir = "/work1/s103232/ABMTRANS2019/input/"; // With
+	public final static String inputBaseDir = "C:/Users/madsp/DTA/Input/"; // With
+	public final static String inputResumeBaseDir = "C:/Users/madsp/DTA/ResumableInput/"; // With
 
+	
 	// final
 	// /
 
@@ -89,7 +94,7 @@ public class RunBicycleCopenhagen {
 		if (args.length > 3) {
 			runMatsim = Boolean.parseBoolean(args[3]);
 		}
-		if (args.length > 5) {
+		if (args.length > 4) {
 			numberOfGlobalThreads = Integer.parseInt(args[4]);
 		}
 
@@ -181,7 +186,8 @@ public class RunBicycleCopenhagen {
 
 		if (roW) {
 			RunMatsim.addRoWModuleToConfig(config, tenPercentCars);
-		} else if (tenPercentCars) {
+		}
+		if (tenPercentCars) {
 			config.qsim().setFlowCapFactor(capFactor); // This has to be calibrated
 			config.qsim().setStorageCapFactor(capFactor); // This has to be calibrated
 			config.qsim().setStuckTime(60); // This has to be calibrated

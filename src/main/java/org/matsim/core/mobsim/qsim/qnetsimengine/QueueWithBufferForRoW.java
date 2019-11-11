@@ -246,25 +246,23 @@ final class QueueWithBufferForRoW implements QLaneI, SignalizeableItem {
 
 		double now = context.getSimTimer().getTimeOfDay() ;
 		flowcap_accumulate.addValue(-getFlowCapacityConsumptionInEquivalents(veh), now);
+		if(leftBuffer.isEmpty() && generalBuffer.isEmpty()){
+			bufferLastMovedTime = now;
+		}
 
 		//Add to correct buffer
 		Id<Link> nextLinkId = veh.getDriver().chooseNextLinkId();
 		QFFFAbstractNode toQNode = ((QFFFNode) this.qLink.getToNodeQ()).getQFFFAbstractNode();
 		if(toQNode instanceof QFFFNodeDirectedPriorityNode && 
-				((QFFFNodeDirectedPriorityNode) toQNode).isLeftTurn(this.qLink.getId(), nextLinkId) ){
-			if(leftBuffer.isEmpty() & generalBuffer.isEmpty()){
-				bufferLastMovedTime = now;
-			}
+				((QFFFNodeDirectedPriorityNode) toQNode).isCarLeftTurn(this.qLink.getId(), nextLinkId)) {
 			leftBuffer.add(veh);
 		} else {
-			if(leftBuffer.isEmpty() & generalBuffer.isEmpty()){
-				bufferLastMovedTime = now;
-			}
 			generalBuffer.add(veh);
 		}
-		
+
+
 		// Activation
-		QNodeI toNode = this.qLink.getToNodeQ();
+		final QNodeI toNode = this.qLink.getToNodeQ();
 		if(toNode instanceof AbstractQNode){
 			((AbstractQNode) toNode).activateNode();
 		}
@@ -512,12 +510,15 @@ final class QueueWithBufferForRoW implements QLaneI, SignalizeableItem {
 
 			// Check if veh has reached destination:
 			if ( driver.isWantingToArriveOnCurrentLink() ) {
-				qLink.letVehicleArrive( veh );
+				if(qLink.letVehicleArrive( veh )) {
+					// remove _after_ processing the arrival to keep link active:
+					removeVehicleFromQueue( veh ) ;
+					continue;
+				} else {
+					return;
+				}
 
-				// remove _after_ processing the arrival to keep link active:
-				removeVehicleFromQueue( veh ) ;
 
-				continue;
 			}
 
 			/* is there still any flow capacity left? */

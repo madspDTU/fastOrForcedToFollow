@@ -8,10 +8,19 @@ import org.matsim.api.core.v01.TransportMode;
 public class RunBicycleCopenhagenIndirectly {
 
 	public static void main(String[] args) throws IOException{
+		
+		
+		
+
+		// test: placeVehicleAtFront no longer activates the link. 
+		
+		// Directed of size 2 works!
+		//Right-priority works!
+		// Merging works!
+		//Anti-priority works!
 		if(args.length==0){
-			int iterations = 50;
-			System.out.println("Using " + iterations + " cores");
-			args = new String[]{"smallNoCongestion", "" + iterations, "bike",  "true"};
+			args = new String[]{
+					"fullRoW", "5", "bike,car",  "true", "20"};
 		}
 		RunBicycleCopenhagen.main(args);
 

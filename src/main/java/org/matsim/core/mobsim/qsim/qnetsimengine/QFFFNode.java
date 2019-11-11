@@ -261,17 +261,20 @@ final class QFFFNode extends AbstractQNode {
 		boolean isLargeRoadsMerging = false;
 		if(carOutThetaMap.size() == 1 && carInThetaMap.size() == 2
 				&& bicycleOutThetaMap.size() == 0 && bicycleInThetaMap.size() == 0){
-				isLargeRoadsMerging = true;
+			isLargeRoadsMerging = true;
 		}
 
 
 		TreeMap<Double, LinkedList<Link>> bundleMap = createBundleMap(bicycleOutThetaMap, carOutThetaMap, carInThetaMap,
 				bicycleInThetaMap);
 
+	
 		if(isLargeRoadsMerging){
 			this.nodeType = new QFFFLargeRoadsMergingNode(this, bundleMap, network);
 			return;
 		}
+
+
 
 
 		if(bundleMap.size() == 1){ // Determine if capacities are different: We now allow larger intersection types.
@@ -292,7 +295,7 @@ final class QFFFNode extends AbstractQNode {
 
 
 			if(areBicycleCapacitiesEqual && areCarCapacitiesEqual){
-					this.nodeType = new QFFFRightPriorityNode(this, bundleMap, network);
+				this.nodeType = new QFFFRightPriorityNode(this, bundleMap, network);
 			} else {
 				TreeMap<Double, LinkedList<Integer>> capacities = carCapacities;
 				if(areCarCapacitiesEqual){

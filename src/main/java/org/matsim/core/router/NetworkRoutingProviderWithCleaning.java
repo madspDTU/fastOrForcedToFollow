@@ -101,18 +101,6 @@ public class NetworkRoutingProviderWithCleaning implements Provider<RoutingModul
 				filter.filter(filteredNetwork, modes);
 				new NetworkCleaner().run(filteredNetwork); // mads
 				this.singleModeNetworksCache.getSingleModeNetworksCache().put(mode, filteredNetwork);
-				
-				// mads. this is highly temporary! //TODO.
-				if(mode.equals(TransportMode.car)){
-					for(Link link : filteredNetwork.getLinks().values()){
-						if(link.getFreespeed() > 100){
-							log.warn("Link too fast: " + link.getId() + " speed " + link.getFreespeed());
-						}
-						if(link.getLength() <= 0){
-							log.warn("Link too short: " + link.getId() + " length " + link.getLength());
-						}
-					}
-				}
 			}
 		}
 
@@ -130,23 +118,33 @@ public class NetworkRoutingProviderWithCleaning implements Provider<RoutingModul
 						filteredNetwork,
 						travelDisutilityFactory.createTravelDisutility(travelTime),
 						travelTime);
-		LeastCostPathCalculator routeAlgoBicycle = 
-				(leastCostPathCalculatorFactory instanceof DesiredSpeedBicycleFastAStarLandmarks.Factory) ?
-						((DesiredSpeedBicycleFastAStarLandmarks.Factory) leastCostPathCalculatorFactory).
-						createDesiredSpeedPathCalculator(
-								filteredNetwork,
-								travelDisutilityFactory.createTravelDisutility(travelTime),
-								travelTime	) 			:    
-									routeAlgo;
+		
+		LeastCostPathCalculator routeAlgoBicycle;
+		if(routeAlgo instanceof DesiredSpeedBicycleFastAStarLandmarksFactory) {
+			DesiredSpeedBicycleFastAStarLandmarksFactory ra = 
+					(DesiredSpeedBicycleFastAStarLandmarksFactory) routeAlgo;
+			routeAlgoBicycle = ra.createDesiredSpeedPathCalculator(filteredNetwork, 
+					travelDisutilityFactory.createTravelDisutility(travelTime), travelTime);
+		} else if(routeAlgo instanceof DesiredSpeedBicycleFastDijkstraFactory ) {
+			DesiredSpeedBicycleFastDijkstraFactory ra = 
+					(DesiredSpeedBicycleFastDijkstraFactory) routeAlgo;
+			routeAlgoBicycle = ra.createDesiredSpeedPathCalculator(filteredNetwork, 
+					travelDisutilityFactory.createTravelDisutility(travelTime), travelTime);
+		} else if(routeAlgo instanceof DesiredSpeedBicycleDijkstraFactory ) {
+			DesiredSpeedBicycleDijkstraFactory ra = (DesiredSpeedBicycleDijkstraFactory) routeAlgo;
+			routeAlgoBicycle = ra.createDesiredSpeedPathCalculator(filteredNetwork, 
+					travelDisutilityFactory.createTravelDisutility(travelTime), travelTime);
+		} else {
+			routeAlgoBicycle = routeAlgo;
+		}
 
-
-								// the following again refers to the (transport)mode, since it will determine the mode of the leg on the network:
-								if ( plansCalcRouteConfigGroup.isInsertingAccessEgressWalk() ) {
-									return DefaultRoutingModules.createAccessEgressNetworkRouter(mode, 	mode.equals(TransportMode.bike) ? routeAlgoBicycle : routeAlgo, 
-											scenario, filteredNetwork);
-								} else {
-									return DefaultRoutingModules.createPureNetworkRouter(mode, populationFactory, filteredNetwork,
-											mode.equals(TransportMode.bike) ? routeAlgoBicycle : routeAlgo);
-								}
+		// the following again refers to the (transport)mode, since it will determine the mode of the leg on the network:
+		if ( plansCalcRouteConfigGroup.isInsertingAccessEgressWalk() ) {
+			return DefaultRoutingModules.createAccessEgressNetworkRouter(mode, 	mode.equals(TransportMode.bike) ? routeAlgoBicycle : routeAlgo, 
+					scenario, filteredNetwork);
+		} else {
+			return DefaultRoutingModules.createPureNetworkRouter(mode, populationFactory, filteredNetwork,
+					mode.equals(TransportMode.bike) ? routeAlgoBicycle : routeAlgo);
+		}
 	}
 }

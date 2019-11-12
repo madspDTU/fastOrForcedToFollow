@@ -49,53 +49,9 @@ public class DesiredSpeedBicycleDijkstra extends Dijkstra{
 				Id.createVehicleId(idString), vehicleType);
 			
 		return super.calcLeastCostPath(fromNode, toNode, startTime, person, actualVehicle);
-
-		
-	//If needing to determine mode first....
-	//	String mode = determineMode(startTime, person);	
-	//	if(mode.equals(TransportMode.car)){
-	//		vehicleType.setMaximumVelocity(Double.POSITIVE_INFINITY);	
-	//	} else if (mode.equals(TransportMode.bike)) {
-	//		double v_0 = (double) person.getAttributes().getAttribute( 
-	//				RunMatsim.DESIRED_SPEED );
-	//		vehicleType.setMaximumVelocity(v_0);
-	//	} else {
-	//		System.err.println("No valid mode found");
-	//		Gbl.assertIf(false);
-	//	}
 	}
 
-//	private String determineMode(final double startTime, final Person person) {
-//		ArrayList<PlanElement> pes = (ArrayList<PlanElement>) person.getSelectedPlan().getPlanElements();
-//		double dif = Double.NEGATIVE_INFINITY;
-//		String mode = "";
-//
-//		for(int i = 0; i < person.getSelectedPlan().getPlanElements().size(); i++){
-//			if( pes.get(i) instanceof Leg){
-//				Leg leg = (Leg) pes.get(i);
-//				if(leg.getMode().equals(TransportMode.car) || leg.getMode().equals(TransportMode.bike)){
-//					Activity activity = (Activity) pes.get(i-1);
-//					if(activity.getType().contains("interaction")){
-//						activity = (Activity) pes.get(i-3);
-//					}
-//					double endTime = activity.getEndTime();
-//
-//					if(endTime >= startTime){
-//						if(endTime - startTime < -dif){
-//							dif = endTime - startTime;
-//							mode = leg.getMode();
-//						}
-//						return mode;
-//					} else {
-//						dif =  endTime - startTime;
-//						mode = leg.getMode();
-//					}
-//				}
-//			}
-//		}
-//		return mode;
-//	}
-
+/*
 	@Singleton
 	public static class Factory implements LeastCostPathCalculatorFactory{
 
@@ -130,4 +86,5 @@ public class DesiredSpeedBicycleDijkstra extends Dijkstra{
 			return new DesiredSpeedBicycleDijkstra(network, travelCosts, travelTimes);
 		}
 	}
+	*/
 }

@@ -42,6 +42,7 @@ public class DesiredSpeedBicycleFastAStarLandmarks extends FastAStarLandmarks {
 		return super.calcLeastCostPath(fromNode, toNode, startTime, person, actualVehicle);
 	}
 
+	/*
 	@Singleton
 	public static class Factory implements LeastCostPathCalculatorFactory{
 
@@ -135,4 +136,5 @@ public class DesiredSpeedBicycleFastAStarLandmarks extends FastAStarLandmarks {
 			return new DesiredSpeedBicycleFastAStarLandmarks(routingNetwork, preProcessLandmarks, travelCosts, travelTimes, overdoFactor, fastRouterFactory);
 		}
 	}
+	*/
 }

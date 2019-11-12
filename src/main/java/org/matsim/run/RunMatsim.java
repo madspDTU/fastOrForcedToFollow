@@ -73,7 +73,10 @@ import org.matsim.core.network.algorithms.TransportModeNetworkFilter;
 import org.matsim.core.replanning.strategies.DefaultPlanStrategiesModule.DefaultSelector;
 import org.matsim.core.replanning.strategies.DefaultPlanStrategiesModule.DefaultStrategy;
 import org.matsim.core.router.DesiredSpeedBicycleDijkstra;
+import org.matsim.core.router.DesiredSpeedBicycleDijkstraFactory;
 import org.matsim.core.router.DesiredSpeedBicycleFastAStarLandmarks;
+import org.matsim.core.router.DesiredSpeedBicycleFastAStarLandmarksFactory;
+import org.matsim.core.router.DesiredSpeedBicycleFastDijkstraFactory;
 import org.matsim.core.router.NetworkRoutingProviderWithCleaning;
 import org.matsim.core.router.SingleModeNetworksCache;
 import org.matsim.core.router.util.LeastCostPathCalculatorFactory;
@@ -394,41 +397,24 @@ public class RunMatsim {
 		controler.addOverridingModule( new AbstractModule(){
 			@Override public void install() {
 				this.bindScoringFunctionFactory().to( FFFScoringFactory.class ) ;
-				if(scenario.getConfig().controler().getRoutingAlgorithmType() ==
-						RoutingAlgorithmType.FastAStarLandmarks ){
+				switch(scenario.getConfig().controler().getRoutingAlgorithmType()) {
+				case FastAStarLandmarks: 
 					this.bind(LeastCostPathCalculatorFactory.class).to(
-							DesiredSpeedBicycleFastAStarLandmarks.Factory.class );
-				} else {
+							DesiredSpeedBicycleFastAStarLandmarksFactory.class );
+					break;
+				case FastDijkstra: 
 					this.bind(LeastCostPathCalculatorFactory.class).to(
-							DesiredSpeedBicycleDijkstra.Factory.class );
+							DesiredSpeedBicycleFastDijkstraFactory.class);
+					break;
+				default:
+					this.bind(LeastCostPathCalculatorFactory.class).to(
+							DesiredSpeedBicycleDijkstraFactory.class);
+					break;
 				}
+				
 				for(String mode : networkModes){
 					this.addRoutingModuleBinding(mode).toProvider(new NetworkRoutingProviderWithCleaning(mode));
 				}
-
-				//				this.addTravelTimeBinding( TransportMode.bike ).toInstance( new TravelTime(){
-				//					@Inject TravelTimeCalculator travelTimeCalculator ;
-				//					@Override public double getLinkTravelTime( Link link, double time, Person person, Vehicle vehicle ){
-				//						double congestedTravelTime = travelTimeCalculator.getLinkTravelTimes().getLinkTravelTime( link, time, person, vehicle );
-				//						double freeSpeedTravelTime = link.getLength() / (double) person.getAttributes().getAttribute( FFFConfigGroup.DESIRED_SPEED );
-				//						return Math.max( congestedTravelTime, freeSpeedTravelTime ) ;
-				//					}
-				//				} ) ;
-
-				//				this.addControlerListenerBinding().toInstance( new StartupListener(){
-				//					@Inject SingleModeNetworksCache singleModeNetworksCache ;
-				//					@Inject Network network ;
-				//					@Override public void notifyStartup( StartupEvent event ){
-				//						String mode = TransportMode.bike
-				//						TransportModeNetworkFilter filter = new TransportModeNetworkFilter(network);
-				//						Set<String> modes = new HashSet<>(Arrays.asList(mode));
-				//						Network filteredNetwork = NetworkUtils.createNetwork();
-				//						filter.filter(filteredNetwork, modes);
-				//						new NetworkCleaner().run(filteredNetwork ); // mads
-				//						this.singleModeNetworksCache.getSingleModeNetworksCache().put(mode, filteredNetwork);
-				//					}
-				//				} );
-
 			}
 		} );
 		return controler;

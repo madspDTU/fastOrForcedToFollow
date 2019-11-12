@@ -168,16 +168,15 @@ public class RunBicycleCopenhagen {
 		config.controler().setWriteEventsInterval(config.controler().getLastIteration() + 1);
 
 		config.global().setNumberOfThreads(numberOfGlobalThreads);
-		if(roW && false){
-			config.qsim().setNumberOfThreads(1);
-			config.parallelEventHandling().setNumberOfThreads(numberOfGlobalThreads - 1);
-			if(false){
+		config.qsim().setNumberOfThreads(numberOfGlobalThreads - 1);
+		config.parallelEventHandling().setNumberOfThreads(1);
+		
+		if(roW){
 				config.controler().setLinkToLinkRoutingEnabled(true);
-			}
-		} else {
-			config.qsim().setNumberOfThreads(numberOfGlobalThreads - 1);
-			config.parallelEventHandling().setNumberOfThreads(1);
-		}
+				config.travelTimeCalculator().setCalculateLinkToLinkTravelTimes(true);
+				config.travelTimeCalculator().setSeparateModes(false);
+				config.controler().setRoutingAlgorithmType(RoutingAlgorithmType.FastDijkstra);
+		} 
 
 		config.global().setCoordinateSystem("EPSG:32632"); // /EPSG:32632 is
 		// WGS84 UTM32N

@@ -147,9 +147,6 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode{
 							// since that final part would be a trivial, short right-hand move anyway.
 						}
 						turns[inDirection][outDirection] = t;
-						Gbl.assertNotNull(decreaseInt(t));
-						Gbl.assertIf(turns[inDirection][outDirection] != inDirection || 
-								inDirection == outDirection);
 					}
 				}
 			}

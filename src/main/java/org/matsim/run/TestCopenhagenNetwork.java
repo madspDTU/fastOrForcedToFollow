@@ -14,6 +14,7 @@ import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.Activity;
 import org.matsim.api.core.v01.population.Person;
+import org.matsim.api.core.v01.population.Plan;
 import org.matsim.api.core.v01.population.PlanElement;
 import org.matsim.api.core.v01.population.Population;
 import org.matsim.api.core.v01.population.PopulationWriter;
@@ -23,10 +24,13 @@ import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.population.io.PopulationReader;
 import org.matsim.core.scenario.ScenarioUtils;
 
+import fastOrForcedToFollow.configgroups.FFFConfigGroup;
+
 public class TestCopenhagenNetwork {
 
 	public static void main(String[] args) {
-		
+
+
 		Config combinedConfig = ConfigUtils.createConfig();
 		Scenario combinedScenario = ScenarioUtils.createScenario(combinedConfig);
 		Population combinedPop = combinedScenario.getPopulation();
@@ -38,30 +42,46 @@ public class TestCopenhagenNetwork {
 		Config carConfig = ConfigUtils.createConfig();
 		Scenario carScenario = ScenarioUtils.createScenario(carConfig);
 
-		File dir = new File("/zhome/81/e/64390/MATSim/ABMTRANS2019/hEART2019/");
-		for(File file : dir.listFiles()){
-			try {
-				BufferedReader reader = new BufferedReader(new FileReader(file));
-				String readLine;
-				try {
-					while((readLine = reader.readLine()) != null){
-						if(readLine.contains("LinkedList")){
-							System.out.println(file);
-						}
+		boolean bool1 = true;
+		PopulationReader pr2 = new PopulationReader(bicycleScenario);
+		pr2.readFile("C:/Users/madsp/DTA/ResumableInput/ResumablePlans_Bicycles.xml.gz");
+		for(Person person : combinedScenario.getPopulation().getPersons().values()){
+			LinkedList<Plan> plansToDelete = new LinkedList<Plan>();
+			for(Plan plan : person.getPlans()){
+				if(plan != person.getSelectedPlan()){
+					plansToDelete.add(plan);
+					if(bool1) {
+						System.out.println("THis happens");
+						bool1 = false;
 					}
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				} 
 			}
-			
+			for(Plan plan : plansToDelete){
+				person.removePlan(plan);
+			}
 		}
-		
+
+		PopulationWriter pw2 = new PopulationWriter(bicycleScenario.getPopulation());
+		pw2.write("C:/Users/madsp/DTA/ResumableInput/ResumablePlans_Bicycles_selectedOnly.xml.gz");
+
+
+		PopulationReader pr = new PopulationReader(combinedScenario);
+		pr.readFile("C:/Users/madsp/DTA/ResumableInput/ResumablePlans_Cars.xml.gz");
+		for(Person person : combinedScenario.getPopulation().getPersons().values()){
+			LinkedList<Plan> plansToDelete = new LinkedList<Plan>();
+			for(Plan plan : person.getPlans()){
+				plansToDelete.add(plan);
+			}
+			for(Plan plan : plansToDelete){
+				person.removePlan(plan);
+			}
+		}
+
+		PopulationWriter pw = new PopulationWriter(combinedScenario.getPopulation());
+		pw.write("C:/Users/madsp/DTA/ResumableInput/ResumablePlans_Cars_selectedOnly.xml.gz");
 
 		System.exit(-1);
-		
+
 		PopulationReader bicycleReader = new PopulationReader(bicycleScenario);
 		bicycleReader.readFile("/zhome/81/e/64390/MATSim/ABMTRANS2019/input/BicyclePlans_CPH_full.xml.gz");
 		RunMatsim.addCyclistAttributes(bicycleConfig, bicycleScenario);

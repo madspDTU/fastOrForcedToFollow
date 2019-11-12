@@ -1,18 +1,17 @@
 package org.matsim.run;
 
 import java.io.IOException;
-import java.util.Arrays;
-
-import org.matsim.api.core.v01.TransportMode;
 
 public class RunBicycleCopenhagenIndirectly {
 
 	public static void main(String[] args) throws IOException{
 		
+		//Run fullRowBothResume50
+		//Run fullRowBothDasAutoResume50
 		
 		if(args.length==0){
 			args = new String[]{
-					"fullRoWUneven", "5", "bike,car",  "true", "20"}; 
+					"fullRoWBoth50", "50", "bike,car",  "true", "30"}; 
 		}
 		RunBicycleCopenhagen.main(args);
 

@@ -52,8 +52,8 @@ public class QFFFRightPriorityNode extends QFFFAbstractNode{
 			return false;
 		}
 
-		double nowishBicycle = getNowPlusDelayBicycle(now);
-		double nowishCar = getNowPlusDelayCar(now);
+		double nowishBicycle = getNowPlusDelayBicycle(now) + 1;
+		double nowishCar = getNowPlusDelayCar(now) + 1;
 
 		int n = inLinkOrder.size();
 		int i = (n == 1) ? 0 : random.nextInt(n);

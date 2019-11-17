@@ -83,9 +83,9 @@ public class QFFFAntiPriorityNode extends QFFFAbstractNode {
 		
 			for(int count = 0; count < n; count++){
 				int direction = primaryInLinkOrder.get(i);
-				bicycleMoveWithFullLeftTurns(direction, now, nowishBicycle,
+				bicycleMoveWithFullLeftTurns(direction, now, nowishBicycle + 1,
 						new RightPriorityBicycleTimeoutModifier());
-				carMoveAllowingLeftTurns(direction, now, nowishCar, 
+				carMoveAllowingLeftTurns(direction, now, nowishCar + 1, 
 						new RightPriorityCarTimeoutModifier());
 				i = QFFFNodeUtils.increaseInt(i, n);
 			}

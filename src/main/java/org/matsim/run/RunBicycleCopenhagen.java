@@ -216,19 +216,19 @@ public class RunBicycleCopenhagen {
 			// Must be 100% car or no cars...
 		} else if (carOnly){
 			if(resumeNonRoW){
-				config.plans().setInputFile(inputResumeBaseDir + "ResumablePlans_Cars.xml.gz");
+				config.plans().setInputFile(inputResumeBaseDir + "ResumablePlans_Cars_selectedOnly.xml.gz");
 			} else {
 				config.plans().setInputFile(inputBaseDir + "CarPopulation2019_Micro_full.xml.gz");
 			}
 		} else if (carsAreSomehowIncluded) {
 			if(resumeNonRoW){
-				config.plans().setInputFile(inputResumeBaseDir + "ResumablePlans_Both.xml.gz");
+				config.plans().setInputFile(inputResumeBaseDir + "ResumablePlans_Both_selectedOnly.xml.gz");
 			} else {
 				config.plans().setInputFile(inputBaseDir + "COMPASBicycle100_COMPASSCarMicro100.xml.gz");
 			}
 		} else {
 			if(resumeNonRoW && size.equals("full")){
-				config.plans().setInputFile(inputResumeBaseDir + "ResumablePlans_Bicycles.xml.gz");
+				config.plans().setInputFile(inputResumeBaseDir + "ResumablePlans_Bicycles_selectedOnly.xml.gz");
 			} else {
 				config.plans().setInputFile(inputBaseDir + "BicyclePlans_CPH_" + size + ".xml.gz");
 			}

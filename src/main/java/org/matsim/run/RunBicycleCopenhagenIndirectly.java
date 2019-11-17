@@ -5,13 +5,10 @@ import java.io.IOException;
 public class RunBicycleCopenhagenIndirectly {
 
 	public static void main(String[] args) throws IOException{
-		
-		//Run fullRowBothResume50
-		//Run fullRowBothDasAutoResume50
-		
+			
 		if(args.length==0){
 			args = new String[]{
-					"fullRoWBoth50", "50", "bike,car",  "true", "30"}; 
+					"fullRoWBothDasAutoResume50", "50", "car",  "true", "24"}; 
 		}
 		RunBicycleCopenhagen.main(args);
 

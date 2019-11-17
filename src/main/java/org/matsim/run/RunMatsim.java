@@ -191,8 +191,8 @@ public class RunMatsim {
 
 	public static void addRoWModuleToConfig(Config config, boolean uneven){
 		FFFNodeConfigGroup fffNodeConfig = ConfigUtils.addOrGetModule(config, FFFNodeConfigGroup.class);
-		fffNodeConfig.setBicycleDelay(2.);
-		fffNodeConfig.setCarDelay(2.);
+		fffNodeConfig.setBicycleDelay(1.);
+		fffNodeConfig.setCarDelay(1.);
 		config.qsim().setStuckTime(30); // This has to be calibrated
 		if(uneven){
 			config.qsim().setFlowCapFactor(RunBicycleCopenhagen.capFactor); // This has to be calibrated

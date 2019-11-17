@@ -7,6 +7,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.List;
 
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
@@ -45,41 +46,120 @@ public class TestCopenhagenNetwork {
 		boolean bool1 = true;
 		PopulationReader pr2 = new PopulationReader(bicycleScenario);
 		pr2.readFile("C:/Users/madsp/DTA/ResumableInput/ResumablePlans_Bicycles.xml.gz");
-		for(Person person : combinedScenario.getPopulation().getPersons().values()){
-			LinkedList<Plan> plansToDelete = new LinkedList<Plan>();
-			for(Plan plan : person.getPlans()){
-				if(plan != person.getSelectedPlan()){
-					plansToDelete.add(plan);
-					if(bool1) {
-						System.out.println("THis happens");
-						bool1 = false;
-					}
-				} 
+		for(Person person : bicycleScenario.getPopulation().getPersons().values()){
+			double bestScore = Double.NEGATIVE_INFINITY;
+			int bestPlan = -1;
+			if(bool1) {
+				System.out.println("Agent has " + person.getPlans().size() + " plans before");
 			}
-			for(Plan plan : plansToDelete){
+			int i = 0;
+			for(Plan plan : person.getPlans()){
+				double score = plan.getScore();
+				if(score > bestScore) {
+					bestScore = score;
+					bestPlan = i;
+				}
+				i++;
+			}
+			LinkedList<Plan> plansToRemove = new LinkedList<Plan>();
+			i = 0;
+			for(Plan plan : person.getPlans()){
+				if(i != bestPlan) {
+					plansToRemove.add(plan);
+				}
+				i++;
+			}
+			for(Plan plan: plansToRemove) {
 				person.removePlan(plan);
 			}
+			if(bool1) {
+				System.out.println("Agent has " + person.getPlans().size() + " plans afterwards");
+				bool1 = false;
+			}
 		}
-
 		PopulationWriter pw2 = new PopulationWriter(bicycleScenario.getPopulation());
 		pw2.write("C:/Users/madsp/DTA/ResumableInput/ResumablePlans_Bicycles_selectedOnly.xml.gz");
+		bicycleScenario = null;
+		pw2 = null;
+		pr2 = null;
 
-
-		PopulationReader pr = new PopulationReader(combinedScenario);
-		pr.readFile("C:/Users/madsp/DTA/ResumableInput/ResumablePlans_Cars.xml.gz");
-		for(Person person : combinedScenario.getPopulation().getPersons().values()){
-			LinkedList<Plan> plansToDelete = new LinkedList<Plan>();
-			for(Plan plan : person.getPlans()){
-				plansToDelete.add(plan);
+		PopulationReader pr3 = new PopulationReader(carScenario);
+		pr3.readFile("C:/Users/madsp/DTA/ResumableInput/ResumablePlans_Cars.xml.gz");
+		for(Person person : carScenario.getPopulation().getPersons().values()){
+			double bestScore = Double.NEGATIVE_INFINITY;
+			int bestPlan = -1;
+			if(bool1) {
+				System.out.println("Agent has " + person.getPlans().size() + " plans before");
 			}
-			for(Plan plan : plansToDelete){
+			int i = 0;
+			for(Plan plan : person.getPlans()){
+				double score = plan.getScore();
+				if(score > bestScore) {
+					bestScore = score;
+					bestPlan = i;
+				}
+				i++;
+			}
+			LinkedList<Plan> plansToRemove = new LinkedList<Plan>();
+			i = 0;
+			for(Plan plan : person.getPlans()){
+				if(i != bestPlan) {
+					plansToRemove.add(plan);
+				}
+				i++;
+			}
+			for(Plan plan: plansToRemove) {
 				person.removePlan(plan);
 			}
+			if(bool1) {
+				System.out.println("Agent has " + person.getPlans().size() + " plans afterwards");
+				bool1 = false;
+			}
 		}
+		PopulationWriter pw3 = new PopulationWriter(carScenario.getPopulation());
+		pw3.write("C:/Users/madsp/DTA/ResumableInput/ResumablePlans_Cars_selectedOnly.xml.gz");
+		carScenario = null;
+		pw3 = null;
+		pr3 = null;
 
-		PopulationWriter pw = new PopulationWriter(combinedScenario.getPopulation());
-		pw.write("C:/Users/madsp/DTA/ResumableInput/ResumablePlans_Cars_selectedOnly.xml.gz");
-
+		PopulationReader pr4 = new PopulationReader(combinedScenario);
+		pr4.readFile("C:/Users/madsp/DTA/ResumableInput/ResumablePlans_Both.xml.gz");
+		for(Person person : combinedScenario.getPopulation().getPersons().values()){
+			double bestScore = Double.NEGATIVE_INFINITY;
+			int bestPlan = -1;
+			if(bool1) {
+				System.out.println("Agent has " + person.getPlans().size() + " plans before");
+			}
+			int i = 0;
+			for(Plan plan : person.getPlans()){
+				double score = plan.getScore();
+				if(score > bestScore) {
+					bestScore = score;
+					bestPlan = i;
+				}
+				i++;
+			}
+			LinkedList<Plan> plansToRemove = new LinkedList<Plan>();
+			i = 0;
+			for(Plan plan : person.getPlans()){
+				if(i != bestPlan) {
+					plansToRemove.add(plan);
+				}
+				i++;
+			}
+			for(Plan plan: plansToRemove) {
+				person.removePlan(plan);
+			}
+			if(bool1) {
+				System.out.println("Agent has " + person.getPlans().size() + " plans afterwards");
+				bool1 = false;
+			}
+}
+		PopulationWriter pw4 = new PopulationWriter(combinedScenario.getPopulation());
+		pw4.write("C:/Users/madsp/DTA/ResumableInput/ResumablePlans_Both_selectedOnly.xml.gz");
+		combinedScenario = null;
+		pw4 = null;
+		pr4 = null;
 		System.exit(-1);
 
 		PopulationReader bicycleReader = new PopulationReader(bicycleScenario);

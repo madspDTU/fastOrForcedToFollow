@@ -10,7 +10,7 @@ public class FFFNodeConfigGroup extends ReflectiveConfigGroup {
 	/**
 	 * 
 	 */
-	private double bicycleDelay = 2.;
+	private double bicycleDelay = 1.;
 //	@StringGetter( "bicycleDelay" )
 	public double getBicycleDelay() {
 		return this.bicycleDelay;
@@ -23,7 +23,7 @@ public class FFFNodeConfigGroup extends ReflectiveConfigGroup {
 	/**
 	 * 
 	 */
-	private double carDelay = 2.;
+	private double carDelay = 1.;
 //	@StringGetter( "carDelay" )	
 	public double getCarDelay() {
 		return this.carDelay;

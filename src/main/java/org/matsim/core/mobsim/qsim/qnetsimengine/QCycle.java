@@ -4,6 +4,7 @@ import fastOrForcedToFollow.Cyclist;
 import fastOrForcedToFollow.configgroups.FFFConfigGroup;
 
 import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.core.mobsim.framework.DriverAgent;
@@ -35,6 +36,7 @@ public class QCycle implements QVehicle
 	 */
 	public QCycle( Vehicle basicVehicle ) {
 		VehicleType vehicleType = VehicleUtils.getFactory().createVehicleType(Id.create(basicVehicle.getId().toString(), VehicleType.class));
+		vehicleType.setNetworkMode(TransportMode.bike);
 		Vehicle vehicle = VehicleUtils.getFactory().createVehicle(Id.createVehicleId(basicVehicle.getId().toString()), vehicleType);
 		this.qVehicle = new QVehicleImpl(vehicle);
 		
@@ -47,7 +49,6 @@ public class QCycle implements QVehicle
 	 */
 	@Override public void setDriver( final DriverAgent driver ) {
 		this.qVehicle.setDriver( driver );
-
 		if ( driver!=null ){   // is null when vehicle arrives, and driver LEAVES vehicle!
 			Person person = ((HasPerson) driver).getPerson();
 			final double v_0 = (double) person.getAttributes().getAttribute( FFFConfigGroup.DESIRED_SPEED );

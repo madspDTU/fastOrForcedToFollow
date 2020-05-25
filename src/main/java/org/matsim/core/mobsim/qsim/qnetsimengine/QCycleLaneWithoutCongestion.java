@@ -82,10 +82,10 @@ class QCycleLaneWithoutCongestion extends QCycleLane{
 
 
 	@Override public void addFromWait( final QVehicle veh ) {
-
 		// ensuring that the first provisional earliest link exit cannot be before now.
 		double now = context.getSimTimer().getTimeOfDay() ;
 		QCycle qCyc = (QCycle) veh;
+		
 		
 		if(qCyc.getDriver().isWantingToArriveOnCurrentLink()){
 			qLinkImpl.letVehicleArrive(qCyc);

@@ -11,6 +11,7 @@ import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.gbl.Gbl;
 import org.matsim.core.gbl.MatsimRandom;
+import org.matsim.core.mobsim.qsim.qnetsimengine.QFFFNode.MoveType;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QLaneI;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QLinkI;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QNetwork;
@@ -20,6 +21,20 @@ import fastOrForcedToFollow.timeoutmodifiers.TimeoutModifier;
 
 public abstract class QFFFAbstractNode { //Interface or abstract
 
+	static final boolean defaultStuckReturnValue = true;
+	private static final boolean stuckChangesOrderAtRightPriority = true;
+	
+	//static final boolean allowFreeingGeneralVehiclesStuckBehindLeftBuffer = false;
+	static final boolean allowStuckTimeoutMoves = false;
+	private static final boolean stuckTimeoutChangesOrderAtRightPriority = false;
+	static final boolean defaultTimeoutStuckReturnValue = false;
+	
+//	static final boolean letVehiclesFreedFromBehindLeftVehiclesAlterTimeouts = false;
+	public static final int smallRoadLeftBufferCapacity = 2;
+	
+	
+	
+	
 
 	final Random random;
 	final QFFFNode qNode;
@@ -86,12 +101,20 @@ public abstract class QFFFAbstractNode { //Interface or abstract
 					int outDirection = bicycleOutTransformations.get(nextLinkId);
 					if(bicycleTimeouts[inDirection][outDirection] <= now){
 						//Ignoring left turns when using right priority.
-						if (! this.qNode.moveVehicleOverNode(veh, inLink, lane, now, true )) {
+						if (! this.qNode.moveVehicleOverNode(veh, inLink, lane, now,  MoveType.GENERAL, defaultStuckReturnValue )) {
 							break;
 						}
 						timeoutModifier.updateTimeouts(bicycleTimeouts, carTimeouts, 
 								inDirection, outDirection, null, nowish);
 					} else {
+						if(allowStuckTimeoutMoves && this.qNode.vehicleIsStuck(lane, now, MoveType.GENERAL)) {
+							this.qNode.moveVehicleFromInlinkToOutlink(veh, inLink, lane, now, MoveType.GENERAL);
+							if(defaultTimeoutStuckReturnValue) {
+								timeoutModifier.updateTimeouts(bicycleTimeouts, carTimeouts, 
+										inDirection, outDirection, null, nowish);
+								continue;
+							}
+						}
 						break;
 					}
 				}
@@ -111,12 +134,21 @@ public abstract class QFFFAbstractNode { //Interface or abstract
 					int outDirection = carOutTransformations.get(nextLinkId);
 					if(carTimeouts[inDirection][outDirection] <= now){
 						//Ignoring left turns when using right priority.
-						if (! this.qNode.moveVehicleOverNode(veh, inLink, lane, now, true )) {
+						if (! this.qNode.moveVehicleOverNode(veh, inLink, lane, now, MoveType.GENERAL, stuckChangesOrderAtRightPriority)) {
 							break;
 						}
 						timeoutModifier.updateTimeouts(bicycleTimeouts, carTimeouts, 
 								inDirection, outDirection, null, nowish);
+						continue;
 					} else {
+						if(allowStuckTimeoutMoves && this.qNode.vehicleIsStuck(lane, now, MoveType.GENERAL)) {
+							this.qNode.moveVehicleFromInlinkToOutlink(veh, inLink, lane, now, MoveType.GENERAL);
+							if(stuckTimeoutChangesOrderAtRightPriority) {
+								timeoutModifier.updateTimeouts(bicycleTimeouts, carTimeouts, 
+										inDirection, outDirection, null, nowish);
+								continue;
+							}
+						}
 						break;
 					}
 				}

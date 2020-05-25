@@ -66,7 +66,7 @@ public class RunMatsimSpeedHeterogeneity {
 	final static int lastIteration = 1;
 
 	public static void main(String[] args) {
-		Config config = RunMatsim.createConfigFromExampleName(Arrays.asList(TransportMode.bike));	
+		Config config = RunMatsim.createConfigFromExampleName(Arrays.asList(TransportMode.bike), 0.2, 5);	
 		config.controler().setLastIteration(lastIteration);
 		config.controler().setOutputDirectory("./output/SpeedHeterogeneity/");
 	

@@ -257,7 +257,7 @@ final class QueueWithBufferForRoW_simpler implements QLaneI, SignalizeableItem {
 		QFFFAbstractNode toNode = ((QFFFNode) this.qLink.getToNodeQ()).getQFFFAbstractNode();
 		// Left buffer
 		if(toNode instanceof QFFFNodeDirectedPriorityNode && 
-				((QFFFNodeDirectedPriorityNode) toNode).isLeftTurn(this.qLink.getId(), nextLinkId) ){
+				((QFFFNodeDirectedPriorityNode) toNode).isCarLeftTurn(this.qLink.getId(), nextLinkId) ){
 			if(leftBuffer.isEmpty() & generalBuffer.isEmpty()){
 				bufferLastMovedTime = now;
 			}

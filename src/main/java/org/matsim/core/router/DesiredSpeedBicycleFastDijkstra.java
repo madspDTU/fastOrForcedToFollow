@@ -21,6 +21,7 @@
 package org.matsim.core.router;
 
 import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.core.router.priorityqueue.BinaryMinHeap;
@@ -73,6 +74,7 @@ public class DesiredSpeedBicycleFastDijkstra extends FastDijkstra {
 		String idString = person.getId().toString();
 		VehicleType vehicleType = VehicleUtils.getFactory().createVehicleType(
 				Id.create(idString, VehicleType.class));
+		vehicleType.setNetworkMode(TransportMode.bike);
 		double v_0 = (double) person.getAttributes().getAttribute( FFFConfigGroup.DESIRED_SPEED );
 		vehicleType.setMaximumVelocity(v_0);
 		Vehicle actualVehicle = VehicleUtils.getFactory().createVehicle(

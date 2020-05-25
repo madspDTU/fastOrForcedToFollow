@@ -32,6 +32,8 @@ public class TestCopenhagenNetwork {
 	public static void main(String[] args) {
 
 
+		System.exit(-1);
+		
 		Config combinedConfig = ConfigUtils.createConfig();
 		Scenario combinedScenario = ScenarioUtils.createScenario(combinedConfig);
 		Population combinedPop = combinedScenario.getPopulation();

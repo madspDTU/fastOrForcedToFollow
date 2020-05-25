@@ -40,7 +40,7 @@ public class FFFLegScoring implements LegScoring{
 	public void handleLeg(Leg leg) {
 		FFFModeUtilityParameters modeParams = params.modeParams.get(leg.getMode());
 
-		double travelTime = leg.getTravelTime();
+		double travelTime = leg.getTravelTime().seconds();
 		double distance = leg.getRoute().getDistance(); 
 		double congestedTravelTime = 0;
 		if( leg.getMode().equals(TransportMode.bike) ){

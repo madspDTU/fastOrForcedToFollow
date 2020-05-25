@@ -67,7 +67,7 @@ public class DesiredSpeedBicycleDijkstraFactory implements LeastCostPathCalculat
 		return new Dijkstra(network, travelCosts, travelTimes);
 	}
 	
-	public synchronized LeastCostPathCalculator createDesiredSpeedPathCalculator(final Network network, final TravelDisutility travelCosts, final TravelTime travelTimes) {
+	public synchronized LeastCostPathCalculator createDesiredSpeedPathCalculator(final Network network, final TravelDisutility travelCosts, final TravelTime travelTimes, String mode) {
 		if (this.usePreProcessData) {
 			PreProcessDijkstra preProcessDijkstra = this.preProcessData.get(network);
 			if (preProcessDijkstra == null) {

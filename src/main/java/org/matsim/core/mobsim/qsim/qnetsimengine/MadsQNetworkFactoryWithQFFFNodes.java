@@ -30,7 +30,8 @@ import org.matsim.core.gbl.Gbl;
 import org.matsim.core.mobsim.framework.MobsimTimer;
 import org.matsim.core.mobsim.qsim.interfaces.AgentCounter;
 import org.matsim.core.mobsim.qsim.pt.TransitStopAgentTracker;
-import org.matsim.core.mobsim.qsim.qnetsimengine.QNetsimEngine.NetsimInternalInterface;
+import org.matsim.core.mobsim.qsim.qnetsimengine.QNetsimEngineI.NetsimInternalInterface;
+import org.matsim.core.mobsim.qsim.qnetsimengine.QueueWithBufferForRoW.Builder;
 import org.matsim.core.mobsim.qsim.qnetsimengine.vehicleq.VehicleQ;
 import org.matsim.vis.snapshotwriters.SnapshotLinkWidthCalculator;
 
@@ -55,6 +56,10 @@ public class MadsQNetworkFactoryWithQFFFNodes extends AbstractMadsQNetworkFactor
 
 	@Override
 	public QLinkI createNetsimLink(final Link link, final QNodeI toQueueNode) {
+		
+		QFFFAbstractNode nodeType = ((QFFFNode) toQueueNode).getQFFFAbstractNode();
+		// TODO capacity based on nodetype and highway type (from osm);
+		
 		if ( link.getAllowedModes().contains( TransportMode.bike ) ) {
 
 			Gbl.assertIf( link.getAllowedModes().size()==1 ); // not possible with multi-modal links! kai, oct'18
@@ -63,7 +68,13 @@ public class MadsQNetworkFactoryWithQFFFNodes extends AbstractMadsQNetworkFactor
 			return linkBuilder.build( link, toQueueNode );
 		} else {
 			QLinkImpl.Builder linkBuilder = new QLinkImpl.Builder( context, netsimEngine );
-			linkBuilder.setLaneFactory(new QueueWithBufferForRoW.Builder( context ));
+			Builder laneBuilder = new QueueWithBufferForRoW.Builder( context );
+			if(link.getNumberOfLanes() == 1 && link.getCapacity() <= 600) {
+				laneBuilder.setMaximumLeftBufferLength(fffNodeConfig.getSmallRoadLeftBufferCapacity());
+			} else {
+				laneBuilder.setMaximumLeftBufferLength(Integer.MAX_VALUE);
+			}
+			linkBuilder.setLaneFactory(laneBuilder);
 			return linkBuilder.build( link, toQueueNode );
 		}
 	}

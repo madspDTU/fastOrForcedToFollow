@@ -1,10 +1,13 @@
 package org.matsim.core.router;
 
 import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.TransportMode;
+import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.core.config.groups.GlobalConfigGroup;
+import org.matsim.core.gbl.Gbl;
 import org.matsim.core.router.util.*;
 import org.matsim.vehicles.Vehicle;
 import org.matsim.vehicles.VehicleType;
@@ -19,27 +22,39 @@ import java.util.Map;
 
 public class DesiredSpeedBicycleFastAStarLandmarks extends FastAStarLandmarks {
 
+
+	public String mode;
+
 	DesiredSpeedBicycleFastAStarLandmarks(RoutingNetwork routingNetwork, PreProcessLandmarks preProcessData,
 			TravelDisutility costFunction, TravelTime timeFunction, double overdoFactor,
-			FastRouterDelegateFactory fastRouterFactory) {
+			FastRouterDelegateFactory fastRouterFactory, String mode) {
 		super(routingNetwork, preProcessData, costFunction, timeFunction, overdoFactor, fastRouterFactory);
+		this.mode = mode;
 	}
 
 	@Override
 	public Path calcLeastCostPath(final Node fromNode, final Node toNode, final double startTime,
 			final Person person, final Vehicle vehicle) {
-		
+
 		String idString = person.getId().toString();
 		VehicleType vehicleType = VehicleUtils.getFactory().createVehicleType(
-				Id.create(idString, VehicleType.class));
-	
-		double v_0 = (double) person.getAttributes().getAttribute( FFFConfigGroup.DESIRED_SPEED );
-		vehicleType.setMaximumVelocity(v_0);
-
+				Id.create(person.getId(), VehicleType.class));
+		vehicleType.setNetworkMode(this.mode);
+		if(this.mode.equals(TransportMode.bike)) {
+			double v_0 = (double) person.getAttributes().getAttribute( FFFConfigGroup.DESIRED_SPEED );
+			vehicleType.setMaximumVelocity(v_0);
+		} else if(this.mode.equals(TransportMode.car)) {
+			vehicleType.setMaximumVelocity(130/3.6);
+		}
 		Vehicle actualVehicle = VehicleUtils.getFactory().createVehicle(
-				Id.createVehicleId(idString), vehicleType);
-			
-		return super.calcLeastCostPath(fromNode, toNode, startTime, person, actualVehicle);
+				Id.createVehicleId(idString), vehicleType);	
+		double minTravelCostPerLength = 1/60. / vehicleType.getMaximumVelocity();
+		super.setMinTravelCostPerLength(minTravelCostPerLength);
+		
+		Path path =  super.calcLeastCostPath(fromNode, toNode, startTime, person, actualVehicle);	
+		
+		Gbl.assertIf(super.getMinTravelCostPerLength() == minTravelCostPerLength);
+		return path;
 	}
 
 	/*
@@ -136,5 +151,5 @@ public class DesiredSpeedBicycleFastAStarLandmarks extends FastAStarLandmarks {
 			return new DesiredSpeedBicycleFastAStarLandmarks(routingNetwork, preProcessLandmarks, travelCosts, travelTimes, overdoFactor, fastRouterFactory);
 		}
 	}
-	*/
+	 */
 }

@@ -15,6 +15,7 @@ import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.population.PopulationFactory;
+import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.GlobalConfigGroup;
 import org.matsim.core.config.groups.PlansCalcRouteConfigGroup;
 import org.matsim.core.network.NetworkUtils;
@@ -25,36 +26,27 @@ import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.router.util.LeastCostPathCalculatorFactory;
 import org.matsim.core.router.util.TravelTime;
 
+import com.google.inject.name.Named;
+
+import fastOrForcedToFollow.configgroups.FFFConfigGroup;
+import fastOrForcedToFollow.configgroups.FFFScoringConfigGroup;
+
 public class NetworkRoutingProviderWithCleaning implements Provider<RoutingModule> {
 	private static final Logger log = Logger.getLogger( NetworkRoutingProviderWithCleaning.class ) ;
 
 	private final String routingMode;
+	
+	@Inject Map<String, TravelTime> travelTimes;
+	@Inject Map<String, TravelDisutilityFactory> travelDisutilityFactories;
+	@Inject SingleModeNetworksCache singleModeNetworksCache;
+	@Inject PlansCalcRouteConfigGroup plansCalcRouteConfigGroup;
+	@Inject Network network;
+	@Inject PopulationFactory populationFactory;
+	@Inject LeastCostPathCalculatorFactory leastCostPathCalculatorFactory;
+	@Inject Scenario scenario ;
 	@Inject
-	Map<String, TravelTime> travelTimes;
-
-	@Inject
-	Map<String, TravelDisutilityFactory> travelDisutilityFactories;
-
-	@Inject
-	SingleModeNetworksCache singleModeNetworksCache;
-
-	@Inject
-	PlansCalcRouteConfigGroup plansCalcRouteConfigGroup;
-
-	@Inject
-	GlobalConfigGroup globalConfigGroup;
-
-	@Inject
-	Scenario scenario;
-
-	@Inject
-	Network network;
-
-	@Inject
-	PopulationFactory populationFactory;
-
-	@Inject
-	LeastCostPathCalculatorFactory leastCostPathCalculatorFactory;
+	@Named(TransportMode.walk)
+	private RoutingModule walkRouter;
 
 	/**
 	 * This is the older (and still more standard) constructor, where the routingMode and the resulting mode were the
@@ -80,6 +72,7 @@ public class NetworkRoutingProviderWithCleaning implements Provider<RoutingModul
 		this.mode = mode;
 		this.routingMode = routingMode ;
 	}
+	
 
 	private final String mode;
 
@@ -87,7 +80,7 @@ public class NetworkRoutingProviderWithCleaning implements Provider<RoutingModul
 	public RoutingModule get() {
 		log.debug( "requesting network routing module with routingMode="
 				+ routingMode + ";\tmode=" + mode) ;
-
+		
 		// the network refers to the (transport)mode:
 		Network filteredNetwork = null;
 
@@ -112,7 +105,9 @@ public class NetworkRoutingProviderWithCleaning implements Provider<RoutingModul
 		TravelTime travelTime = travelTimes.get(routingMode);
 		if (travelTime == null) {
 			throw new RuntimeException("No TravelTime bound for mode "+routingMode+".");
-		}
+		} 
+		
+
 		LeastCostPathCalculator routeAlgo =
 				leastCostPathCalculatorFactory.createPathCalculator(
 						filteredNetwork,
@@ -120,31 +115,36 @@ public class NetworkRoutingProviderWithCleaning implements Provider<RoutingModul
 						travelTime);
 		
 		LeastCostPathCalculator routeAlgoBicycle;
-		if(routeAlgo instanceof DesiredSpeedBicycleFastAStarLandmarksFactory) {
-			DesiredSpeedBicycleFastAStarLandmarksFactory ra = 
-					(DesiredSpeedBicycleFastAStarLandmarksFactory) routeAlgo;
-			routeAlgoBicycle = ra.createDesiredSpeedPathCalculator(filteredNetwork, 
-					travelDisutilityFactory.createTravelDisutility(travelTime), travelTime);
-		} else if(routeAlgo instanceof DesiredSpeedBicycleFastDijkstraFactory ) {
-			DesiredSpeedBicycleFastDijkstraFactory ra = 
-					(DesiredSpeedBicycleFastDijkstraFactory) routeAlgo;
-			routeAlgoBicycle = ra.createDesiredSpeedPathCalculator(filteredNetwork, 
-					travelDisutilityFactory.createTravelDisutility(travelTime), travelTime);
-		} else if(routeAlgo instanceof DesiredSpeedBicycleDijkstraFactory ) {
-			DesiredSpeedBicycleDijkstraFactory ra = (DesiredSpeedBicycleDijkstraFactory) routeAlgo;
-			routeAlgoBicycle = ra.createDesiredSpeedPathCalculator(filteredNetwork, 
-					travelDisutilityFactory.createTravelDisutility(travelTime), travelTime);
+		if(leastCostPathCalculatorFactory instanceof DesiredSpeedBicycleFastAStarLandmarksFactory) {
+			DesiredSpeedBicycleFastAStarLandmarksFactory fac = 
+					(DesiredSpeedBicycleFastAStarLandmarksFactory) leastCostPathCalculatorFactory ;
+			routeAlgoBicycle = fac.createDesiredSpeedPathCalculator(filteredNetwork, 
+					travelDisutilityFactory.createTravelDisutility(travelTime), travelTime, mode);
+		} else if(leastCostPathCalculatorFactory instanceof DesiredSpeedBicycleFastDijkstraFactory ) {
+			DesiredSpeedBicycleFastDijkstraFactory fac = 
+					(DesiredSpeedBicycleFastDijkstraFactory) leastCostPathCalculatorFactory ;
+			routeAlgoBicycle = fac.createDesiredSpeedPathCalculator(filteredNetwork, 
+					travelDisutilityFactory.createTravelDisutility(travelTime), travelTime, mode);
+		} else if(leastCostPathCalculatorFactory instanceof DesiredSpeedBicycleDijkstraFactory ) {
+			DesiredSpeedBicycleDijkstraFactory fac = (DesiredSpeedBicycleDijkstraFactory) leastCostPathCalculatorFactory ;
+			routeAlgoBicycle = fac.createDesiredSpeedPathCalculator(filteredNetwork, 
+					travelDisutilityFactory.createTravelDisutility(travelTime), travelTime, mode);
 		} else {
 			routeAlgoBicycle = routeAlgo;
 		}
-
+	
 		// the following again refers to the (transport)mode, since it will determine the mode of the leg on the network:
 		if ( plansCalcRouteConfigGroup.isInsertingAccessEgressWalk() ) {
-			return DefaultRoutingModules.createAccessEgressNetworkRouter(mode, 	mode.equals(TransportMode.bike) ? routeAlgoBicycle : routeAlgo, 
-					scenario, filteredNetwork);
+			RoutingModule router = walkRouter;
+			if (mode.equals(TransportMode.walk)) {
+				router = null;
+			}
+			//Used to be a separate route for non-bicycles, but has been embedded within router now, Mads. 
+			return DefaultRoutingModules.createAccessEgressNetworkRouter(mode, 	routeAlgoBicycle, 
+					scenario, filteredNetwork, router);
 		} else {
-			return DefaultRoutingModules.createPureNetworkRouter(mode, populationFactory, filteredNetwork,
-					mode.equals(TransportMode.bike) ? routeAlgoBicycle : routeAlgo);
+			//Used to be a separate route for non-bicycles, but has been embedded within router now, Mads. 
+			return DefaultRoutingModules.createPureNetworkRouter(mode, populationFactory, filteredNetwork, routeAlgoBicycle);
 		}
 	}
 }

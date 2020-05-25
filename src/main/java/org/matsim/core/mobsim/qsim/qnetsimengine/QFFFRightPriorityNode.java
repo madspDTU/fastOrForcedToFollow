@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.TreeMap;
 
+import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QLaneI;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QLinkI;
@@ -14,7 +15,7 @@ import org.matsim.core.mobsim.qsim.qnetsimengine.QNetwork;
 import fastOrForcedToFollow.timeoutmodifiers.RightPriorityBicycleTimeoutModifier;
 import fastOrForcedToFollow.timeoutmodifiers.RightPriorityCarTimeoutModifier;
 
-public class QFFFRightPriorityNode extends QFFFAbstractNode{
+public class QFFFRightPriorityNode extends QFFFAbstractNode{ // implements HasLeftBuffer{
 
 
 	QFFFRightPriorityNode(final QFFFNode qNode, final TreeMap<Double, LinkedList<Link>> bundleMap, QNetwork qNetwork){
@@ -68,5 +69,18 @@ public class QFFFRightPriorityNode extends QFFFAbstractNode{
 
 		return true;
 	}
+
+
+//	@Override
+//	public boolean isCarLeftTurn(Id<Link> fromLink, Id<Link> toLink) {
+//		int inDirection = carInTransformations.get(fromLink) + 1;
+//		int outDirection = carOutTransformations.get(toLink);
+//		
+//		if(inDirection == carInLinks.length) {
+//			return outDirection != 0;
+//		} else {
+//			return inDirection != outDirection;
+//		}
+//	}
 
 }

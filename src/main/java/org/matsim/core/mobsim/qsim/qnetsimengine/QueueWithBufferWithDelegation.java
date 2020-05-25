@@ -252,7 +252,7 @@ class QueueWithBufferWithDelegation implements QLaneI, SignalizeableItem{
 		QFFFAbstractNode toQFFFAbstractNode = toQFFFNode.getQFFFAbstractNode();
 		// Left buffer
 		if(toQFFFAbstractNode instanceof QFFFNodeDirectedPriorityNode && 
-				((QFFFNodeDirectedPriorityNode) toQFFFAbstractNode).isLeftTurn(this.qLink.getId(), nextLinkId) ){
+				((QFFFNodeDirectedPriorityNode) toQFFFAbstractNode).isCarLeftTurn(this.qLink.getId(), nextLinkId) ){
 			if(generalBuffer.isEmpty() && leftBuffer.isEmpty()){
 				bufferLastMovedTime = now;
 			}
@@ -333,6 +333,9 @@ class QueueWithBufferWithDelegation implements QLaneI, SignalizeableItem{
 			}
 
 			addToBuffer(veh);
+			
+			//Event here....
+			
 			removeVehicleFromQueue(veh);
 			if(context.qsimConfig.isRestrictingSeepage()
 					&& context.qsimConfig.getLinkDynamics()==LinkDynamics.SeepageQ

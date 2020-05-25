@@ -96,7 +96,7 @@ public class DesiredSpeedBicycleFastDijkstraFactory implements LeastCostPathCalc
 	}
 	
 	public synchronized LeastCostPathCalculator createDesiredSpeedPathCalculator(final Network network,
-			final TravelDisutility travelCosts, final TravelTime travelTimes) {
+			final TravelDisutility travelCosts, final TravelTime travelTimes, String mode) {
 		RoutingNetwork routingNetwork = this.routingNetworks.get(network);
 		PreProcessDijkstra preProcessDijkstra = this.preProcessData.get(network);
 
@@ -117,6 +117,6 @@ public class DesiredSpeedBicycleFastDijkstraFactory implements LeastCostPathCalc
 		}
 		FastRouterDelegateFactory fastRouterFactory = new ArrayFastRouterDelegateFactory();
 
-		return new FastDijkstra(routingNetwork, travelCosts, travelTimes, preProcessDijkstra, fastRouterFactory);
+		return new DesiredSpeedBicycleFastDijkstra(routingNetwork, travelCosts, travelTimes, preProcessDijkstra, fastRouterFactory);
 	}
 }

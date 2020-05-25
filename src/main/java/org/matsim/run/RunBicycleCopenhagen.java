@@ -4,47 +4,48 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+
+import javax.swing.text.StyleContext.SmallAttributeSet;
 
 import org.matsim.api.core.v01.Coord;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
+import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
-import org.matsim.api.core.v01.population.Leg;
-import org.matsim.api.core.v01.population.Person;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.ControlerConfigGroup.RoutingAlgorithmType;
-import org.matsim.core.config.groups.QSimConfigGroup.VehiclesSource;
-import org.matsim.core.config.groups.StrategyConfigGroup.StrategySettings;
-import org.matsim.core.controler.AbstractModule;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
-import org.matsim.core.replanning.strategies.DefaultPlanStrategiesModule.DefaultSelector;
-import org.matsim.core.replanning.strategies.DefaultPlanStrategiesModule.DefaultStrategy;
-import org.matsim.core.router.NetworkRoutingProviderWithCleaning;
-import org.matsim.core.router.TripStructureUtils;
+import org.matsim.core.mobsim.qsim.qnetsimengine.QFFFAbstractNode;
+import org.matsim.core.population.FFFPlan;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.vehicles.VehicleType;
 
-import fastOrForcedToFollow.configgroups.FFFConfigGroup;
 import fastOrForcedToFollow.configgroups.FFFNodeConfigGroup;
 import fastOrForcedToFollow.configgroups.FFFScoringConfigGroup;
-import fastOrForcedToFollow.scoring.FFFModeUtilityParameters;
-import fastOrForcedToFollow.scoring.FFFScoringFactory;
+import fastOrForcedToFollow.configgroups.FFFScoringConfigGroup.PlanSelectorType;
 
 public class RunBicycleCopenhagen {
 
-	public static int numberOfGlobalThreads = 3;
+	public static int numberOfGlobalThreads = 20;
 	public static Collection<String> networkModes = null;
-	public static final double capFactor = 0.1;
+	public static final double flowCapFactor = 0.2;
+	public static final double storageCapFactor = 0.3;
+	public static final double stuckTime = 10.;
+	
 
-	//public static String outputBaseDir = "/work1/s103232/ABMTRANS2019/"; // With
-	public static String outputBaseDir = "C:/Users/madsp/DTA/Output/"; // With
+
+	public static String outputBaseDir = "/work1/s103232/DTA2020/"; // With
+	//public static String outputBaseDir = "C:/Users/madsp/DTA/Output/"; // With
+	private static int numberOfThreadsReservedForParallelEventHandling = 2;
+	private static double reRoutingProportion = 0.1;
+	private static int choiceSetSize = 5;
+	public static double qSimEndTime = 30 * 3600.;
 
 	// final
 	// /
@@ -53,12 +54,12 @@ public class RunBicycleCopenhagen {
 	// public static String outputBaseDir =
 	// "C:/Users/madsp/git/fastOrForcedToFollowMaven/output/Copenhagen/";
 
-	//public final static String inputBaseDir = "/zhome/81/e/64390/MATSim/ABMTRANS2019/input/"; // With
-	//public final static String inputResumeBaseDir = "/work1/s103232/ABMTRANS2019/input/"; // With
-	public final static String inputBaseDir = "C:/Users/madsp/DTA/Input/"; // With
-	public final static String inputResumeBaseDir = "C:/Users/madsp/DTA/ResumableInput/"; // With
+	public final static String inputBaseDir = "/zhome/81/e/64390/MATSim/DTA2020/input/"; // With
+	public final static String inputResumeBaseDir = "/work1/s103232/DTA2020/input/"; // With
+	//public final static String inputBaseDir = "C:/Users/madsp/DTA/Input/"; // With
+	//public final static String inputResumeBaseDir = "C:/Users/madsp/DTA/ResumableInput/"; // With
 
-	
+
 	// final
 	// /
 
@@ -78,7 +79,6 @@ public class RunBicycleCopenhagen {
 		boolean berlin = false;
 		boolean runMatsim = true;
 		boolean resumeNonRoW = false;
-		double qSimEndTime = 100 * 3600;
 
 		List<String> analysedModes = Arrays.asList(TransportMode.bike);
 
@@ -96,6 +96,33 @@ public class RunBicycleCopenhagen {
 		}
 		if (args.length > 4) {
 			numberOfGlobalThreads = Integer.parseInt(args[4]);
+		}
+		if (args.length > 5) {
+			reRoutingProportion  = Double.parseDouble(args[5]);
+		}
+		if (args.length > 6) {
+			if(args[6].contains("b") || args[6].contains("B")) {
+				choiceSetSize = Integer.MAX_VALUE;
+			} else {
+				choiceSetSize   = Integer.parseInt(args[6]);
+			}
+		}
+		PlanSelectorType planSelectorType = PlanSelectorType.BoundedLogit;
+		if (args.length > 7) {
+			if(args[7].toLowerCase().contains("g")) {
+				planSelectorType = PlanSelectorType.GradualBoundedLogit;
+			} else if(args[7].toLowerCase().contains("b")) {
+				planSelectorType = PlanSelectorType.BestBounded;
+			}
+		}
+		boolean approximateNullLinkToLinkTravelTimes = false;
+		if (args.length > 8) {
+			if(args[8].toLowerCase().contains("tru") || args[8].toLowerCase().contains("ye")) {
+				System.out.println("Approximating link-to-link travel times when none exist");
+				approximateNullLinkToLinkTravelTimes = true;
+			} else {
+				System.out.println("NOT Approximating link-to-link travel times when none exist");
+			}
 		}
 
 		if (scenarioType.contains("NoCongestion")) {
@@ -123,7 +150,7 @@ public class RunBicycleCopenhagen {
 		if(scenarioType.contains("Resume")){
 			resumeNonRoW = true;
 		}
-		if (scenarioType.contains("DasAuto")) {
+		if (scenarioType.contains("Auto")) {
 			carOnly = true;
 			carsAreSomehowIncluded = true;
 		}
@@ -148,15 +175,14 @@ public class RunBicycleCopenhagen {
 			networkModes = Arrays.asList(TransportMode.bike);
 		}
 
-		Config config = RunMatsim.createConfigFromExampleName(networkModes);
+		Config config = RunMatsim.createConfigFromExampleName(networkModes, reRoutingProportion, choiceSetSize, planSelectorType);
 		config.controler().setOutputDirectory(outputBaseDir + scenarioType);
 
 		String size = null;
-		if (scenarioType.substring(0, 4).equals("full")) {
-			size = "full";
-		} else if (scenarioType.substring(0, 5).equals("small")) {
-			size = "small";
-			numberOfGlobalThreads = 1;
+		if (scenarioType.contains("Full")) {
+			size = "Full";
+		} else if (scenarioType.contains("Small")) {
+			size = "Small";
 		}
 		config.controler().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists);
 		config.controler().setLastIteration(lastIteration);
@@ -164,31 +190,81 @@ public class RunBicycleCopenhagen {
 			config.controler().setLastIteration(0);
 		}
 
-		config.controler().setWritePlansInterval(config.controler().getLastIteration() + 1);
-		config.controler().setWriteEventsInterval(config.controler().getLastIteration() + 1);
+		config.controler().setWritePlansInterval(lastIteration);
+		config.controler().setWritePlansUntilIteration(-1);
+		config.controler().setWriteEventsInterval(lastIteration);
+		config.controler().setWriteEventsUntilIteration(-1);
+		config.controler().setWriteSnapshotsInterval(0);
+		config.controler().setWriteTripsInterval(0);
+
+		config.linkStats().setAverageLinkStatsOverIterations(0);
+		config.linkStats().setWriteLinkStatsInterval(0);
+
+
+		config.parallelEventHandling().setSynchronizeOnSimSteps(true); //Is this neede to trigger my own, or will it be ignored???? 'mads may'20.
 
 		config.global().setNumberOfThreads(numberOfGlobalThreads);
-		config.qsim().setNumberOfThreads(numberOfGlobalThreads - 1);
-		config.parallelEventHandling().setNumberOfThreads(1);
-		
+		if(args[0].toLowerCase().contains("cheat")) {
+			numberOfThreadsReservedForParallelEventHandling = 4;
+		} else if(roW) {
+			numberOfThreadsReservedForParallelEventHandling = 2;
+		} else {
+			numberOfThreadsReservedForParallelEventHandling = 3;
+		}
+		config.qsim().setNumberOfThreads(numberOfGlobalThreads - numberOfThreadsReservedForParallelEventHandling);
+		config.parallelEventHandling().setNumberOfThreads(numberOfThreadsReservedForParallelEventHandling);
+
+
+		/// A: Old TravelTimeCalculator. QSim: 19, WITH linkTravelTime.  Not synchronized. 4 billion
+		/// B: Old TravelTimeCalculator. QSim: 19. WITHOUT linkTravelTIME, and thus WRONG.  Not synchronized. 4 billion
+		/// C: New TravelTimeCalculator. QSim: 18 WITHOUT linkTravelTime.  Not synchronized. 4 billion
+		/// D: New TravelTimeCalculator. QSim: 16 WITHOUT linkTavelTime. Not synchronized. 550 millon
+		/// E: New TravelTimeCalculator. QSim: 16 WITHOUT linkTravelTime. Not Synchronized. 550 million. (Might have been linkleaveomitted)...
+		/// F: New TravelTimeCalculator. QSim: 18 WITHOUT linkTravelTime. Not synchronized. LinkLeaveIn. 0 events. (aiming for fully during)
+		/// G: New TravelTimeCalculator. QSim: 18 WITHOUT linkTravelTime. Not synchronized. LinkLeaveIn. 5 billion evens. (aiming for fully after)
+		/// H: New TravelTimeCalculator. QSim: 16 WITHOUT linkTravelTime. Synchronized. LinkLeaveIn. 42l never read!
+		/// I: New TravelTimeCalculator. QSim: 18 WITHOUT linkTravelTime. Synchronized. LinkLeaveIn. 42l never read!
+		/// J_died: New TravelTimeCalculator. QSim: 14 WITHOUT linkTravelTime. Synchronized. LinkLeaveIn. 42l never read!
+		/// J: New TravelTimeCalculator. QSim: 16 WITHOUT linkTravelTime. My Not synchronized. LinkLeaveIn. 
+		/// K: New TravelTimeCalculator. QSim: 18 WITHOUT linkTravelTime. My Not Synchronized. LinkLeaveIn. 
+		/// l: New TravelTimeCalculator. QSim: 18 WITHOUT linkTravelTime. My Not synchronized. LinkLeaveOmitted. 
+		/// m: New TravelTimeCalculator. QSim: 19 WITHOUT linkTravelTime. My Not synchronized. LinkLeaveOmitted. 
+		/// n: New TravelTimeCalculator. QSim: 17 WITHOUT linkTravelTime. My Not synchronized. LinkLeaveOmitted. 
+		/// o: New TravelTimeCalcflasulator. QSim: 16 WITHOUT linkTravelTime. My Not synchronized. LinkLeaveOmitted. 
+
+
+
+
+
+
+
+
+
 		if(roW){
-				config.controler().setLinkToLinkRoutingEnabled(true);
-				config.travelTimeCalculator().setCalculateLinkToLinkTravelTimes(true);
-				config.travelTimeCalculator().setSeparateModes(false);
-				config.controler().setRoutingAlgorithmType(RoutingAlgorithmType.FastDijkstra);
+			config.controler().setLinkToLinkRoutingEnabled(true);
+			config.travelTimeCalculator().setCalculateLinkToLinkTravelTimes(true);
+			config.travelTimeCalculator().setCalculateLinkTravelTimes(false);
+			config.travelTimeCalculator().setSeparateModes(false);
 		} 
 
 		config.global().setCoordinateSystem("EPSG:32632"); // /EPSG:32632 is
 		// WGS84 UTM32N
 
 		config.qsim().setEndTime(qSimEndTime);
+		config.qsim().setStuckTime(stuckTime);
+		config.travelTimeCalculator().setMaxTime((int) Math.round(qSimEndTime));
 
 		if (roW) {
 			RunMatsim.addRoWModuleToConfig(config, tenPercentCars);
+			if(!config.travelTimeCalculator().isCalculateLinkTravelTimes()) {
+				System.out.println("Omitting linkLeaveEvents");
+				ConfigUtils.addOrGetModule(config, FFFNodeConfigGroup.class).setOmitLinkLeaveEvents(true);
+				ConfigUtils.addOrGetModule(config, FFFNodeConfigGroup.class).setApproximateNullLinkToLinkTravelTimes(approximateNullLinkToLinkTravelTimes);				
+			}
 		}
 		if (tenPercentCars) {
-			config.qsim().setFlowCapFactor(capFactor); // This has to be calibrated
-			config.qsim().setStorageCapFactor(capFactor); // This has to be calibrated
+			config.qsim().setFlowCapFactor(flowCapFactor); // This has to be calibrated
+			config.qsim().setStorageCapFactor(storageCapFactor); // This has to be calibrated
 			config.qsim().setStuckTime(60); // This has to be calibrated
 		}
 
@@ -205,7 +281,13 @@ public class RunBicycleCopenhagen {
 			config.network().setInputFile(inputBaseDir + "MATSimCopenhagenNetwork_BicyclesOnly.xml.gz");
 		}
 
-		if (berlin) {
+		if(args[0].toLowerCase().contains("cheat")) {
+			config.plans().setInputFile(  "/work1/s103232/DTA2020/withNodeModelling/FullRoWAuto200azFin/output_plans.xml.gz");
+			config.network().setInputFile("/work1/s103232/DTA2020/withNodeModelling/FullRoWAuto200azFin/output_network.xml.gz");
+			config.controler().setLastIteration(0);
+		} else if(args[0].contains("DADADADADA")) {
+			config.plans().setInputFile("/zhome/81/e/64390/MATSim/DTA2020/input/dadadadada.xml");
+		} else if (berlin) {
 			config.plans().setInputFile("/zhome/81/e/64390/MATSim/input/Berlin/AllPlans_CPH_uneven_Berlin.xml.gz");
 		} else if (tenPercentCars) {
 			if(carOnly){
@@ -218,7 +300,7 @@ public class RunBicycleCopenhagen {
 			if(resumeNonRoW){
 				config.plans().setInputFile(inputResumeBaseDir + "ResumablePlans_Cars_selectedOnly.xml.gz");
 			} else {
-				config.plans().setInputFile(inputBaseDir + "CarPopulation2019_Micro_full.xml.gz");
+				config.plans().setInputFile(inputBaseDir + "CarPopulation2019_Micro_Full.xml.gz");
 			}
 		} else if (carsAreSomehowIncluded) {
 			if(resumeNonRoW){
@@ -235,7 +317,8 @@ public class RunBicycleCopenhagen {
 		}
 
 		Scenario scenario = ScenarioUtils.loadScenario(config);
-		if (!berlin) {
+		FFFPlan.convertToFFFPlans(scenario.getPopulation());
+		if (!berlin &&  !args[0].toLowerCase().contains("cheat") ) {
 			RunMatsim.cleanBicycleNetwork(scenario.getNetwork(), config);
 		}
 
@@ -263,9 +346,12 @@ public class RunBicycleCopenhagen {
 			controler = RunMatsim.createControlerWithoutCongestion(scenario);
 		}
 
+		
 		if (runMatsim) {
 			try {
+				System.gc();
 				controler.run();
+				System.gc();
 			} catch (Exception ee) {
 				ee.printStackTrace();
 			}
@@ -286,13 +372,13 @@ public class RunBicycleCopenhagen {
 			System.out.print(s + ", ");
 		}
 		System.out.println();
-		String outDir = config.controler().getOutputDirectory();
-		ConstructSpeedFlowsFromCopenhagen.run(outDir, scenarioType, -1, ignoredModes, analysedModes);
+		ConstructSpeedFlowsFromCopenhagen.run(scenario, scenarioType, -1, ignoredModes, analysedModes);
 		// PostProcessing final iteration
-		if (lastIteration != 0) {
-			ConstructSpeedFlowsFromCopenhagen.run(outDir, scenarioType, 0, ignoredModes, analysedModes);
-			// PostProcessing first iteration
-		}
+		//		if (lastIteration != 0) {
+		//			System.gc();
+		//			ConstructSpeedFlowsFromCopenhagen.run(outDir, scenarioType, 0, ignoredModes, analysedModes);
+		//			// PostProcessing first iteration
+		//		}
 
 	}
 
@@ -322,8 +408,8 @@ public class RunBicycleCopenhagen {
 		for (int i = 0; i < v.length; i++) {
 			if ((v[i].getY() < c.getY() && v[j].getY() >= c.getY()) || v[j].getY() < c.getY()
 					&& v[i].getY() >= c.getY()) {
-				if (v[i].getX() + (c.getY() - v[i].getY()) / (v[j].getY() - v[i].getY()) * (v[j].getX() - v[i].getX()) < c
-						.getX()) {
+				if (v[i].getX() + (c.getY() - v[i].getY()) / 
+						(v[j].getY() - v[i].getY()) * (v[j].getX() - v[i].getX()) < c.getX()) {
 					oddNodes = !oddNodes;
 				}
 			}

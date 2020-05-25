@@ -22,10 +22,10 @@ public class QFFFAntiPriorityNode extends QFFFAbstractNode {
 
 
 	protected QFFFAntiPriorityNode(final QFFFNode qNode, final TreeMap<Double, LinkedList<Link>> bundleMap, QNetwork qNetwork,
-			final TreeMap<Double,LinkedList<Integer>> capacities) {
+			final TreeMap<HierarchyInformation, LinkedList<Integer>> hierarchyInformations) {
 		super(qNode, bundleMap, qNetwork);
 		this.isSecondary = new boolean[carInLinks.length];
-		for(int i : capacities.lastEntry().getValue()){
+		for(int i : hierarchyInformations.lastEntry().getValue()){
 			isSecondary[i] = false;
 		}
 	}
@@ -72,8 +72,8 @@ public class QFFFAntiPriorityNode extends QFFFAbstractNode {
 		}
 
 		
-		double nowishBicycle = getNowPlusDelayBicycle(now);
-		double nowishCar = getNowPlusDelayCar(now);
+		double nowishBicycle = getNowPlusDelayBicycle(now) + 1;
+		double nowishCar = getNowPlusDelayCar(now) + 1;
 
 		
 		if(!primaryInLinkOrder.isEmpty()){
@@ -83,15 +83,18 @@ public class QFFFAntiPriorityNode extends QFFFAbstractNode {
 		
 			for(int count = 0; count < n; count++){
 				int direction = primaryInLinkOrder.get(i);
-				bicycleMoveWithFullLeftTurns(direction, now, nowishBicycle + 1,
+				bicycleMoveWithFullLeftTurns(direction, now, nowishBicycle,
 						new RightPriorityBicycleTimeoutModifier());
-				carMoveAllowingLeftTurns(direction, now, nowishCar + 1, 
+				carMoveAllowingLeftTurns(direction, now, nowishCar, 
 						new RightPriorityCarTimeoutModifier());
 				i = QFFFNodeUtils.increaseInt(i, n);
 			}
 		}
+		
+
 		if(!secondaryInLinkOrder.isEmpty()){
-			
+			nowishBicycle--;
+			nowishCar--;			
 			int n = secondaryInLinkOrder.size();
 			int i = (n == 0) ? 1 : random.nextInt(n);
 			

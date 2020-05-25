@@ -22,6 +22,8 @@
 
 package org.matsim.core.mobsim.qsim.qnetsimengine;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -35,6 +37,7 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.events.LinkEnterEvent;
 import org.matsim.api.core.v01.events.LinkLeaveEvent;
+//import org.matsim.api.core.v01.events.LinkLeaveEvent;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.gbl.Gbl;
@@ -43,12 +46,14 @@ import org.matsim.core.mobsim.framework.PassengerAgent;
 
 import fastOrForcedToFollow.Cyclist;
 import fastOrForcedToFollow.configgroups.FFFNodeConfigGroup;
-import org.matsim.core.mobsim.qsim.qnetsimengine.QNetsimEngine.NetsimInternalInterface;
+import org.matsim.core.mobsim.qsim.qnetsimengine.QNetsimEngineI.NetsimInternalInterface;
 
 /**
  * Represents a node supporting right of way at intersections.
  */
-final class QFFFNode extends AbstractQNode {
+public final class QFFFNode extends AbstractQNode {
+
+	public static enum MoveType {GENERAL, LEFT_TURN, PASSING_IMPATIENTLY_ON_THE_RIGHT};
 
 	public static class Builder {
 		private final NetsimInternalInterface netsimEngine;
@@ -68,19 +73,6 @@ final class QFFFNode extends AbstractQNode {
 
 	private static int wrnCnt = 0 ;
 
-	//	// TOBEDELETED
-	//	final AtomicBoolean active = new AtomicBoolean(false);
-	//
-	//	// TOBEDELETED
-	//	private final Node node;
-	//
-	//	// TOBEDELETED
-	//	private NetElementActivationRegistry activator = null;
-	//
-	//	// TOBEDELETED
-	//	private final Map<String, Object> customAttributes = new HashMap<>();
-
-
 	private final NetsimEngineContext context;
 
 	private final NetsimInternalInterface netsimEngine;
@@ -90,8 +82,6 @@ final class QFFFNode extends AbstractQNode {
 
 	protected QFFFNode(final Node n, NetsimEngineContext context, NetsimInternalInterface netsimEngine2, FFFNodeConfigGroup fffNodeConfig) {
 		super(n);
-		// TOBEDELETED
-		//		this.node = n;
 		this.netsimEngine = netsimEngine2 ;
 		this.context = context ;
 		this.fffNodeConfig = fffNodeConfig;
@@ -135,36 +125,39 @@ final class QFFFNode extends AbstractQNode {
 	}
 
 
-	private void calculateCapacities(TreeMap<Double, LinkedList<Link>> thetaMap,
-			TreeMap<Double, LinkedList<Integer>> carCapacities, TreeMap<Double, LinkedList<Integer>> bicycleCapacities) {
+	private void calculateHierarchyInformations(TreeMap<Double, LinkedList<Link>> thetaMap, 
+			TreeMap<HierarchyInformation, LinkedList<Integer>> carHIs, TreeMap<HierarchyInformation, LinkedList<Integer>> bicycleHIs, 
+			HashMap<String,Integer> roadValueMap) {
+
 		int i = 0;
 		for(LinkedList<Link> list : thetaMap.values()){
-
-			double highestCarCapacity = 0;
-			double highestBicycleCapacity = 0;
+			HierarchyInformation highestCarHI = new HierarchyInformation(Integer.MIN_VALUE, 0.);
+			HierarchyInformation highestBicycleHI = new HierarchyInformation(Integer.MIN_VALUE, 0.);
 
 			for(Link link : list){
+				String roadType = (String) link.getAttributes().getAttribute("type");
+				int roadValue = roadValueMap.get( roadType );
+				double capacity = link.getCapacity();
+				HierarchyInformation hi = new HierarchyInformation(roadValue, capacity);
 				if(link.getAllowedModes().contains(TransportMode.car)){
-					double capacity = link.getCapacity();
-					if(capacity > highestCarCapacity){
-						highestCarCapacity = capacity;
+					if(hi.compareTo(highestCarHI) > 0){
+						highestCarHI = hi;
 					}
 				} else if(link.getAllowedModes().contains(TransportMode.bike)){
-					double capacity = link.getNumberOfLanes();
-					if(capacity > highestBicycleCapacity){
-						highestBicycleCapacity = capacity;
+					if(hi.compareTo(highestBicycleHI) > 0){
+						highestBicycleHI = hi;
 					}
 				}
 			}
 
-			if(!carCapacities.containsKey(highestCarCapacity)){
-				carCapacities.put(highestCarCapacity, new LinkedList<Integer>());
+			if(!carHIs.containsKey(highestCarHI)){
+				carHIs.put(highestCarHI, new LinkedList<Integer>());
 			}
-			carCapacities.get(highestCarCapacity).addLast(i);
-			if(!bicycleCapacities.containsKey(highestBicycleCapacity)){
-				bicycleCapacities.put(highestBicycleCapacity, new LinkedList<Integer>());
+			carHIs.get(highestCarHI).addLast(i);
+			if(!bicycleHIs.containsKey(highestBicycleHI)){
+				bicycleHIs.put(highestBicycleHI, new LinkedList<Integer>());
 			}
-			bicycleCapacities.get(highestBicycleCapacity).addLast(i);
+			bicycleHIs.get(highestBicycleHI).addLast(i);
 			i++;
 		}
 	}
@@ -259,18 +252,46 @@ final class QFFFNode extends AbstractQNode {
 
 		//Cannot be tested later since the thetamaps are emptied during the creation of bundleMap.
 		boolean isLargeRoadsMerging = false;
+		Id<Link> largestOutLinkOfLargeRoadsDiverging = null;
+
 		if(carOutThetaMap.size() == 1 && carInThetaMap.size() == 2
 				&& bicycleOutThetaMap.size() == 0 && bicycleInThetaMap.size() == 0){
+
+			// Determining the lowest valued link...
+			int lowestRoadValue = Integer.MAX_VALUE;
+			for(Collection<Link> links : Arrays.asList(carInThetaMap.values(), carOutThetaMap.values())) {
+				for(Link link : links) {
+					int value = fffNodeConfig.getRoadTypeToValueMap().get(link.getAttributes().getAttribute("type"));
+					if(value < lowestRoadValue) {
+						lowestRoadValue = value;
+					}
+				} 
+			}
+			//Only allow node type if smallest link is at least trunk_link.
+			//	if(lowestRoadValue >= fffNodeConfig.getRoadTypeToValueMap().get("trunk_link")) {
 			isLargeRoadsMerging = true;
+			//	}
+		} else if(carOutThetaMap.size() == 2 && carInThetaMap.size() == 1
+				&& bicycleOutThetaMap.size() == 0 && bicycleInThetaMap.size() == 0) {
+			double largestCapacity = -1;
+			for(Link link : carInThetaMap.values()) {
+				if(link.getCapacity() > largestCapacity) {
+					largestCapacity = link.getCapacity();
+					largestOutLinkOfLargeRoadsDiverging = link.getId();
+				}
+			}
 		}
 
 
 		TreeMap<Double, LinkedList<Link>> bundleMap = createBundleMap(bicycleOutThetaMap, carOutThetaMap, carInThetaMap,
 				bicycleInThetaMap);
 
-	
+
 		if(isLargeRoadsMerging){
 			this.nodeType = new QFFFLargeRoadsMergingNode(this, bundleMap, network);
+			return;
+		} else if(largestOutLinkOfLargeRoadsDiverging != null) {
+			this.nodeType = new QFFFLargeRoadsDivergingNode(this, bundleMap, network, largestOutLinkOfLargeRoadsDiverging);
 			return;
 		}
 
@@ -279,37 +300,45 @@ final class QFFFNode extends AbstractQNode {
 
 		if(bundleMap.size() == 1){ // Determine if capacities are different: We now allow larger intersection types.
 			this.nodeType = new QFFFRightPriorityNode(this, bundleMap, network);
+			return;
 		} else if(bundleMap.size() == 2){
+			//Obviously fine when both bundles are proper bundles...
 			this.nodeType = new QFFFNodeDirectedPriorityNode(this, bundleMap, network);
+			return;
 		} else {
-			TreeMap<Double, LinkedList<Integer>> carCapacities = new TreeMap<Double, LinkedList<Integer>>();
-			TreeMap<Double, LinkedList<Integer>> bicycleCapacities = new TreeMap<Double, LinkedList<Integer>>();
-			calculateCapacities(bundleMap, carCapacities, bicycleCapacities);
+			TreeMap<HierarchyInformation, LinkedList<Integer>> carHIs = new TreeMap<HierarchyInformation, LinkedList<Integer>>();
+			TreeMap<HierarchyInformation, LinkedList<Integer>> bicycleHIs = new TreeMap<HierarchyInformation, LinkedList<Integer>>();
 
-			boolean areCarCapacitiesEqual = carCapacities.tailMap(Double.MIN_VALUE).size() <= 1 &&
-					!(carCapacities.tailMap(Double.MIN_VALUE).size() == 1 &&  
-					carCapacities.ceilingEntry(Double.MIN_VALUE).getValue().size() <= 1);
-			boolean areBicycleCapacitiesEqual =	 bicycleCapacities.tailMap(Double.MIN_VALUE).size() <= 1 &&
-					!(bicycleCapacities.tailMap(Double.MIN_VALUE).size() == 1 &&  
-					bicycleCapacities.ceilingEntry(Double.MIN_VALUE).getValue().size() <= 1);
+			calculateHierarchyInformations(bundleMap, carHIs, bicycleHIs, fffNodeConfig.getRoadTypeToValueMap());
+			HierarchyInformation minimumHI = new HierarchyInformation(Integer.MIN_VALUE, 0.);
+
+			boolean areCarHIsEqual = carHIs.tailMap(minimumHI).size() <= 1 &&
+					!(carHIs.tailMap(minimumHI).size() == 1 &&  
+					carHIs.ceilingEntry(minimumHI).getValue().size() <= 1);
+			boolean areBicycleHIsEqual = bicycleHIs.tailMap(minimumHI).size() <= 1 &&
+					!(bicycleHIs.tailMap(minimumHI).size() == 1 &&  
+					bicycleHIs.ceilingEntry(minimumHI).getValue().size() <= 1);
 
 
-			if(areBicycleCapacitiesEqual && areCarCapacitiesEqual){
+			if(areBicycleHIsEqual && areCarHIsEqual){
 				this.nodeType = new QFFFRightPriorityNode(this, bundleMap, network);
+				return;
 			} else {
-				TreeMap<Double, LinkedList<Integer>> capacities = carCapacities;
-				if(areCarCapacitiesEqual){
-					capacities = bicycleCapacities;
+				TreeMap<HierarchyInformation, LinkedList<Integer>> his = carHIs;
+				if(areCarHIsEqual){
+					his = bicycleHIs;
 				}
-				int largestCapacities = capacities.lastEntry().getValue().size();
-				if(largestCapacities == 1){
-					SortedMap<Double, LinkedList<Integer>> headMap = capacities.headMap(capacities.lastKey());
-					largestCapacities += headMap.get(headMap.lastKey()).size();
+				int largestHIs = his.lastEntry().getValue().size();
+				if(largestHIs == 1){
+					SortedMap<HierarchyInformation, LinkedList<Integer>> headMap = his.headMap(his.lastKey());
+					largestHIs += headMap.get(headMap.lastKey()).size();
 				}
-				if(largestCapacities == 2 || (largestCapacities == 3 && bundleMap.size() == 4) ){
-					this.nodeType = new QFFFNodeDirectedPriorityNode(this, bundleMap, network, capacities);
+				if(largestHIs == 2 || (largestHIs == 3 && bundleMap.size() == 4) ){
+					this.nodeType = new QFFFNodeDirectedPriorityNode(this, bundleMap, network, his);
+					return;
 				} else {
-					this.nodeType = new QFFFAntiPriorityNode(this, bundleMap, network, capacities);		
+					this.nodeType = new QFFFAntiPriorityNode(this, bundleMap, network, his);		
+					return;
 				}
 			}
 		} 
@@ -347,7 +376,11 @@ final class QFFFNode extends AbstractQNode {
 	private void moveVehicleFromInlinkToAbort(final QVehicle veh, final QLaneI fromLane, final double now, Id<Link> currentLinkId) {
 		fromLane.popFirstVehicle();
 		// -->
-		this.context.getEventsManager().processEvent(new LinkLeaveEvent(now, veh.getId(), currentLinkId));
+
+		// Because we only care about linkentries in this RoW setup, we do not need a linkLeaveEvent. Mads
+		if(!fffNodeConfig.getOmitLinkLeaveEvents()) {
+			this.context.getEventsManager().processEvent(new LinkLeaveEvent(now, veh.getId(), currentLinkId));
+		}
 		// <--
 
 		// first treat the passengers:
@@ -369,7 +402,8 @@ final class QFFFNode extends AbstractQNode {
 	}
 
 
-	private void moveVehicleFromInlinkToOutlink(final QVehicle veh, Id<Link> currentLinkId, final QLaneI fromLane, Id<Link> nextLinkId, QLaneI nextQueueLane, boolean pop) {
+	private void moveVehicleFromInlinkToOutlink(final QVehicle veh, Id<Link> currentLinkId, final QLaneI fromLane, 
+			Id<Link> nextLinkId, QLaneI nextQueueLane, MoveType moveType) {
 
 		double now = this.context.getSimTimer().getTimeOfDay();
 
@@ -385,13 +419,20 @@ final class QFFFNode extends AbstractQNode {
 			}
 		}
 
-		if(pop){
+		if(moveType == MoveType.GENERAL) {
 			fromLane.popFirstVehicle();
-		}
+		} else if(moveType == MoveType.LEFT_TURN) {
+			((QueueWithBufferForRoW) fromLane).popFirstLeftVehicle();
+		} // else if( moveType == MoeveType.PASSING_IMPATIENTLY_ON_THE_RIGHT { //Passing on the right pops beforehand! }
+
 		// -->
 		//		network.simEngine.getMobsim().getEventsManager().processEvent(new LaneLeaveEvent(now, veh.getId(), currentLinkId, fromLane.getId()));
 
-		this.context.getEventsManager().processEvent(new LinkLeaveEvent(now, veh.getId(), currentLinkId));
+		// Because we only care about linkentries in this RoW setup, we do not need a linkLeaveEvent. Mads
+		if(!fffNodeConfig.getOmitLinkLeaveEvents()) {
+			this.context.getEventsManager().processEvent(new LinkLeaveEvent(now, veh.getId(), currentLinkId));
+		}
+
 		// <--
 
 		veh.getDriver().notifyMoveOverNode( nextLinkId );
@@ -411,8 +452,22 @@ final class QFFFNode extends AbstractQNode {
 	 */
 
 
+
+	void moveVehicleFromInlinkToOutlink( final QVehicle veh, QLinkI fromLink, final QLaneI fromLane,
+			final double now, MoveType moveType) {
+		Id<Link> nextLinkId = veh.getDriver().chooseNextLinkId();
+		Link currentLink = veh.getCurrentLink();   // Takes it from QVehicle, so temporary link does not enter here...
+		QLinkI nextQueueLink = this.netsimEngine.getNetsimNetwork().getNetsimLinks().get(nextLinkId);
+		QLaneI	nextQueueLane = nextQueueLink.getAcceptingQLane() ;
+		moveVehicleFromInlinkToOutlink(veh, currentLink.getId(), fromLane, nextLinkId, nextQueueLane, moveType);
+	}
+
+
+
+
 	protected boolean moveVehicleOverNode( final QVehicle veh, QLinkI fromLink, final QLaneI fromLane,
-			final double now, final boolean pop ) {
+			final double now, MoveType moveType, boolean stuckReturnValue) {
+
 		Id<Link> nextLinkId = veh.getDriver().chooseNextLinkId();
 		Link currentLink = veh.getCurrentLink();   // Takes it from QVehicle, so temporary link does not enter here...
 
@@ -425,38 +480,26 @@ final class QFFFNode extends AbstractQNode {
 		//		}
 
 		QLinkI nextQueueLink = this.netsimEngine.getNetsimNetwork().getNetsimLinks().get(nextLinkId);
-
-		//		QLaneI nextQueueLane = null;
-		//		try{
-		QLaneI
-		nextQueueLane = nextQueueLink.getAcceptingQLane() ;
-		//		} catch(Exception e) {
-		//			System.out.println("NextLinkId " + nextLinkId);
-		//			System.out.println("NextQueueLink " + nextQueueLink);		
-		//			e.printStackTrace();
-		//		}
+		QLaneI	nextQueueLane = nextQueueLink.getAcceptingQLane() ;
 
 		if (nextQueueLane.isAcceptingFromUpstream()) {
-			moveVehicleFromInlinkToOutlink(veh, currentLink.getId(), fromLane, nextLinkId, nextQueueLane, pop);
+			moveVehicleFromInlinkToOutlink(veh, currentLink.getId(), fromLane, nextLinkId, nextQueueLane, moveType);
 			return true;
 		}
 
-		if (vehicleIsStuck(fromLane, now)) {
+
+		boolean vehicleIsStuck = vehicleIsStuck(fromLane, now, moveType); 
+		if (vehicleIsStuck) {
 			/* We just push the vehicle further after stucktime is over, regardless
 			 * of if there is space on the next link or not.. optionally we let them
 			 * die here, we have a config setting for that!
 			 */
-			if (this.context.qsimConfig.isRemoveStuckVehicles()) {
-				moveVehicleFromInlinkToAbort(veh, fromLane, now, currentLink.getId());
-				return false ;
-			} else {
-				moveVehicleFromInlinkToOutlink(veh, currentLink.getId(), fromLane, nextLinkId, nextQueueLane, pop);
-				return true;
+				moveVehicleFromInlinkToOutlink(veh, currentLink.getId(), fromLane, nextLinkId, nextQueueLane, moveType);
+				return stuckReturnValue;
 				// (yyyy why is this returning `true'?  Since this is a fix to avoid gridlock, this should proceed in small steps. 
 				// kai, feb'12) 
-			}
 		}
-
+		
 		return false;
 
 	}
@@ -488,8 +531,20 @@ final class QFFFNode extends AbstractQNode {
 	//		this.activator = activator;
 	//	}
 
-	private boolean vehicleIsStuck(final QLaneI fromLaneBuffer, final double now) {
-		//		final double stuckTime = network.simEngine.getStuckTime();
+	boolean vehicleIsStuck(final QLaneI fromLaneBuffer, final double now, MoveType moveType) {
+		if(moveType == MoveType.LEFT_TURN) {
+			return leftVehicleIsStuck( (QueueWithBufferForRoW) fromLaneBuffer, now);
+		} else {
+			return generalVehicleIsStuck(fromLaneBuffer, now);
+		}
+	}
+
+	private boolean leftVehicleIsStuck(final QueueWithBufferForRoW fromLaneBuffer, final double now) {
+		final double stuckTime = this.context.qsimConfig.getStuckTime() ;
+		return (now - fromLaneBuffer.getLastMovementTimeOfFirstLeftVehicle()) > stuckTime;
+	}
+
+	private boolean generalVehicleIsStuck(final QLaneI fromLaneBuffer, final double now) {
 		final double stuckTime = this.context.qsimConfig.getStuckTime() ;
 		return (now - fromLaneBuffer.getLastMovementTimeOfFirstVehicle()) > stuckTime;
 	}
@@ -501,52 +556,11 @@ final class QFFFNode extends AbstractQNode {
 	}
 
 
-	protected boolean moveCarPassingOnTheRightOverNode( final QVehicle veh, QLinkI fromLink, final QLaneI fromLane, final double now ) {
-		Id<Link> nextLinkId = veh.getDriver().chooseNextLinkId();
-		Link currentLink = veh.getCurrentLink();   // Takes it from QVehicle, so temporary link does not enter here...
-
-		QLinkI nextQueueLink = this.netsimEngine.getNetsimNetwork().getNetsimLinks().get(nextLinkId);
-		QLaneI nextQueueLane = nextQueueLink.getAcceptingQLane() ;
-		if (nextQueueLane.isAcceptingFromUpstream()) {
-			moveCarPassingOnTheRightFromInlinkToOutlink(veh, currentLink.getId(), fromLane, nextLinkId, nextQueueLane);
-			return true;
-		}
-
-		if (vehicleIsStuck(fromLane, now)) {
-			if (this.context.qsimConfig.isRemoveStuckVehicles()) {
-				moveVehicleFromInlinkToAbort(veh, fromLane, now, currentLink.getId());
-				return false ;
-			} else {
-				moveCarPassingOnTheRightFromInlinkToOutlink(veh, currentLink.getId(), fromLane, nextLinkId, nextQueueLane);
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	private void moveCarPassingOnTheRightFromInlinkToOutlink(final QVehicle veh, Id<Link> currentLinkId, final QLaneI fromLane, Id<Link> nextLinkId, QLaneI nextQueueLane) {
-
-		double now = this.context.getSimTimer().getTimeOfDay();
-
-		// The vehicle is popped at a later stage...
-		// -->
-		//		network.simEngine.getMobsim().getEventsManager().processEvent(new LaneLeaveEvent(now, veh.getId(), currentLinkId, fromLane.getId()));
-
-		this.context.getEventsManager().processEvent(new LinkLeaveEvent(now, veh.getId(), currentLinkId));
-		// <--
-
-		veh.getDriver().notifyMoveOverNode( nextLinkId );
-
-		// -->
-		this.context.getEventsManager().processEvent(new LinkEnterEvent(now, veh.getId(), nextLinkId ));
-
-		// <--
-		nextQueueLane.addFromUpstream(veh);
-	}
 
 
-	QFFFAbstractNode getQFFFAbstractNode(){
+
+
+	public QFFFAbstractNode getQFFFAbstractNode(){
 		return nodeType;
 	}
 

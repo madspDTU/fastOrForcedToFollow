@@ -218,7 +218,7 @@ public class AnalyseTravelTimesLight {
 			for(PlanElement pe : person.getSelectedPlan().getPlanElements()){
 				if(relevantLegs.contains(i)){
 					Leg leg = (Leg) pe;
-					double travelTime = leg.getTravelTime();
+					double travelTime = leg.getTravelTime().seconds();
 					double distance = leg.getRoute().getDistance();
 					double freeFlowTravelTime = travelTime;
 

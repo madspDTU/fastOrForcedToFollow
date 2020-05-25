@@ -4,18 +4,25 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.TreeMap;
 
+import org.apache.log4j.Logger;
+import org.jfree.util.Log;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
+import org.matsim.core.gbl.Gbl;
 import org.matsim.core.gbl.MatsimRandom;
+import org.matsim.core.mobsim.qsim.qnetsimengine.QFFFNode.MoveType;
+import org.matsim.core.trafficmonitoring.FFFTravelTimeCalculator;
 
 public class QFFFLargeRoadsMergingNode extends QFFFAbstractNode{
 
+	private static final Logger log = Logger.getLogger(QFFFLargeRoadsMergingNode.class);
 
-	private int leftInLink = -1;
-	private int rightInLink = -1;
+
+	private int majorInLink = -1;
+	private int minorInLink = -1;
 	private double minorProb = 0;
 	final HashMap<Id<Link>, Integer> carInTransformations;
-
+	
 
 	QFFFLargeRoadsMergingNode(final QFFFNode qNode, final TreeMap<Double, LinkedList<Link>> thetaMap, QNetwork qNetwork){
 		super(qNode, thetaMap, qNetwork);
@@ -28,10 +35,16 @@ public class QFFFLargeRoadsMergingNode extends QFFFAbstractNode{
 				outLink = i;
 			}
 		}
-		this.leftInLink = (outLink + 1)  % carInLinks.length;
-		this.rightInLink = (this.leftInLink + 1) % carInLinks.length;
-		this.minorProb = carInLinks[rightInLink].getLink().getCapacity() / 
-				(carInLinks[rightInLink].getLink().getCapacity() + carInLinks[leftInLink].getLink().getCapacity() );
+		this.majorInLink = (outLink + 1)  % carInLinks.length;
+		this.minorInLink = (this.majorInLink + 1) % carInLinks.length;
+		this.minorProb = carInLinks[this.minorInLink].getLink().getCapacity() / 
+				(carInLinks[this.minorInLink].getLink().getCapacity() + carInLinks[this.majorInLink].getLink().getCapacity() );
+		if(minorProb > 0.5) {
+			int temp = this.majorInLink;
+			this.majorInLink = this.minorInLink;
+			this.minorInLink = temp;
+			this.minorProb = 1 - this.minorProb;
+		}
 	}
 
 	/*
@@ -54,75 +67,78 @@ public class QFFFLargeRoadsMergingNode extends QFFFAbstractNode{
 
 		double minorCap = 	carInLinks[minorInLink].getLink().getCapacity();
 		double majorCap = carInLinks[majorInLink].getLink().getCapacity();
-		
+
 		Gbl.assertIf(this.inPriority != this.outPriority);
 	}
-	*/
+	 */
 
 	protected boolean doSimStep(final double now){
 
-		boolean highwayInLinkMoves = false;
-		QLinkI qLink = carInLinks[leftInLink];
+		boolean majorInLinkMoves = false;
+		QLinkI qLink = carInLinks[majorInLink];
 		if(qLink != null){
 			for(QLaneI qLane : qLink.getOfferingQLanes()){
 				if(!qLane.isNotOfferingVehicle()){
-					highwayInLinkMoves = true;
+					majorInLinkMoves = true;
 					break;
 				}
 			}
 		}
 
-		boolean rampInLinkMoves = false;
-		qLink = carInLinks[rightInLink];
+		boolean minorInLinkMoves = false;
+		qLink = carInLinks[minorInLink];
 		if(qLink != null){
 			for(QLaneI qLane : qLink.getOfferingQLanes()){
 				if(!qLane.isNotOfferingVehicle()){
-					rampInLinkMoves = true;
+					minorInLinkMoves = true;
 					break;
 				}
 			}
 		}
 
-		if(!highwayInLinkMoves && !rampInLinkMoves){
+		if(!majorInLinkMoves && !minorInLinkMoves){
 			this.qNode.setActive( false ) ;
 			return false;
 		}
 
-		QLaneI qLane = carInLinks[leftInLink].getAcceptingQLane();
-		if(rampInLinkMoves){ // Can be nullified if other lane is fully packed.
-		 rampInLinkMoves = qLane.getStorageCapacity() > qLane.getLoadIndicator();
+		QLaneI majorQLane = carInLinks[majorInLink].getAcceptingQLane();
+		if(minorInLinkMoves){ // Can be nullified if other lane is fully packed.
+			minorInLinkMoves = majorQLane.getStorageCapacity() > majorQLane.getLoadIndicator();
+//			if(minorInLinkMoves) {
+//				log.info("minorInLinkMove accepted     " + majorQLane.getStorageCapacity() + " > " +  majorQLane.getLoadIndicator());
+//			} else {
+//				log.info("minorInLinkMove prohibited   " + majorQLane.getStorageCapacity() + " <=  " +  majorQLane.getLoadIndicator());
+//			}
 		}
 
-		if(highwayInLinkMoves && rampInLinkMoves){
+		if(majorInLinkMoves && minorInLinkMoves){
 			if(random.nextDouble() < minorProb){
-				highwayMove(now, rightInLink);
-				highwayMove(now, leftInLink);
+				highwayMove(now, minorInLink);
+				highwayMove(now, majorInLink);
 			} else {
-				highwayMove(now, leftInLink);	
-				highwayMove(now, rightInLink);
+				highwayMove(now, majorInLink);	
+				highwayMove(now, minorInLink);
 			}
-		} else if(highwayInLinkMoves){
-			highwayMove(now, leftInLink);
-		} else if(rampInLinkMoves){
-			highwayMove(now, rightInLink);		
-		}
+		} else if(majorInLinkMoves){
+			highwayMove(now, majorInLink);
+		} else if(minorInLinkMoves){
+			highwayMove(now, minorInLink);		
+		} 
 
 		return true;
 	}
 
-	
-	
+
+
 	private void highwayMove(double now, int inDirection){
 		QLinkI inLink = carInLinks[inDirection];
 		if(inLink != null){
-			for(QLaneI laneI : inLink.getOfferingQLanes()){
-				QueueWithBufferForRoW lane = (QueueWithBufferForRoW) laneI;
+			for(QLaneI lane : inLink.getOfferingQLanes()){
 				while(! lane.isNotOfferingVehicle()){
 					QVehicle veh = lane.getFirstVehicle();
-					if (! this.qNode.moveVehicleOverNode(veh, inLink, lane, now, false)) {
+					if (! this.qNode.moveVehicleOverNode(veh, inLink, lane, now, MoveType.GENERAL, false)) {
 						break;
 					}
-					lane.removeFirstGeneralVehicle();
 				}
 			}
 		}

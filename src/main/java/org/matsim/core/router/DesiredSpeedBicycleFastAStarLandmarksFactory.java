@@ -20,15 +20,20 @@
 
 package org.matsim.core.router;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.matsim.api.core.v01.TransportMode;
+import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.core.config.Config;
+import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.GlobalConfigGroup;
+import org.matsim.core.gbl.Gbl;
 import org.matsim.core.router.util.ArrayRoutingNetworkFactory;
 import org.matsim.core.router.util.LeastCostPathCalculator;
 import org.matsim.core.router.util.LeastCostPathCalculatorFactory;
@@ -38,6 +43,9 @@ import org.matsim.core.router.util.RoutingNetworkFactory;
 import org.matsim.core.router.util.RoutingNetworkNode;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
+
+import fastOrForcedToFollow.configgroups.FFFConfigGroup;
+import fastOrForcedToFollow.configgroups.FFFScoringConfigGroup;
 
 @Singleton
 public class DesiredSpeedBicycleFastAStarLandmarksFactory implements LeastCostPathCalculatorFactory {
@@ -77,58 +85,68 @@ public class DesiredSpeedBicycleFastAStarLandmarksFactory implements LeastCostPa
 		}
 
 		this.nThreads = numberOfThreads;
+		//this.nThreads = 1; // Overrules, because we want many cores to work on the same network, but we don't want many networks.
 	}
 
+	@Override
 	public synchronized LeastCostPathCalculator createPathCalculator(final Network network, final TravelDisutility travelCosts, final TravelTime travelTimes) {
+		
 		RoutingNetwork routingNetwork = this.routingNetworks.get(network);
 		PreProcessLandmarks preProcessLandmarks = this.preProcessData.get(network);
-		
+
 		if (routingNetwork == null) {
 			routingNetwork = this.routingNetworkFactory.createRoutingNetwork(network);
-			
-			if (preProcessLandmarks == null) {
-				preProcessLandmarks = new PreProcessLandmarks(travelCosts);
-				preProcessLandmarks.setNumberOfThreads(nThreads);
-				preProcessLandmarks.run(network);
-				this.preProcessData.put(network, preProcessLandmarks);
-				
-				for (RoutingNetworkNode node : routingNetwork.getNodes().values()) {
-					node.setDeadEndData(preProcessLandmarks.getNodeData(node.getNode()));
-				}
-			}				
-			
+
+			preProcessLandmarks = new PreProcessLandmarks(travelCosts);
+			preProcessLandmarks.setNumberOfThreads(nThreads);
+			preProcessLandmarks.run(network);
+			this.preProcessData.put(network, preProcessLandmarks);
+
+			for (RoutingNetworkNode node : routingNetwork.getNodes().values()) {
+				node.setDeadEndData(preProcessLandmarks.getNodeData(node.getNode()));
+			}
+
 			this.routingNetworks.put(network, routingNetwork);
 		}
-		FastRouterDelegateFactory fastRouterFactory = new ArrayFastRouterDelegateFactory();
 		
+		Gbl.assertIf(routingNetwork.getNodes().size()>0);
+		FastRouterDelegateFactory fastRouterFactory = new ArrayFastRouterDelegateFactory();
+
 		final double overdoFactor = 1.0;
 		return new FastAStarLandmarks(routingNetwork, preProcessLandmarks, travelCosts, travelTimes, overdoFactor, fastRouterFactory);
 	}
 
-	
-	public synchronized LeastCostPathCalculator createDesiredSpeedPathCalculator(final Network network, final TravelDisutility travelCosts, final TravelTime travelTimes) {
+
+	public synchronized LeastCostPathCalculator createDesiredSpeedPathCalculator(final Network network, final TravelDisutility travelCosts,
+			final TravelTime travelTimes, String mode) {
 		RoutingNetwork routingNetwork = this.routingNetworks.get(network);
 		PreProcessLandmarks preProcessLandmarks = this.preProcessData.get(network);
-
-		if (routingNetwork == null) {
-			routingNetwork = this.routingNetworkFactory.createRoutingNetwork(network);
-
-			if (preProcessLandmarks == null) {
-				preProcessLandmarks = new PreProcessLandmarks(travelCosts);
-				preProcessLandmarks.setNumberOfThreads(nThreads);
-				preProcessLandmarks.run(network);
-				this.preProcessData.put(network, preProcessLandmarks);
-
-				for (RoutingNetworkNode node : routingNetwork.getNodes().values()) {
-					node.setDeadEndData(preProcessLandmarks.getNodeData(node.getNode()));
-				}
-			}				
-
-			this.routingNetworks.put(network, routingNetwork);
+		
+		boolean wrongNetwork = false;
+		if(routingNetwork != null && routingNetwork.getNodes().size() != network.getNodes().size()) {
+			wrongNetwork = true;
+			System.err.println("Network exists, but it is wrong!");
 		}
-		FastRouterDelegateFactory fastRouterFactory = new ArrayFastRouterDelegateFactory();
+		
+		if (routingNetwork == null || wrongNetwork) {
+			routingNetwork = this.routingNetworkFactory.createRoutingNetwork(network);
+			if (preProcessLandmarks == null || wrongNetwork) {
+		
+					preProcessLandmarks = new PreProcessLandmarks(travelCosts);
+					preProcessLandmarks.setNumberOfThreads(nThreads);
+					preProcessLandmarks.run(network);
+					this.preProcessData.put(network, preProcessLandmarks);
 
-		final double overdoFactor = 1.0;
-		return new DesiredSpeedBicycleFastAStarLandmarks(routingNetwork, preProcessLandmarks, travelCosts, travelTimes, overdoFactor, fastRouterFactory);
-	}
-}
+					for (RoutingNetworkNode node : routingNetwork.getNodes().values()) {
+						node.setDeadEndData(preProcessLandmarks.getNodeData(node.getNode()));
+					}
+				}				
+
+				this.routingNetworks.put(network, routingNetwork);
+			}
+			FastRouterDelegateFactory fastRouterFactory = new ArrayFastRouterDelegateFactory();
+		
+			final double overdoFactor = 1.0;
+			return new DesiredSpeedBicycleFastAStarLandmarks(routingNetwork, preProcessLandmarks, travelCosts, travelTimes, overdoFactor, fastRouterFactory, mode);
+		}
+	} 

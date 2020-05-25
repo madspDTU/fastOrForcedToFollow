@@ -11,7 +11,9 @@ import java.util.TreeMap;
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.core.gbl.Gbl;
+import org.matsim.core.mobsim.qsim.agents.PlanBasedDriverAgentImpl;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QCycleLaneWithSublinks;
+import org.matsim.core.mobsim.qsim.qnetsimengine.QFFFNode.MoveType;
 
 import fastOrForcedToFollow.timeoutmodifiers.PriorityLeftTurnCarTimeoutModifier;
 import fastOrForcedToFollow.timeoutmodifiers.RightPriorityBicycleTimeoutModifier;
@@ -19,7 +21,7 @@ import fastOrForcedToFollow.timeoutmodifiers.RightPriorityCarTimeoutModifier;
 import fastOrForcedToFollow.timeoutmodifiers.SecondaryBicycleTimeoutModifier;
 import fastOrForcedToFollow.timeoutmodifiers.TimeoutModifier;
 
-public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode{
+public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode implements HasLeftBuffer {
 
 
 	private int inPriority = -1;
@@ -32,14 +34,14 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode{
 
 
 	QFFFNodeDirectedPriorityNode(final QFFFNode qNode, final TreeMap<Double, LinkedList<Link>> thetaMap, QNetwork qNetwork,
-			final TreeMap<Double,LinkedList<Integer>> capacities){
+			final TreeMap<HierarchyInformation, LinkedList<Integer>> hierarchyInformations){
 		super(qNode, thetaMap, qNetwork);
-		if(capacities == null) {
+		if(hierarchyInformations == null) {
 			Gbl.assertIf(carInLinks.length == 2); // This constructor must only be used, when node has exactly 2 bundles
 			this.inPriority = 0;
 			this.outPriority = 1;
 		} else {
-			determinePriority(capacities);
+			determinePriority(hierarchyInformations);
 		}
 		this.isSecondary = new boolean[carInLinks.length];
 		this.carInTransformations = new HashMap<Id<Link>, Integer>();
@@ -65,11 +67,11 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode{
 				while(! lane.isNotOfferingVehicle()){	
 					QVehicle veh = lane.getFirstVehicle();
 					Id<Link> nextLinkId = veh.getDriver().chooseNextLinkId();
-					int outDirection = bicycleOutTransformations.get(nextLinkId);
+					int outDirection = getBicycleOutDirection(nextLinkId, veh);
 					int t = bicycleTurns[inDirection][outDirection];
 					if(bicycleTimeouts[inDirection][t] <= now){
 						if(t == outDirection){ // Not a partial turn
-							if (! this.qNode.moveVehicleOverNode(veh, inLink, lane, now, true )) {
+							if (! this.qNode.moveVehicleOverNode(veh, inLink, lane, now,  MoveType.GENERAL, QFFFAbstractNode.defaultStuckReturnValue)) {
 								break;
 							}
 						} else { // a partial turn
@@ -78,7 +80,21 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode{
 						}
 						timeoutModifier.updateTimeouts(bicycleTimeouts, carTimeouts, 
 								inDirection, t, isSecondary, nowish);
+						continue;
 					} else {
+						if(QFFFAbstractNode.allowStuckTimeoutMoves && this.qNode.vehicleIsStuck(lane, now, MoveType.GENERAL)){
+							if(t != outDirection){
+								t = decreaseInt(t);
+								moveLeftTurningBicyclePartiallyOverNode(veh, lane, t);
+							} else {
+								this.qNode.moveVehicleFromInlinkToOutlink(veh, inLink, lane, now, MoveType.GENERAL);	
+							}
+							if(QFFFAbstractNode.defaultTimeoutStuckReturnValue) {
+								timeoutModifier.updateTimeouts(bicycleTimeouts, carTimeouts, 
+										inDirection, t, isSecondary, nowish);
+								continue;
+							}
+						}
 						break;
 					}
 				}
@@ -87,7 +103,29 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode{
 	}
 
 
-
+	private int getBicycleOutDirection(Id<Link> nextLinkId, QVehicle veh) {
+		if(bicycleOutTransformations.containsKey(nextLinkId)) {
+			return bicycleOutTransformations.get(nextLinkId);
+		} else {
+			System.out.println(nextLinkId + " does not exist... Existing outlinks are: ");
+			for(Id<Link> linkId : bicycleOutTransformations.keySet()) {
+				System.out.println(linkId);
+			}
+			System.out.println(nextLinkId + " does not exist... Existing inlinks are: ");
+			for( QLinkI link : bicycleInLinks) {
+				System.out.println(link.getLink().getId());
+			}
+			System.out.println(veh.getDriver().getState());
+			System.out.println(veh.getDriver().getMode());
+			System.out.println(veh.getDriver().chooseNextLinkId());
+			System.out.println(veh.getDriver().isWantingToArriveOnCurrentLink());
+			System.out.println(veh.getDriver().getDestinationLinkId());
+			System.out.println(veh.getDriver().getCurrentLinkId());
+			System.out.println(veh.getDriver().getId());
+			System.exit(-1);
+			return -1;
+		}
+	}
 
 	private int[][] createBicycleTurns(){
 		// The outputs either the outdirection, or the bundle FOLLOWING the bundle with the appropriate inlink
@@ -216,9 +254,9 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode{
 	}
 
 
-	protected void determinePriority(TreeMap<Double, LinkedList<Integer>> capacities){
+	protected void determinePriority(TreeMap<HierarchyInformation, LinkedList<Integer>> hierarchyInformations){
 
-		Entry<Double,LinkedList<Integer>> entry = capacities.pollLastEntry(); //highest entry
+		Entry<HierarchyInformation, LinkedList<Integer>> entry = hierarchyInformations.pollLastEntry(); //highest entry
 		int numberOfBundlesInLargestCapacity = entry.getValue().size();
 		if(numberOfBundlesInLargestCapacity == 2){
 			this.inPriority = entry.getValue().getFirst();
@@ -226,7 +264,7 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode{
 		} else if (numberOfBundlesInLargestCapacity == 1){
 			this.inPriority = entry.getValue().getFirst();	
 
-			entry = capacities.lastEntry();
+			entry = hierarchyInformations.lastEntry();
 
 			if(entry.getValue().size() == 1){
 				this.outPriority = entry.getValue().getFirst();
@@ -246,7 +284,7 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode{
 		} else { //cumCount > 2
 			if(carInLinks.length == 4){ //cumCount must be 3 then - we thus determine capacity based on the lowest
 				Gbl.assertIf(numberOfBundlesInLargestCapacity == 3);
-				int lowestDirection = capacities.pollFirstEntry().getValue().getFirst();
+				int lowestDirection = hierarchyInformations.pollFirstEntry().getValue().getFirst();
 				this.inPriority = (lowestDirection + 3) % 4;
 				this.outPriority = (lowestDirection + 1) % 4;
 			} else if(carInLinks.length >= 5){
@@ -280,8 +318,9 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode{
 			for(int i = 0; i < carInLinks.length; i++){
 				QLinkI qLink = carInLinks[i];
 				if(qLink != null){
-					for(QLaneI qLane : qLink.getOfferingQLanes()){
-						if(!qLane.isNotOfferingVehicle()){
+					for(QLaneI qLaneI : qLink.getOfferingQLanes()){
+						QueueWithBufferForRoW qLane = (QueueWithBufferForRoW) qLaneI;
+						if(!qLane.isOfferingNeitherGeneralNorLeftVehicle()){
 							if(isSecondary[i]){
 								secondaryInLinkOrder.add(i);
 							} else {
@@ -338,7 +377,7 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode{
 			//3 ) left turn moves for cars from priority
 			for(int count = 0; count < n; count++){
 				int direction = primaryInLinkOrder.get(i);
-				leftTurnCarMove(direction, now, nowishCar, new PriorityLeftTurnCarTimeoutModifier()); // includes step-wise left turns
+				leftTurnCarMove(direction, now, nowishCar, new PriorityLeftTurnCarTimeoutModifier()); 
 				i = QFFFNodeUtils.increaseInt(i, n);
 			}
 		}
@@ -383,18 +422,25 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode{
 		if(inLink != null){
 			for(QLaneI laneI : inLink.getOfferingQLanes()){
 				QueueWithBufferForRoW lane = (QueueWithBufferForRoW) laneI;
-				while(! lane.isNotOfferingLeftVehicle()){
+				while(! lane.isNotOfferingLeftVehicle(this)){
 					QVehicle veh = lane.getFirstLeftVehicle();
 					Id<Link> nextLinkId = veh.getDriver().chooseNextLinkId();
 					int outDirection = carOutTransformations.get(nextLinkId);
-					if(carTimeouts[inDirection][outDirection] <= now && carLeftTurns[inDirection][outDirection]){
-						if (! this.qNode.moveVehicleOverNode(veh, inLink, lane, now, false)) {
+					if(carTimeouts[inDirection][outDirection] <= now){
+						if (! this.qNode.moveVehicleOverNode(veh, inLink, lane, now,  MoveType.LEFT_TURN, QFFFAbstractNode.defaultStuckReturnValue)) {
 							break;
 						}
-						lane.removeFirstLeftVehicle();
 						timeoutModifier.updateTimeouts(bicycleTimeouts, carTimeouts, inDirection, outDirection,
 								isSecondary, nowish);
 					} else {
+						if(QFFFAbstractNode.allowStuckTimeoutMoves && this.qNode.vehicleIsStuck(lane, now, MoveType.LEFT_TURN)){
+							this.qNode.moveVehicleFromInlinkToOutlink(veh, inLink, lane, now, MoveType.LEFT_TURN);
+							if(QFFFAbstractNode.defaultTimeoutStuckReturnValue) {
+								timeoutModifier.updateTimeouts(bicycleTimeouts, carTimeouts, inDirection, outDirection,
+										isSecondary, nowish);
+								continue;
+							}
+						}
 						break;
 					}
 				}
@@ -424,20 +470,27 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode{
 		if(inLink != null){
 			for(QLaneI laneI : inLink.getOfferingQLanes()){
 				QueueWithBufferForRoW lane = (QueueWithBufferForRoW) laneI;
-				while(! lane.isNotOfferingGeneralVehicle()){
+				while(! lane.isNotOfferingGeneralVehicle(this)){
 					QVehicle veh = lane.getFirstGeneralVehicle();
 					Id<Link> nextLinkId = veh.getDriver().chooseNextLinkId();
 					int outDirection = carOutTransformations.get(nextLinkId);
 					if(carTimeouts[inDirection][outDirection] <= now){
 						// No conflicting move is making the move impossible.
-						if (! this.qNode.moveVehicleOverNode(veh, inLink, lane, now, false )) {
+						if (! this.qNode.moveVehicleOverNode(veh, inLink, lane, now, MoveType.GENERAL, QFFFAbstractNode.defaultStuckReturnValue)) {
 							//vehicle wasn't moved.
 							break;
 						}
-						lane.removeFirstGeneralVehicle();
 						timeoutModifier.updateTimeouts(bicycleTimeouts, carTimeouts, 
 								inDirection, outDirection, isSecondary, nowish);
 					} else {
+						if(QFFFAbstractNode.allowStuckTimeoutMoves && this.qNode.vehicleIsStuck(lane, now, MoveType.GENERAL)){
+							this.qNode.moveVehicleFromInlinkToOutlink(veh, inLink, lane, now, MoveType.GENERAL);
+							if(QFFFAbstractNode.defaultTimeoutStuckReturnValue) {
+								timeoutModifier.updateTimeouts(bicycleTimeouts, carTimeouts, 
+										inDirection, outDirection, isSecondary, nowish);
+								continue;
+							} 
+						}
 						break;
 					}
 				}
@@ -452,10 +505,11 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode{
 		return QFFFNodeUtils.increaseInt(i, carInLinks.length);
 	}
 
+	@Override
 	public boolean isCarLeftTurn(Id<Link> id, Id<Link> nextLinkId) {
-		if(id == nextLinkId || nextLinkId == null){
-			return false;
-		}
+	//	if(id == nextLinkId || nextLinkId == null){
+	//		return false;
+	//	}
 		return carLeftTurns[carInTransformations.get(id)][carOutTransformations.get(nextLinkId)];
 	}
 

@@ -26,7 +26,7 @@ public class QFFFRightPriorityNode extends QFFFAbstractNode{ // implements HasLe
 	protected boolean doSimStep(final double now){	
 		ArrayList<Integer> inLinkOrder = new ArrayList<Integer>(carInLinks.length);
 
-		outerLoop:  
+		outerLoop: 
 			for(int i = 0; i < carInLinks.length; i++){
 				QLinkI qLink = carInLinks[i];
 				if(qLink != null){

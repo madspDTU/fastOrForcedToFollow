@@ -62,10 +62,10 @@ public class Sublink{
 		this.leavingVehicles.addFirst(veh);
 	}
 	public QVehicle getFirstLeavingVehicle(){
-		return leavingVehicles.isEmpty() ? null : leavingVehicles.peekFirst();
+		return leavingVehicles.peekFirst();
 	}
 	public QVehicle pollFirstLeavingVehicle(){
-		return leavingVehicles.isEmpty() ? null : leavingVehicles.pollFirst();
+		return leavingVehicles.pollFirst();
 	}
 	public boolean hasNoLeavingVehicles(){
 		return leavingVehicles.isEmpty();
@@ -224,8 +224,9 @@ public class Sublink{
 			final double L_MAX){
 		int N = (int) Math.ceil(length / L_MAX);
 		Sublink[] linkArray = new Sublink[N];
+		double subLinkLength = length/N;
 		for(int i = 0; i < linkArray.length; i++){
-			linkArray[i] = new Sublink(id + "_part_" + (i+1) , Psi, length/N);
+			linkArray[i] = new Sublink(id + "_part_" + (i+1) , Psi, subLinkLength);
 		}
 		return linkArray;
 	}

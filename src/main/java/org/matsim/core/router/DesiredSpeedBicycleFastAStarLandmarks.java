@@ -45,6 +45,8 @@ public class DesiredSpeedBicycleFastAStarLandmarks extends FastAStarLandmarks {
 			vehicleType.setMaximumVelocity(v_0);
 		} else if(this.mode.equals(TransportMode.car)) {
 			vehicleType.setMaximumVelocity(130/3.6);
+		} else if (this.mode.equals(TransportMode.truck)) {
+			vehicleType.setMaximumVelocity(80/3.6);
 		}
 		Vehicle actualVehicle = VehicleUtils.getFactory().createVehicle(
 				Id.createVehicleId(idString), vehicleType);	

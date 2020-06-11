@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
@@ -31,8 +32,6 @@ public class TestCopenhagenNetwork {
 
 	public static void main(String[] args) {
 
-
-		System.exit(-1);
 		
 		Config combinedConfig = ConfigUtils.createConfig();
 		Scenario combinedScenario = ScenarioUtils.createScenario(combinedConfig);
@@ -45,6 +44,9 @@ public class TestCopenhagenNetwork {
 		Config carConfig = ConfigUtils.createConfig();
 		Scenario carScenario = ScenarioUtils.createScenario(carConfig);
 
+		/*
+
+		
 		boolean bool1 = true;
 		PopulationReader pr2 = new PopulationReader(bicycleScenario);
 		pr2.readFile("C:/Users/madsp/DTA/ResumableInput/ResumablePlans_Bicycles.xml.gz");
@@ -163,17 +165,19 @@ public class TestCopenhagenNetwork {
 		pw4 = null;
 		pr4 = null;
 		System.exit(-1);
-
+*/
+		
+		String dir = "/zhome/81/e/64390/MATSim/DTA2020/input/";
 		PopulationReader bicycleReader = new PopulationReader(bicycleScenario);
-		bicycleReader.readFile("/zhome/81/e/64390/MATSim/ABMTRANS2019/input/BicyclePlans_CPH_full.xml.gz");
+		bicycleReader.readFile(dir + "BicyclePlans_CPH_Full.xml.gz");
 		RunMatsim.addCyclistAttributes(bicycleConfig, bicycleScenario);
 		PopulationWriter bicycleWriter = new PopulationWriter(bicycleScenario.getPopulation());
-		bicycleWriter.write("/zhome/81/e/64390/MATSim/ABMTRANS2019/input/BicyclePlans_CPH_full.xml.gz");
+		bicycleWriter.write(dir + "BicyclePlans_CPH_Full.xml.gz");
 		Population bicyclePop = bicycleScenario.getPopulation();
 
 
 		PopulationReader carReader = new PopulationReader(carScenario);
-		carReader.readFile("/zhome/81/e/64390/MATSim/ABMTRANS2019/input/CarPopulation2019_Micro_full.xml.gz");
+		carReader.readFile(dir + "CarPopulation2020_OTM_full.xml.gz");
 		Population carPop = carScenario.getPopulation();
 
 		for(Population pop : Arrays.asList(bicyclePop,carPop)){
@@ -183,7 +187,7 @@ public class TestCopenhagenNetwork {
 		}	
 
 		PopulationWriter combinedWriter = new PopulationWriter(combinedPop);
-		combinedWriter.write("/zhome/81/e/64390/MATSim/ABMTRANS2019/input/COMPASBicycle100_COMPASSCarMicro100.xml.gz");
+		combinedWriter.write(dir + "COMPASBicycle100_COMPASSCarOTM100.xml.gz");
 
 
 

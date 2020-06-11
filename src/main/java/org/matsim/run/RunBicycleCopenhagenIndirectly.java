@@ -9,6 +9,7 @@ import org.matsim.api.core.v01.population.Activity;
 import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.Person;
 import org.matsim.api.core.v01.population.Plan;
+import org.matsim.api.core.v01.population.PlanElement;
 import org.matsim.api.core.v01.population.PopulationWriter;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
@@ -23,7 +24,7 @@ public class RunBicycleCopenhagenIndirectly {
 
 		//Run fullRowBothResume50
 		//Run fullRowBothDasAutoResume50
-
+/*
 		Config config = ConfigUtils.createConfig();
 		Scenario scenario = ScenarioUtils.createScenario(config);
 		Person person = scenario.getPopulation().getFactory().createPerson(Id.create("TheOne",Person.class));
@@ -47,12 +48,42 @@ public class RunBicycleCopenhagenIndirectly {
 		writer.write("/zhome/81/e/64390/MATSim/DTA2020/input/dadadadada.xml");
 
 
+*/ 
 
-
+		/*
+		 *
+		Scenario scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
+		PopulationReader pr = new PopulationReader(scenario);
+		pr.readFile("/zhome/81/e/64390/MATSim/DTA2020/input/COMPASBicycle100_COMPASSCarOTM100.xml.gz");
+		
+		long bCounter = 0;
+		long cCounter = 0;
+		long tCounter = 0;
+		for(Person person : scenario.getPopulation().getPersons().values()) {
+			for(PlanElement pe : person.getPlans().get(0).getPlanElements()) {
+				if(pe instanceof Leg) {
+					if(((Leg) pe).getMode().equals(TransportMode.bike)){
+						bCounter++;
+					} else if(((Leg) pe).getMode().equals(TransportMode.car)){
+						cCounter++;
+					} else if(((Leg) pe).getMode().equals(TransportMode.truck)){
+						tCounter++;
+					}
+				}
+			}
+		}
+		
+		System.out.println("#Bicycle trips: " + bCounter);
+		System.out.println("#Car trips: " + cCounter);
+		System.out.println("#Truck trips: " + tCounter);
+		System.exit(-1);
+	*/	
+		
+		
 		//	if(args.length==0){
 		args = new String[]{
-				"FullRoWAuto200bb", "200", TransportMode.car,  "false", "6", "0.05", "Bounded", "Gradual", "false"}; 
-		//	}
+				"Full150_10n_qKKos", "1", "bicycle", "true", "8" ,"0.05", "Bounded", "Best", "true", "1.00", "queue", "-1", "1000"}; 
+		//	};
 		RunBicycleCopenhagen.main(args);
 		
 		//Scenario scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());

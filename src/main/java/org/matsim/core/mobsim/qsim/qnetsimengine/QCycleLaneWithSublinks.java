@@ -82,10 +82,12 @@ class QCycleLaneWithSublinks extends QCycleLane{
 
 
 					//Auxiliary buffer created to fit the piece into MATSim.
+					if(currentFFFLink.hasNoLeavingVehicles()) {
+						currentFFFLink.setLastTimeMoved(qCyc.getEarliestLinkExitTime());
+					}
 					currentFFFLink.addVehicleToLeavingVehicles(qCyc );
 					currentFFFLink.increaseOccupiedSpaceByBicycleLength(cyclist);
-					currentFFFLink.setLastTimeMoved(qCyc.getEarliestLinkExitTime());
-
+					
 
 					final QNodeI toNode = qLinkImpl.getToNode();
 					if ( toNode instanceof AbstractQNode ) {
@@ -109,7 +111,6 @@ class QCycleLaneWithSublinks extends QCycleLane{
 
 
 	@Override public void addFromWait( final QVehicle veh ) {
-
 		// ensuring that the first provisional earliest link exit cannot be before now.
 		double now = context.getSimTimer().getTimeOfDay() ;
 		QCycle qCyc = (QCycle) veh;
@@ -122,9 +123,11 @@ class QCycleLaneWithSublinks extends QCycleLane{
 
 		// Essentially just skipping this first link (in order to be consistent with scorin mechanism)
 		numberOfCyclistsOnLink.incrementAndGet();
+		if(lastSubLink.hasNoLeavingVehicles()) {
+			lastSubLink.setLastTimeMoved(now);	
+		}
 		lastSubLink.addVehicleToLeavingVehicles(qCyc );
 		lastSubLink.increaseOccupiedSpaceByBicycleLength(qCyc.getCyclist());
-		lastSubLink.setLastTimeMoved(now);
 		qCyc.setEarliestLinkExitTime(now);
 		
 		final QNodeI toNode = qLinkImpl.getToNode();

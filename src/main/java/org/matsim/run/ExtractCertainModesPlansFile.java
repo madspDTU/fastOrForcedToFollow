@@ -23,7 +23,7 @@ public class ExtractCertainModesPlansFile {
 
 	public static void main(String[] args){
 
-		HashSet<String> validModes = new HashSet<String>(Arrays.asList(TransportMode.car));
+		HashSet<String> validModes = new HashSet<String>(Arrays.asList(TransportMode.car, TransportMode.truck));
 
 		Config config = ConfigUtils.createConfig();
 		Scenario scenario = ScenarioUtils.createScenario(config);

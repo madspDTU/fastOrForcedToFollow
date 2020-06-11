@@ -54,8 +54,8 @@ public class FFFScoringConfigGroup extends ReflectiveConfigGroup {
 				worstUtility = combined;
 			}
 		}
-		builder.setModeParameters(worstUtility);
-		scoringParameters = builder.build();
+		builder.setAbortPlanScore(worstUtility);
+		this.scoringParameters = builder.build();
 	}
 	
 	

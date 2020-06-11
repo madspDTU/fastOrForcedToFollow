@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.matsim.api.core.v01.Coord;
@@ -67,7 +68,7 @@ public class MultiModalBicycleDoorToDoorHandler implements BasicEventHandler {
 	private  Network network;
 
 	final static double timeStepSize = 3600;
-	final static double endTime = 27*3600;  // From 0-1 it is necessary to add 1 and 25 probably.
+	final static double endTime = 27*3600+1;  // From 0-1 it is necessary to add 1 and 25 probably.
 	final static int numberOfSlots = (int) Math.ceil(endTime/ timeStepSize);
 	static double currentTime = 0;
 	static int printCounter = 0;
@@ -177,7 +178,7 @@ public class MultiModalBicycleDoorToDoorHandler implements BasicEventHandler {
 		}
 	}
 
-	public void setAnalysedModes(List<String> analysedModes){
+	public void setAnalysedModes(Set<String> analysedModes){
 		this.ignoredActivities = new HashSet<String>();
 		for(String mode : analysedModes){
 			totalTravelTimes.put(mode, new AtomicDouble());
@@ -364,7 +365,8 @@ public class MultiModalBicycleDoorToDoorHandler implements BasicEventHandler {
 
 	public static boolean isHighlightTrip(boolean originTime, boolean destinationTime,
 			boolean originGeography, boolean destinationGeography) {
-		return destinationGeography && originTime  && originGeography;
+	//	return destinationGeography && originTime   && originGeography;
+		return destinationTime && destinationGeography;
 	}
 
 	private double getPlannedDuration(Id<Person> personId, String mode) {
@@ -395,6 +397,17 @@ public class MultiModalBicycleDoorToDoorHandler implements BasicEventHandler {
 			}
 			link = network.getLinks().get(leg.getRoute().getEndLinkId());
 			freeFlowTravelTime += Math.ceil(link.getLength() / link.getFreespeed());
+		} else if(mode.equals(TransportMode.truck)) {
+			NetworkRoute route = (NetworkRoute) leg.getRoute();
+			Link link;
+			for(Id<Link> id : route.getLinkIds()){
+				link = network.getLinks().get(id);
+				double freeSpeed = Math.min(link.getFreespeed(), 80/3.6);
+				freeFlowTravelTime += Math.ceil(link.getLength() / freeSpeed);
+			}
+			link = network.getLinks().get(leg.getRoute().getEndLinkId());
+			double freeSpeed = Math.min(link.getFreespeed(), 80/3.6);
+			freeFlowTravelTime += Math.ceil(link.getLength() / freeSpeed);
 		}
 		return freeFlowTravelTime;
 	}

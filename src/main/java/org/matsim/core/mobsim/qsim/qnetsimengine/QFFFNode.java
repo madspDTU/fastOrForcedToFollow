@@ -69,7 +69,7 @@ public final class QFFFNode extends AbstractQNode {
 			return new QFFFNode( n, context, netsimEngine, fffNodeConfig) ;
 		}
 	}
-	private static final Logger log = Logger.getLogger(QNodeImpl.class);
+	private static final Logger log = Logger.getLogger(QFFFNode.class);
 
 	private static int wrnCnt = 0 ;
 
@@ -268,7 +268,7 @@ public final class QFFFNode extends AbstractQNode {
 				} 
 			}
 			//Only allow node type if smallest link is at least trunk_link.
-			//	if(lowestRoadValue >= fffNodeConfig.getRoadTypeToValueMap().get("trunk_link")) {
+			//	if(lowestRoadValue >= fffNodeConfig.getRoadTypeToValueMap().get("primary_link")) {
 			isLargeRoadsMerging = true;
 			//	}
 		} else if(carOutThetaMap.size() == 2 && carInThetaMap.size() == 1

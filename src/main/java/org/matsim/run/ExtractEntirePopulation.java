@@ -35,6 +35,8 @@ public class ExtractEntirePopulation {
 		
 		HashMap<String, Double> modeProbabilities = new HashMap<String, Double>();
 		modeProbabilities.put(TransportMode.car, carProbability);
+		modeProbabilities.put(TransportMode.truck, carProbability);
+		
 		modeProbabilities.put(TransportMode.bike, bicycleProbability);
 		
 		

@@ -54,6 +54,7 @@ public class AnalyseTravelTimesLight {
 			outDir = "/work1/s103232/ABMTRANS2019/withNodeModelling/fullRoWUneven100A";
 			it = -1;
 			analysedModes.add(TransportMode.car);
+			analysedModes.add(TransportMode.truck);
 			analysedModes.add(TransportMode.bike);
 		}
 
@@ -208,7 +209,7 @@ public class AnalyseTravelTimesLight {
 					relevantLegs.add(i);
 					relevantLegs.add(i+2); // egress
 					modes[i-2] = ((Leg) pe).getMode();
-					modes[i] = ((Leg) pe).getMode();
+					modes[i] = ((Leg) pe).getMode().equals(TransportMode.truck) ? TransportMode.car :  ((Leg) pe).getMode();
 					modes[i+2] = ((Leg) pe).getMode();		
 				}
 				i++;
@@ -246,7 +247,19 @@ public class AnalyseTravelTimesLight {
 							Link link = network.getLinks().get(leg.getRoute().getEndLinkId());
 							freeFlowTravelTime += Math.ceil(link.getLength() / link.getFreespeed());
 							System.out.println(travelTime / freeFlowTravelTime);
-						}
+						} else if(leg.getMode().equals(TransportMode.truck)) {
+							NetworkRoute route = (NetworkRoute) leg.getRoute();
+							freeFlowTravelTime = 0;
+							for(Id<Link> id : route.getLinkIds()){
+								Link link = network.getLinks().get(id);
+								double freeSpeed = Math.min(link.getFreespeed(), 80/3.6);
+								freeFlowTravelTime += Math.ceil(link.getLength() / freeSpeed);
+							}
+							Link link = network.getLinks().get(leg.getRoute().getEndLinkId());
+							double freeSpeed = Math.min(link.getFreespeed(), 80/3.6);
+							freeFlowTravelTime += Math.ceil(link.getLength() / freeSpeed);
+							System.out.println(travelTime / freeFlowTravelTime);
+						} 
 					}
 					totalFreeFlowTimes.get(modes[i]).addAndGet(freeFlowTravelTime);
 					totalDistances.get(modes[i]).addAndGet(distance);

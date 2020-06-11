@@ -1,5 +1,7 @@
 package fastOrForcedToFollow;
 
+import org.matsim.core.gbl.Gbl;
+
 /**
  * 
  * @author madsp
@@ -24,7 +26,9 @@ public final class SqrtLTM extends LinkTransmissionModel {
 	}
 
 	/* package */ double getLaneVMax(final PseudoLane pseudoLane, final double tStart){
-		double constants = lambda_c + pseudoLane.getLength() - this.theta_0;
+		double lambda_l = Double.max(pseudoLane.getLength(), 10.); //TODO Very heuristic, but prevents very small links from going crazy....
+		double constants = lambda_c + lambda_l - this.theta_0;
+		
 		if(tStart >= pseudoLane.getTEnd() + this.theta_1*this.theta_1/4./constants){ 
 			return 4*Math.pow((constants/this.theta_1),2); //Case 3 from paper
 		}
@@ -45,7 +49,7 @@ public final class SqrtLTM extends LinkTransmissionModel {
 
 	/* package */ void selectPseudoLaneAndUpdateSpeed(final Sublink receivingLink, final Cyclist cyclist){
 		final double tStart = cyclist.getTEarliestExit();	
-		double maxSpeed = 0.; //Should be slightly higher (e.g. 0.1= if maxSpeed theoretically can be zero or negative.
+		double maxSpeed = Double.NEGATIVE_INFINITY; 
 		int maxLane = 0;
 		for(int i = 0; i < receivingLink.getNumberOfPseudoLanes(); i++){
 			double laneMaxSpeed = getLaneVMax(receivingLink.getPseudoLane(i), tStart);
@@ -57,8 +61,17 @@ public final class SqrtLTM extends LinkTransmissionModel {
 				}
 			}
 		}
+	
+		
 		double vTilde = Math.min(cyclist.getDesiredSpeed(), maxSpeed);
 		PseudoLane pseudoLane = receivingLink.getPseudoLane(maxLane);
+
+//		if(cyclist.getTEarliestExit() > pseudoLane.getTEnd() && pseudoLane.getLength() / vTilde > 60) {
+//			System.out.println("ShortLinkProblem: " + vTilde + "  " + pseudoLane.getLength());
+//		} else if(pseudoLane.getLength() / vTilde > 60) {
+//			System.out.println(vTilde + "\tt_s: " + cyclist.getTEarliestExit() + "\tt_e: " + pseudoLane.getTEnd() + "\ttheta_0: " + this.theta_0 + "\ttheta_1: " +
+//					this.theta_1 + "\tlambda_psi" + pseudoLane.getLength() + "\tv_0: " + cyclist.getDesiredSpeed());
+//		}
 
 		// Updating cyclist
 		cyclist.setSpeed(vTilde);

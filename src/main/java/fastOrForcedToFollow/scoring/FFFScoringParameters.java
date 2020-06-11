@@ -8,12 +8,12 @@ import org.matsim.core.api.internal.MatsimParameters;
 public class FFFScoringParameters implements MatsimParameters{
 
 	public final Map<String, FFFModeUtilityParameters> modeParams;
-	public final double abortedPlanScore;
+	public final double abortedPlanUtility;
 
 	private FFFScoringParameters(final Map<String, FFFModeUtilityParameters> modeParams,
 			final double abortedPlanScore){
 		this.modeParams = modeParams;
-		this.abortedPlanScore = abortedPlanScore;
+		this.abortedPlanUtility = abortedPlanScore;
 	}
 
 	public static final class Builder {
@@ -29,7 +29,7 @@ public class FFFScoringParameters implements MatsimParameters{
 			return this;
 		}
 
-		public Builder setModeParameters(final double abortScore) {
+		public Builder setAbortPlanScore(final double abortScore) {
 			this.abortedPlanScore = abortScore;
 			return this;
 		}

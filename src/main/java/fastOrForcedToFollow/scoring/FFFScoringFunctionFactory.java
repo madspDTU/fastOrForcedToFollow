@@ -1,61 +1,54 @@
 package fastOrForcedToFollow.scoring;
 
-import org.matsim.api.core.v01.TransportMode;
-import org.matsim.api.core.v01.events.Event;
+import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Network;
-import org.matsim.api.core.v01.population.Activity;
-import org.matsim.api.core.v01.population.Leg;
 import org.matsim.api.core.v01.population.Person;
+import org.matsim.core.config.Config;
+import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.scoring.ScoringFunction;
-import org.matsim.core.scoring.SumScoringFunction;
-import org.matsim.core.scoring.SumScoringFunction.AgentStuckScoring;
-import org.matsim.core.scoring.SumScoringFunction.LegScoring;
+import org.matsim.core.scoring.ScoringFunctionFactory;
+import org.matsim.core.utils.misc.Time;
 
-public class FFFScoringFunctionFactory implements ScoringFunction {
+import com.google.inject.Inject;
 
-	private final LegScoring legScoring;
-	private final AgentStuckScoring stuckScoring;
+import fastOrForcedToFollow.configgroups.FFFScoringConfigGroup;
 
+public class FFFScoringFunctionFactory implements ScoringFunctionFactory {
 
-	public FFFScoringFunctionFactory(final FFFScoringParameters params, Network network, Person person) {
-		this.legScoring = new FFFLegScoring(params, network, person);
-		this.stuckScoring = new FFFStuckScoring(params);
-	}
+	private Network network;
+	private final FFFScoringParameters params;
+	private double simulationEndTime;
+	private double simulationStartTime;
 
 	
-	@Override
-	public void handleActivity(Activity activity) {
-		// Do nothing
+	public FFFScoringFunctionFactory( final Scenario sc ) {
+		this( sc.getConfig() , sc.getNetwork() );
+	}
+
+	@Inject
+	FFFScoringFunctionFactory(Config config, Network network) {
+		FFFScoringConfigGroup fffScoringConfig =
+				ConfigUtils.addOrGetModule(config, FFFScoringConfigGroup.class);
+		this.params = fffScoringConfig.getMyScoringParameters();
+		this.network = network;
+		
+		if(Time.isUndefinedTime(config.qsim().getStartTime()) || Double.isInfinite(config.qsim().getStartTime())) {
+			this.simulationStartTime = 0.;
+		} else {
+			this.simulationStartTime = config.qsim().getStartTime();
+		}
+		
+		if(Time.isUndefinedTime(config.qsim().getEndTime()) || Double.isInfinite(config.qsim().getEndTime())) {
+			this.simulationEndTime = 30*3600.;
+		} else {
+			this.simulationEndTime = config.qsim().getEndTime();
+		}
 	}
 
 	@Override
-	public void handleLeg(Leg leg) {
-		legScoring.handleLeg(leg);
+	public ScoringFunction createNewScoringFunction(final Person person) {
+		//Not person-specific at the moment.
+		return new FFFScoringFunction(params, network, person, simulationStartTime, simulationEndTime);
 	}
 
-	@Override
-	public void agentStuck(double time) {
-		stuckScoring.agentStuck(time);	
-	}
-
-	@Override
-	public void addMoney(double amount) {
-		// Do nothing
-	}
-
-	@Override
-	public void finish() {
-		// Do nothing
-	}
-
-	@Override
-	public double getScore() {
-		return stuckScoring.getScore() + legScoring.getScore();
-	}
-
-	@Override
-	public void handleEvent(Event event) {
-		//Do nothing
-	}
-	
 }

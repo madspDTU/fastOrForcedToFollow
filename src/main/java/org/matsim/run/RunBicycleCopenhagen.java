@@ -1,11 +1,14 @@
 package org.matsim.run;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.text.StyleContext.SmallAttributeSet;
 
@@ -19,6 +22,8 @@ import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.ControlerConfigGroup.RoutingAlgorithmType;
+import org.matsim.core.config.groups.QSimConfigGroup.TrafficDynamics;
+import org.matsim.core.config.groups.QSimConfigGroup.VehiclesSource;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QFFFAbstractNode;
@@ -35,9 +40,9 @@ public class RunBicycleCopenhagen {
 	public static int numberOfGlobalThreads = 20;
 	public static Collection<String> networkModes = null;
 	public static final double flowCapFactor = 0.2;
-	public static final double storageCapFactor = 0.3;
-	public static final double stuckTime = 10.;
-	
+	public static final double storageCapFactorWhenUsing10Percent = 0.3;
+	public static double stuckTime = 5.;
+
 
 
 	public static String outputBaseDir = "/work1/s103232/DTA2020/"; // With
@@ -46,6 +51,10 @@ public class RunBicycleCopenhagen {
 	private static double reRoutingProportion = 0.1;
 	private static int choiceSetSize = 5;
 	public static double qSimEndTime = 30 * 3600.;
+	public static double storageCapacityFactor = 1.;
+	public static TrafficDynamics trafficDynamics = TrafficDynamics.queue;
+	private static String intersectionSimplificationSuffix = "";
+
 
 	// final
 	// /
@@ -80,8 +89,9 @@ public class RunBicycleCopenhagen {
 		boolean runMatsim = true;
 		boolean resumeNonRoW = false;
 
-		List<String> analysedModes = Arrays.asList(TransportMode.bike);
-
+		
+		Set<String> analysedModes = new HashSet<String>(List.of(TransportMode.bike));
+		
 		if (args.length > 0) {
 			scenarioType = args[0];
 		}
@@ -89,7 +99,17 @@ public class RunBicycleCopenhagen {
 			lastIteration = Integer.valueOf(args[1]);
 		}
 		if (args.length > 2) {
-			analysedModes = Arrays.asList(args[2].split(","));
+			String[] modes = args[2].split(",");
+			if(modes.length>0) {
+				analysedModes.clear();
+			}
+			for(int i = 0; i < modes.length; i++) {
+				String mode = modes[i];
+				analysedModes.add(modes[i]);
+			}
+			if(analysedModes.contains(TransportMode.car)) {
+				analysedModes.add(TransportMode.truck);
+			}
 		}
 		if (args.length > 3) {
 			runMatsim = Boolean.parseBoolean(args[3]);
@@ -123,6 +143,23 @@ public class RunBicycleCopenhagen {
 			} else {
 				System.out.println("NOT Approximating link-to-link travel times when none exist");
 			}
+		}
+		if (args.length > 9) {
+			storageCapacityFactor = Double.parseDouble(args[9]);
+		}
+		if (args.length > 10) {
+			if(args[10].toLowerCase().contains("k") || args[10].toLowerCase().contains("w")) {
+				trafficDynamics = TrafficDynamics.kinematicWaves;
+			}
+		}
+		if (args.length > 11) {
+			int n = Integer.parseInt(args[11]);
+			if(n>0) {
+				intersectionSimplificationSuffix = "_SIMPLIFIED_" + n;
+			}
+		}
+		if (args.length > 12) {
+			stuckTime = Double.parseDouble(args[12]);
 		}
 
 		if (scenarioType.contains("NoCongestion")) {
@@ -168,9 +205,9 @@ public class RunBicycleCopenhagen {
 		System.out.println("Running " + scenarioType);
 
 		if (carOnly) {
-			networkModes = Arrays.asList(TransportMode.car);
+			networkModes = Arrays.asList(TransportMode.car, TransportMode.truck);
 		} else if (carsAreSomehowIncluded) {
-			networkModes = Arrays.asList(TransportMode.car, TransportMode.bike);
+			networkModes = Arrays.asList(TransportMode.car, TransportMode.truck, TransportMode.bike);
 		} else {
 			networkModes = Arrays.asList(TransportMode.bike);
 		}
@@ -250,8 +287,14 @@ public class RunBicycleCopenhagen {
 		config.global().setCoordinateSystem("EPSG:32632"); // /EPSG:32632 is
 		// WGS84 UTM32N
 
+		
+		config.qsim().setStartTime(0.);
 		config.qsim().setEndTime(qSimEndTime);
 		config.qsim().setStuckTime(stuckTime);
+		config.qsim().setStorageCapFactor(storageCapacityFactor);
+		config.qsim().setFlowCapFactor(storageCapacityFactor);
+		config.qsim().setTrafficDynamics(trafficDynamics);
+
 		config.travelTimeCalculator().setMaxTime((int) Math.round(qSimEndTime));
 
 		if (roW) {
@@ -264,7 +307,7 @@ public class RunBicycleCopenhagen {
 		}
 		if (tenPercentCars) {
 			config.qsim().setFlowCapFactor(flowCapFactor); // This has to be calibrated
-			config.qsim().setStorageCapFactor(storageCapFactor); // This has to be calibrated
+			config.qsim().setStorageCapFactor(storageCapFactorWhenUsing10Percent); // This has to be calibrated
 			config.qsim().setStuckTime(60); // This has to be calibrated
 		}
 
@@ -274,11 +317,11 @@ public class RunBicycleCopenhagen {
 			// config.network().setInputFile(
 			// inputBaseDir + "MATSimCopenhagenNetwork_CarsOnly.xml.gz");
 		} else if (carsAreSomehowIncluded) {
-			config.network().setInputFile(inputBaseDir + "MATSimCopenhagenNetwork_WithBicycleInfrastructure.xml.gz");
+			config.network().setInputFile(inputBaseDir + "MATSimCopenhagenNetwork_WithBicycleInfrastructure" + intersectionSimplificationSuffix + ".xml.gz");
 		} else if (oneLane) {
-			config.network().setInputFile(inputBaseDir + "MATSimCopenhagenNetwork_BicyclesOnly_1Lane.xml.gz");
+			config.network().setInputFile(inputBaseDir + "MATSimCopenhagenNetwork_BicyclesOnly_1Lane" + intersectionSimplificationSuffix + ".xml.gz");
 		} else {
-			config.network().setInputFile(inputBaseDir + "MATSimCopenhagenNetwork_BicyclesOnly.xml.gz");
+			config.network().setInputFile(inputBaseDir + "MATSimCopenhagenNetwork_BicyclesOnly" + intersectionSimplificationSuffix + ".xml.gz");
 		}
 
 		if(args[0].toLowerCase().contains("cheat")) {
@@ -300,13 +343,13 @@ public class RunBicycleCopenhagen {
 			if(resumeNonRoW){
 				config.plans().setInputFile(inputResumeBaseDir + "ResumablePlans_Cars_selectedOnly.xml.gz");
 			} else {
-				config.plans().setInputFile(inputBaseDir + "CarPopulation2019_Micro_Full.xml.gz");
+				config.plans().setInputFile(inputBaseDir + "CarPopulation2020_OTM_full.xml.gz");
 			}
 		} else if (carsAreSomehowIncluded) {
 			if(resumeNonRoW){
 				config.plans().setInputFile(inputResumeBaseDir + "ResumablePlans_Both_selectedOnly.xml.gz");
 			} else {
-				config.plans().setInputFile(inputBaseDir + "COMPASBicycle100_COMPASSCarMicro100.xml.gz");
+				config.plans().setInputFile(inputBaseDir + "COMPASBicycle100_COMPASSCarOTM100.xml.gz");
 			}
 		} else {
 			if(resumeNonRoW && size.equals("full")){
@@ -330,8 +373,27 @@ public class RunBicycleCopenhagen {
 		scenario = RunMatsim.addCyclistAttributes(config, scenario);
 		// RunMatsim.reducePopulationToN(0, scenario.getPopulation());
 		// if(mixed){
-		VehicleType vehicleType = scenario.getVehicles().getFactory().createVehicleType(Id.create(TransportMode.car, VehicleType.class));
-		scenario.getVehicles().addVehicleType(vehicleType);
+		VehicleType carVehicleType = scenario.getVehicles().getFactory().createVehicleType(Id.create(TransportMode.car, VehicleType.class));
+		carVehicleType.setPcuEquivalents(1.0);
+		carVehicleType.setMaximumVelocity(130/3.6);
+		scenario.getVehicles().addVehicleType(carVehicleType);
+		VehicleType truckVehicleType = scenario.getVehicles().getFactory().createVehicleType(Id.create(TransportMode.truck, VehicleType.class));
+		truckVehicleType.setPcuEquivalents(2.0);
+		truckVehicleType.setMaximumVelocity(80/3.6);
+		scenario.getVehicles().addVehicleType(truckVehicleType);
+
+		HashSet<String> carTruckModesSet = new HashSet<String>();
+		carTruckModesSet.add(TransportMode.car);
+		carTruckModesSet.add(TransportMode.truck);
+
+		for(Link link : scenario.getNetwork().getLinks().values()) {
+			if(link.getAllowedModes().contains(TransportMode.car) && !link.getAllowedModes().contains(TransportMode.truck)) {
+				link.setAllowedModes(carTruckModesSet);
+			}
+		}
+		config.qsim().setVehiclesSource(VehiclesSource.modeVehicleTypesFromVehiclesData);
+
+
 		// }
 
 		Controler controler;
@@ -346,7 +408,7 @@ public class RunBicycleCopenhagen {
 			controler = RunMatsim.createControlerWithoutCongestion(scenario);
 		}
 
-		
+
 		if (runMatsim) {
 			try {
 				System.gc();
@@ -358,7 +420,7 @@ public class RunBicycleCopenhagen {
 		}
 
 		List<String> ignoredModes = new LinkedList<String>();
-		for (String mode : Arrays.asList(TransportMode.car, TransportMode.bike)) {
+		for (String mode : Arrays.asList(TransportMode.car, TransportMode.bike, TransportMode.truck)) {
 			if (!analysedModes.contains(mode)) {
 				ignoredModes.add(mode);
 			}
@@ -379,18 +441,40 @@ public class RunBicycleCopenhagen {
 		//			ConstructSpeedFlowsFromCopenhagen.run(outDir, scenarioType, 0, ignoredModes, analysedModes);
 		//			// PostProcessing first iteration
 		//		}
+		System.out.println("Postprocessing finished!");
+		System.exit(-1);
 
 	}
 
 	private static void removeSouthWesternPart(Network network) {
 		// Based on
 		// http://www.ytechie.com/2009/08/determine-if-a-point-is-contained-within-a-polygon/
+		FFFNodeConfigGroup nodeConfig = new FFFNodeConfigGroup();
+		HashMap<String, Integer> map = nodeConfig.getRoadTypeToValueMap();
+
 		Coord[] vertices = getVertices();
+		Coord[] southernVertices = getSouthernVertices();
+
 		int linksBefore = network.getLinks().size();
 		LinkedList<Node> nodesToBeRemoved = new LinkedList<Node>();
 		for (Node node : network.getNodes().values()) {
 			if (!isCoordInsidePolygon(node.getCoord(), vertices)) {
-				nodesToBeRemoved.add(node);
+				if(isCoordInsidePolygon(node.getCoord(), southernVertices)) {
+					nodesToBeRemoved.add(node);
+				} else {
+					int largestRoadValue = Integer.MIN_VALUE;
+					for(Collection<? extends Link> col : Arrays.asList(node.getInLinks().values(), node.getOutLinks().values())) {
+						for(Link link : col) {
+							int roadValue = map.get(link.getAttributes().getAttribute("type"));
+							if(roadValue > largestRoadValue) {
+								largestRoadValue = roadValue;
+							}
+						}
+					}
+					if(largestRoadValue < map.get("secondary") ) {
+						nodesToBeRemoved.add(node);
+					}
+				}
 			}
 		}
 		for (Node node : nodesToBeRemoved) {
@@ -420,15 +504,31 @@ public class RunBicycleCopenhagen {
 
 	private static Coord[] getVertices() {
 		LinkedList<Coord> coords = new LinkedList<Coord>();
+		// All sites from feature class ModelAreaConvexHullPoints
+		coords.addLast(new Coord(673977.7833, 6172099.281)); // so:1
+		coords.addLast(new Coord(679281.4926, 6189542,191)); // so:2
+		coords.addLast(new Coord(675045.9795, 6206992.6616)); // so:3
+		coords.addLast(new Coord(703658.9441, 6228283.6447)); // so:4
+		coords.addLast(new Coord(728969.9982, 6216640.5598)); // so:5
+		coords.addLast(new Coord(738845.9346, 6137938.4159)); // so:6
+		coords.addLast(new Coord(699130.2605, 6135696.2925)); // so:7
+		coords.addLast(new Coord(686615.3337, 6142709.614)); // so:8
+
+		Coord[] output = new Coord[coords.size()];
+		for (int i = 0; i < output.length; i++) {
+			output[i] = coords.pollFirst();
+		}
+		return output;
+	}
+
+	private static Coord[] getSouthernVertices() {
+		LinkedList<Coord> coords = new LinkedList<Coord>();
 		// All sites from https://epsg.io/map#srs=32632
-		coords.addLast(new Coord(705928.346681, 6125917.168974)); // Vemmetofte
-		// Strand
-		coords.addLast(new Coord(680313.490601, 6147920.287373)); // Adamshøj
-		coords.addLast(new Coord(669263.733097, 6172981.752523)); // Hellestrup
-		coords.addLast(new Coord(666336.561495, 6384536.656468)); // Vrångö
-		coords.addLast(new Coord(732555.631618, 6201557.084542)); // Bäckviken
-		coords.addLast(new Coord(748457.912623, 6146312.994732)); // Ljunghusen
-		coords.addLast(new Coord(702262.206001, 6111994.192165)); // Bønsvig
+		coords.addLast(new Coord(621986.78, 6111239.17)); // Lohals
+		coords.addLast(new Coord(573186.35, 6022149.54)); // Kiel
+		coords.addLast(new Coord(782969.26, 6027815.34)); // Garz
+		coords.addLast(new Coord(777294.89, 6142058.83)); // Smygehamn
+		coords.addLast(new Coord(697776.79, 6094234.48)); // Tærø
 
 		Coord[] output = new Coord[coords.size()];
 		for (int i = 0; i < output.length; i++) {

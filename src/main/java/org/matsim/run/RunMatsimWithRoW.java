@@ -85,6 +85,11 @@ public class RunMatsimWithRoW {
 			createPopulation(scenario, numberOfAgents);
 			scenario = RunMatsim.addCyclistAttributes(config, scenario);
 			scenario.getVehicles().addVehicleType(  scenario.getVehicles().getFactory().createVehicleType( Id.create( TransportMode.car, VehicleType.class  ) ) );
+			VehicleType truckType = scenario.getVehicles().getFactory().createVehicleType( Id.create( TransportMode.car, VehicleType.class  ) );
+			truckType.setMaximumVelocity(80/3.6);
+			truckType.setPcuEquivalents(3);
+			scenario.getVehicles().addVehicleType( truckType  );
+			
 		} else {
 			scenario = RunMatsim.createScenario(config, 2, false, bicycleMarketShare);
 		}

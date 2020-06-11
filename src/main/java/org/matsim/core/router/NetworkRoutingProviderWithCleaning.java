@@ -35,7 +35,7 @@ public class NetworkRoutingProviderWithCleaning implements Provider<RoutingModul
 	private static final Logger log = Logger.getLogger( NetworkRoutingProviderWithCleaning.class ) ;
 
 	private final String routingMode;
-	
+
 	@Inject Map<String, TravelTime> travelTimes;
 	@Inject Map<String, TravelDisutilityFactory> travelDisutilityFactories;
 	@Inject SingleModeNetworksCache singleModeNetworksCache;
@@ -72,7 +72,7 @@ public class NetworkRoutingProviderWithCleaning implements Provider<RoutingModul
 		this.mode = mode;
 		this.routingMode = routingMode ;
 	}
-	
+
 
 	private final String mode;
 
@@ -80,20 +80,21 @@ public class NetworkRoutingProviderWithCleaning implements Provider<RoutingModul
 	public RoutingModule get() {
 		log.debug( "requesting network routing module with routingMode="
 				+ routingMode + ";\tmode=" + mode) ;
-		
+
 		// the network refers to the (transport)mode:
 		Network filteredNetwork = null;
 
 		// Ensure this is not performed concurrently by multiple threads!
 		synchronized (this.singleModeNetworksCache.getSingleModeNetworksCache()) {
-			filteredNetwork = this.singleModeNetworksCache.getSingleModeNetworksCache().get(mode);
+			String cacheMode = mode;
+			filteredNetwork = this.singleModeNetworksCache.getSingleModeNetworksCache().get(cacheMode);
 			if (filteredNetwork == null) {
 				TransportModeNetworkFilter filter = new TransportModeNetworkFilter(network);
-				Set<String> modes = new HashSet<>(Arrays.asList(mode));
+				Set<String> modes = new HashSet<>(Arrays.asList(cacheMode));
 				filteredNetwork = NetworkUtils.createNetwork();
 				filter.filter(filteredNetwork, modes);
 				new NetworkCleaner().run(filteredNetwork); // mads
-				this.singleModeNetworksCache.getSingleModeNetworksCache().put(mode, filteredNetwork);
+				this.singleModeNetworksCache.getSingleModeNetworksCache().put(cacheMode, filteredNetwork);
 			}
 		}
 
@@ -106,33 +107,33 @@ public class NetworkRoutingProviderWithCleaning implements Provider<RoutingModul
 		if (travelTime == null) {
 			throw new RuntimeException("No TravelTime bound for mode "+routingMode+".");
 		} 
-		
+
 
 		LeastCostPathCalculator routeAlgo =
 				leastCostPathCalculatorFactory.createPathCalculator(
 						filteredNetwork,
 						travelDisutilityFactory.createTravelDisutility(travelTime),
 						travelTime);
-		
-		LeastCostPathCalculator routeAlgoBicycle;
+
+		LeastCostPathCalculator maxSpeedRouteAlgo;
 		if(leastCostPathCalculatorFactory instanceof DesiredSpeedBicycleFastAStarLandmarksFactory) {
 			DesiredSpeedBicycleFastAStarLandmarksFactory fac = 
 					(DesiredSpeedBicycleFastAStarLandmarksFactory) leastCostPathCalculatorFactory ;
-			routeAlgoBicycle = fac.createDesiredSpeedPathCalculator(filteredNetwork, 
+			maxSpeedRouteAlgo = fac.createDesiredSpeedPathCalculator(filteredNetwork, 
 					travelDisutilityFactory.createTravelDisutility(travelTime), travelTime, mode);
 		} else if(leastCostPathCalculatorFactory instanceof DesiredSpeedBicycleFastDijkstraFactory ) {
 			DesiredSpeedBicycleFastDijkstraFactory fac = 
 					(DesiredSpeedBicycleFastDijkstraFactory) leastCostPathCalculatorFactory ;
-			routeAlgoBicycle = fac.createDesiredSpeedPathCalculator(filteredNetwork, 
+			maxSpeedRouteAlgo = fac.createDesiredSpeedPathCalculator(filteredNetwork, 
 					travelDisutilityFactory.createTravelDisutility(travelTime), travelTime, mode);
 		} else if(leastCostPathCalculatorFactory instanceof DesiredSpeedBicycleDijkstraFactory ) {
 			DesiredSpeedBicycleDijkstraFactory fac = (DesiredSpeedBicycleDijkstraFactory) leastCostPathCalculatorFactory ;
-			routeAlgoBicycle = fac.createDesiredSpeedPathCalculator(filteredNetwork, 
+			maxSpeedRouteAlgo = fac.createDesiredSpeedPathCalculator(filteredNetwork, 
 					travelDisutilityFactory.createTravelDisutility(travelTime), travelTime, mode);
 		} else {
-			routeAlgoBicycle = routeAlgo;
+			maxSpeedRouteAlgo = routeAlgo;
 		}
-	
+
 		// the following again refers to the (transport)mode, since it will determine the mode of the leg on the network:
 		if ( plansCalcRouteConfigGroup.isInsertingAccessEgressWalk() ) {
 			RoutingModule router = walkRouter;
@@ -140,11 +141,11 @@ public class NetworkRoutingProviderWithCleaning implements Provider<RoutingModul
 				router = null;
 			}
 			//Used to be a separate route for non-bicycles, but has been embedded within router now, Mads. 
-			return DefaultRoutingModules.createAccessEgressNetworkRouter(mode, 	routeAlgoBicycle, 
+			return DefaultRoutingModules.createAccessEgressNetworkRouter(mode, 	maxSpeedRouteAlgo, 
 					scenario, filteredNetwork, router);
 		} else {
 			//Used to be a separate route for non-bicycles, but has been embedded within router now, Mads. 
-			return DefaultRoutingModules.createPureNetworkRouter(mode, populationFactory, filteredNetwork, routeAlgoBicycle);
+			return DefaultRoutingModules.createPureNetworkRouter(mode, populationFactory, filteredNetwork, maxSpeedRouteAlgo);
 		}
 	}
 }

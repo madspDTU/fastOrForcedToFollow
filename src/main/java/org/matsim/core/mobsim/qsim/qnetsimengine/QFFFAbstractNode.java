@@ -25,9 +25,9 @@ public abstract class QFFFAbstractNode { //Interface or abstract
 	private static final boolean stuckChangesOrderAtRightPriority = true;
 	
 	//static final boolean allowFreeingGeneralVehiclesStuckBehindLeftBuffer = false;
-	static final boolean allowStuckTimeoutMoves = false;
-	private static final boolean stuckTimeoutChangesOrderAtRightPriority = false;
-	static final boolean defaultTimeoutStuckReturnValue = false;
+	static final boolean allowStuckedVehiclesToMoveDespieConflictingMoves = false;
+	private static final boolean timeoutChangesAtRightPriorityWhenStuckedVehiclesMoveDespiteConflictingMoves = false;
+	static final boolean defaultTimeoutBehaviourWhenStuckedVehiclesMoveDespiteConflictingMoves = false;
 	
 //	static final boolean letVehiclesFreedFromBehindLeftVehiclesAlterTimeouts = false;
 	public static final int smallRoadLeftBufferCapacity = 2;
@@ -90,8 +90,9 @@ public abstract class QFFFAbstractNode { //Interface or abstract
 		return now + qNode.getFFFNodeConfig().getCarDelay();
 	}
 
-	protected void bicycleMoveWithFullLeftTurns(final int inDirection, final double now, 
+	protected boolean bicycleMoveWithFullLeftTurns(final int inDirection, final double now, 
 			final double nowish, TimeoutModifier timeoutModifier) {
+		boolean returnValue = false;
 		QLinkI inLink = bicycleInLinks[inDirection];
 		if(inLink != null) {
 			for(QLaneI lane : inLink.getOfferingQLanes()){
@@ -106,10 +107,11 @@ public abstract class QFFFAbstractNode { //Interface or abstract
 						}
 						timeoutModifier.updateTimeouts(bicycleTimeouts, carTimeouts, 
 								inDirection, outDirection, null, nowish);
+						returnValue = true;
 					} else {
-						if(allowStuckTimeoutMoves && this.qNode.vehicleIsStuck(lane, now, MoveType.GENERAL)) {
+						if(allowStuckedVehiclesToMoveDespieConflictingMoves && this.qNode.vehicleIsStuck(lane, now, MoveType.GENERAL)) {
 							this.qNode.moveVehicleFromInlinkToOutlink(veh, inLink, lane, now, MoveType.GENERAL);
-							if(defaultTimeoutStuckReturnValue) {
+							if(defaultTimeoutBehaviourWhenStuckedVehiclesMoveDespiteConflictingMoves) {
 								timeoutModifier.updateTimeouts(bicycleTimeouts, carTimeouts, 
 										inDirection, outDirection, null, nowish);
 								continue;
@@ -120,11 +122,12 @@ public abstract class QFFFAbstractNode { //Interface or abstract
 				}
 			}
 		}
-
+		return returnValue;
 	}
 
-	protected void carMoveAllowingLeftTurns(final int inDirection, final double now, 
+	protected boolean carMoveAllowingLeftTurns(final int inDirection, final double now, 
 			final double nowish, TimeoutModifier timeoutModifier) {
+		boolean returnValue = false;
 		QLinkI inLink = carInLinks[inDirection];
 		if(inLink != null){
 			for(QLaneI lane : inLink.getOfferingQLanes()){
@@ -139,11 +142,12 @@ public abstract class QFFFAbstractNode { //Interface or abstract
 						}
 						timeoutModifier.updateTimeouts(bicycleTimeouts, carTimeouts, 
 								inDirection, outDirection, null, nowish);
+						returnValue = true;
 						continue;
 					} else {
-						if(allowStuckTimeoutMoves && this.qNode.vehicleIsStuck(lane, now, MoveType.GENERAL)) {
+						if(allowStuckedVehiclesToMoveDespieConflictingMoves && this.qNode.vehicleIsStuck(lane, now, MoveType.GENERAL)) {
 							this.qNode.moveVehicleFromInlinkToOutlink(veh, inLink, lane, now, MoveType.GENERAL);
-							if(stuckTimeoutChangesOrderAtRightPriority) {
+							if(timeoutChangesAtRightPriorityWhenStuckedVehiclesMoveDespiteConflictingMoves) {
 								timeoutModifier.updateTimeouts(bicycleTimeouts, carTimeouts, 
 										inDirection, outDirection, null, nowish);
 								continue;
@@ -154,5 +158,43 @@ public abstract class QFFFAbstractNode { //Interface or abstract
 				}
 			}
 		}
+		return returnValue;
 	}
+	
+	
+	
+	
+	protected int getBicycleOutDirection(Id<Link> nextLinkId, QVehicle veh) {
+		if(bicycleOutTransformations.containsKey(nextLinkId)) {
+			return bicycleOutTransformations.get(nextLinkId);
+		} else {
+			System.out.println(nextLinkId + " does not exist... Existing outlinks are: ");
+			for(Id<Link> linkId : bicycleOutTransformations.keySet()) {
+				System.out.println(linkId);
+			}
+			System.out.println(nextLinkId + " does not exist... Existing inlinks are: ");
+			for( QLinkI link : bicycleInLinks) {
+				System.out.println(link.getLink().getId());
+			}
+			System.out.println(veh.getDriver().getState());
+			System.out.println(veh.getDriver().getMode());
+			System.out.println(veh.getDriver().chooseNextLinkId());
+			System.out.println(veh.getDriver().isWantingToArriveOnCurrentLink());
+			System.out.println(veh.getDriver().getDestinationLinkId());
+			System.out.println(veh.getDriver().getCurrentLinkId());
+			System.out.println(veh.getDriver().getId());
+			System.exit(-1);
+			return -1;
+		}
+	}
+	
+	protected int decreaseInt(int i){
+		return QFFFNodeUtils.decreaseInt(i, carInLinks.length);
+	}
+	protected int increaseInt(int i){
+		return QFFFNodeUtils.increaseInt(i, carInLinks.length);
+	}
+	
+	
+	
 }

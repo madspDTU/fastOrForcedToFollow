@@ -45,7 +45,7 @@ public class FFFNodeConfigGroup extends ReflectiveConfigGroup {
 	/**
 	 * 
 	 */
-	private double bundleTol = Math.PI/12;
+	private double bundleTol = Math.PI/4; //Math.PI/12;
 
 	private boolean omitLinkLeaveEvents = false;
 
@@ -80,8 +80,12 @@ public class FFFNodeConfigGroup extends ReflectiveConfigGroup {
 	public FFFNodeConfigGroup() {
 		super( GROUP_NAME );
 		this.roadtypeToValueMap = new HashMap<String,Integer>();
+		int value = 0;
 		for(int i = 0; i < roadTypes.length; i++) {
-			this.roadtypeToValueMap.put(roadTypes[i], -i);
+			if(!roadTypes[i].contains("link")) {
+				value--;
+			}
+			this.roadtypeToValueMap.put(roadTypes[i], value);
 		}
 	}
 	

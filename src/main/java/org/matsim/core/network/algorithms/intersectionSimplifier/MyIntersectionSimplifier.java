@@ -127,6 +127,8 @@ public class MyIntersectionSimplifier {
 		}
 		LOG.info("Done populating QuadTree. Number of nodes affected: " + clusteredNodes.size());
 
+		int[] occurencesPerInt = new int[10];
+		
 		/* Go through each network link, in given network, and evaluate it's nodes. */
 		for(Link link : network.getLinks().values()) {
 			
@@ -151,7 +153,7 @@ public class MyIntersectionSimplifier {
 				/* If both link nodes are part of the same cluster, their node
 				 * Coords will now be the same. The link can be completely ignored, 
 				 * so we do not need to process it here any further. */
-				
+
 				//TODO we might have to count the total link of such links and distribute it accordingly for instance. 
 			} else {
 
@@ -159,6 +161,16 @@ public class MyIntersectionSimplifier {
 					/* FIXME currently the new node carries no additional 
 					 * information from the original network. */
 					NetworkUtils.createAndAddNode(newNetwork, newLink.getFromNode().getId(), newLink.getFromNode().getCoord());
+					int properOutLinks = 0;
+					for(Link outLink : link.getToNode().getOutLinks().values()) {
+						if(outLink.getToNode() != link.getFromNode()) {
+							properOutLinks++;
+						}
+					}
+					if(properOutLinks >= occurencesPerInt.length) {
+						properOutLinks = occurencesPerInt.length-1;
+					}
+					occurencesPerInt[properOutLinks]++;
 				}
 				if(!newNetwork.getNodes().containsKey(newLink.getToNode().getId())) {
 					NetworkUtils.createAndAddNode(newNetwork, newLink.getToNode().getId(), newLink.getToNode().getCoord());
@@ -169,6 +181,10 @@ public class MyIntersectionSimplifier {
 			}
 		}
 
+		for(int i = 0; i < occurencesPerInt.length; i++) {
+			System.out.print(i + ": " + occurencesPerInt[i] + "\t");
+		}
+		
 		/* Update the network name. */
 		String oldName = network.getName();
 		if(oldName != null) {

@@ -100,31 +100,24 @@ public class QFFFLargeRoadsMergingNode extends QFFFAbstractNode{
 			this.qNode.setActive( false ) ;
 			return false;
 		}
-
-		QLaneI majorQLane = carInLinks[majorInLink].getAcceptingQLane();
-		if(minorInLinkMoves){ // Can be nullified if other lane is fully packed.
-			minorInLinkMoves = majorQLane.getStorageCapacity() > majorQLane.getLoadIndicator();
-//			if(minorInLinkMoves) {
-//				log.info("minorInLinkMove accepted     " + majorQLane.getStorageCapacity() + " > " +  majorQLane.getLoadIndicator());
-//			} else {
-//				log.info("minorInLinkMove prohibited   " + majorQLane.getStorageCapacity() + " <=  " +  majorQLane.getLoadIndicator());
-//			}
-		}
-
-		if(majorInLinkMoves && minorInLinkMoves){
-			if(random.nextDouble() < minorProb){
+		
+		if(!majorInLinkMoves) {
+			highwayMove(now, minorInLink);	
+		} else if(!minorInLinkMoves) {
+			highwayMove(now, majorInLink);
+		} else {
+			QLaneI majorQLane = carInLinks[majorInLink].getAcceptingQLane();
+			if(majorQLane.getLoadIndicator() >= majorQLane.getStorageCapacity()  ) {
+				highwayMove(now, majorInLink);
+			} else if(random.nextDouble() < minorProb){
 				highwayMove(now, minorInLink);
 				highwayMove(now, majorInLink);
 			} else {
-				highwayMove(now, majorInLink);	
+				highwayMove(now, majorInLink);
 				highwayMove(now, minorInLink);
 			}
-		} else if(majorInLinkMoves){
-			highwayMove(now, majorInLink);
-		} else if(minorInLinkMoves){
-			highwayMove(now, minorInLink);		
-		} 
-
+		}
+		
 		return true;
 	}
 

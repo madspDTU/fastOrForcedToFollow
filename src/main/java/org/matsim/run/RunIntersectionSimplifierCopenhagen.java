@@ -24,7 +24,9 @@
 package org.matsim.run;
 
 import org.apache.log4j.Logger;
+import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
+import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.algorithms.NetworkCalcTopoType;
@@ -68,6 +70,29 @@ public class RunIntersectionSimplifierCopenhagen {
 	//	LOG.info("\n\n\n\nNetwork statistics very beginning...");	
 	//	MyIntersectionSimplifier.reportNetworkStatistics(network);
 
+		
+		for(Node node : network.getNodes().values()) {
+			boolean highwayPresent = false;
+			for(Link link : node.getInLinks().values()) {
+				if(link.getAttributes().getAttribute("type").equals("motorway")) {
+					highwayPresent = true;
+				}
+			}
+			for(Link link : node.getInLinks().values()) {
+				if(link.getAttributes().getAttribute("type").equals("motorway") ) {
+					highwayPresent = true;
+				}
+			}
+			if(node.getCoord().getX() <  745000 &&  highwayPresent && (node.getInLinks().size() > 2 || node.getOutLinks().size() > 2 || 
+					node.getInLinks().size()  + node.getOutLinks().size()  == 4) ) {
+				System.out.println(node.getInLinks().size() + "->" + node.getOutLinks().size() );
+				System.out.println("   " + node.getCoord().getX() + "," + node.getCoord().getY());
+			}
+		}
+		System.exit(-1);
+		
+		
+		
 
 		RunMatsim.cleanBicycleNetwork(network, ConfigUtils.createConfig());
 	//	LOG.info("\n\n\n\nNetwork statistics after links cleaning...");	

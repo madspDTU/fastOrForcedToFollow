@@ -82,14 +82,14 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode implements Ha
 								inDirection, t, isSecondary, nowish);
 						continue;
 					} else {
-						if(QFFFAbstractNode.allowStuckTimeoutMoves && this.qNode.vehicleIsStuck(lane, now, MoveType.GENERAL)){
+						if(QFFFAbstractNode.allowStuckedVehiclesToMoveDespieConflictingMoves && this.qNode.vehicleIsStuck(lane, now, MoveType.GENERAL)){
 							if(t != outDirection){
 								t = decreaseInt(t);
 								moveLeftTurningBicyclePartiallyOverNode(veh, lane, t);
 							} else {
 								this.qNode.moveVehicleFromInlinkToOutlink(veh, inLink, lane, now, MoveType.GENERAL);	
 							}
-							if(QFFFAbstractNode.defaultTimeoutStuckReturnValue) {
+							if(QFFFAbstractNode.defaultTimeoutBehaviourWhenStuckedVehiclesMoveDespiteConflictingMoves) {
 								timeoutModifier.updateTimeouts(bicycleTimeouts, carTimeouts, 
 										inDirection, t, isSecondary, nowish);
 								continue;
@@ -103,29 +103,7 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode implements Ha
 	}
 
 
-	private int getBicycleOutDirection(Id<Link> nextLinkId, QVehicle veh) {
-		if(bicycleOutTransformations.containsKey(nextLinkId)) {
-			return bicycleOutTransformations.get(nextLinkId);
-		} else {
-			System.out.println(nextLinkId + " does not exist... Existing outlinks are: ");
-			for(Id<Link> linkId : bicycleOutTransformations.keySet()) {
-				System.out.println(linkId);
-			}
-			System.out.println(nextLinkId + " does not exist... Existing inlinks are: ");
-			for( QLinkI link : bicycleInLinks) {
-				System.out.println(link.getLink().getId());
-			}
-			System.out.println(veh.getDriver().getState());
-			System.out.println(veh.getDriver().getMode());
-			System.out.println(veh.getDriver().chooseNextLinkId());
-			System.out.println(veh.getDriver().isWantingToArriveOnCurrentLink());
-			System.out.println(veh.getDriver().getDestinationLinkId());
-			System.out.println(veh.getDriver().getCurrentLinkId());
-			System.out.println(veh.getDriver().getId());
-			System.exit(-1);
-			return -1;
-		}
-	}
+	
 
 	private int[][] createBicycleTurns(){
 		// The outputs either the outdirection, or the bundle FOLLOWING the bundle with the appropriate inlink
@@ -433,9 +411,9 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode implements Ha
 						timeoutModifier.updateTimeouts(bicycleTimeouts, carTimeouts, inDirection, outDirection,
 								isSecondary, nowish);
 					} else {
-						if(QFFFAbstractNode.allowStuckTimeoutMoves && this.qNode.vehicleIsStuck(lane, now, MoveType.LEFT_TURN)){
+						if(QFFFAbstractNode.allowStuckedVehiclesToMoveDespieConflictingMoves && this.qNode.vehicleIsStuck(lane, now, MoveType.LEFT_TURN)){
 							this.qNode.moveVehicleFromInlinkToOutlink(veh, inLink, lane, now, MoveType.LEFT_TURN);
-							if(QFFFAbstractNode.defaultTimeoutStuckReturnValue) {
+							if(QFFFAbstractNode.defaultTimeoutBehaviourWhenStuckedVehiclesMoveDespiteConflictingMoves) {
 								timeoutModifier.updateTimeouts(bicycleTimeouts, carTimeouts, inDirection, outDirection,
 										isSecondary, nowish);
 								continue;
@@ -483,9 +461,9 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode implements Ha
 						timeoutModifier.updateTimeouts(bicycleTimeouts, carTimeouts, 
 								inDirection, outDirection, isSecondary, nowish);
 					} else {
-						if(QFFFAbstractNode.allowStuckTimeoutMoves && this.qNode.vehicleIsStuck(lane, now, MoveType.GENERAL)){
+						if(QFFFAbstractNode.allowStuckedVehiclesToMoveDespieConflictingMoves && this.qNode.vehicleIsStuck(lane, now, MoveType.GENERAL)){
 							this.qNode.moveVehicleFromInlinkToOutlink(veh, inLink, lane, now, MoveType.GENERAL);
-							if(QFFFAbstractNode.defaultTimeoutStuckReturnValue) {
+							if(QFFFAbstractNode.defaultTimeoutBehaviourWhenStuckedVehiclesMoveDespiteConflictingMoves) {
 								timeoutModifier.updateTimeouts(bicycleTimeouts, carTimeouts, 
 										inDirection, outDirection, isSecondary, nowish);
 								continue;
@@ -497,13 +475,7 @@ public class QFFFNodeDirectedPriorityNode extends QFFFAbstractNode implements Ha
 			}
 		}
 	}
-
-	private int decreaseInt(int i){
-		return QFFFNodeUtils.decreaseInt(i, carInLinks.length);
-	}
-	private int increaseInt(int i){
-		return QFFFNodeUtils.increaseInt(i, carInLinks.length);
-	}
+	
 
 	@Override
 	public boolean isCarLeftTurn(Id<Link> id, Id<Link> nextLinkId) {

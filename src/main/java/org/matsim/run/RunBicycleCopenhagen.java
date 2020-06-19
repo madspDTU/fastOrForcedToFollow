@@ -19,6 +19,7 @@ import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
+import org.matsim.api.core.v01.population.Leg;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.ControlerConfigGroup.RoutingAlgorithmType;
@@ -28,6 +29,9 @@ import org.matsim.core.controler.Controler;
 import org.matsim.core.controler.OutputDirectoryHierarchy.OverwriteFileSetting;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QFFFAbstractNode;
 import org.matsim.core.population.FFFPlan;
+import org.matsim.core.population.io.PopulationReader;
+import org.matsim.core.population.routes.NetworkRoute;
+import org.matsim.core.router.TripStructureUtils;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.vehicles.VehicleType;
 
@@ -243,10 +247,12 @@ public class RunBicycleCopenhagen {
 		config.global().setNumberOfThreads(numberOfGlobalThreads);
 		if(args[0].toLowerCase().contains("cheat")) {
 			numberOfThreadsReservedForParallelEventHandling = 4;
-		} else if(roW) {
-			numberOfThreadsReservedForParallelEventHandling = 2;
-		} else {
+		} else if(roW && carsAreSomehowIncluded) {
+			numberOfThreadsReservedForParallelEventHandling = 4;
+		} else if(!roW){
 			numberOfThreadsReservedForParallelEventHandling = 3;
+		} else {
+			numberOfThreadsReservedForParallelEventHandling = 2;
 		}
 		config.qsim().setNumberOfThreads(numberOfGlobalThreads - numberOfThreadsReservedForParallelEventHandling);
 		config.parallelEventHandling().setNumberOfThreads(numberOfThreadsReservedForParallelEventHandling);
@@ -268,10 +274,6 @@ public class RunBicycleCopenhagen {
 		/// m: New TravelTimeCalculator. QSim: 19 WITHOUT linkTravelTime. My Not synchronized. LinkLeaveOmitted. 
 		/// n: New TravelTimeCalculator. QSim: 17 WITHOUT linkTravelTime. My Not synchronized. LinkLeaveOmitted. 
 		/// o: New TravelTimeCalcflasulator. QSim: 16 WITHOUT linkTravelTime. My Not synchronized. LinkLeaveOmitted. 
-
-
-
-
 
 
 
@@ -434,7 +436,7 @@ public class RunBicycleCopenhagen {
 			System.out.print(s + ", ");
 		}
 		System.out.println();
-		ConstructSpeedFlowsFromCopenhagen.run(scenario, scenarioType, -1, ignoredModes, analysedModes);
+		ConstructSpeedFlowsFromCopenhagen.run(scenario, scenarioType, -1, ignoredModes, analysedModes, runMatsim);
 		// PostProcessing final iteration
 		//		if (lastIteration != 0) {
 		//			System.gc();
@@ -504,15 +506,14 @@ public class RunBicycleCopenhagen {
 
 	private static Coord[] getVertices() {
 		LinkedList<Coord> coords = new LinkedList<Coord>();
-		// All sites from feature class ModelAreaConvexHullPoints
-		coords.addLast(new Coord(673977.7833, 6172099.281)); // so:1
-		coords.addLast(new Coord(679281.4926, 6189542,191)); // so:2
-		coords.addLast(new Coord(675045.9795, 6206992.6616)); // so:3
-		coords.addLast(new Coord(703658.9441, 6228283.6447)); // so:4
-		coords.addLast(new Coord(728969.9982, 6216640.5598)); // so:5
-		coords.addLast(new Coord(738845.9346, 6137938.4159)); // so:6
-		coords.addLast(new Coord(699130.2605, 6135696.2925)); // so:7
-		coords.addLast(new Coord(686615.3337, 6142709.614)); // so:8
+		coords.addLast(new Coord(673977.7833, 6172099.281)); // 
+		coords.addLast(new Coord(679281.4926, 6189542,191)); // 
+		coords.addLast(new Coord(675045.9795, 6206992.6616)); // 
+		coords.addLast(new Coord(703658.9441, 6228283.6447)); // 
+		coords.addLast(new Coord(728969.9982, 6216640.5598)); // 
+		coords.addLast(new Coord(738845.9346, 6137938.4159)); // 
+		coords.addLast(new Coord(699130.2605, 6135696.2925)); // 
+		coords.addLast(new Coord(686615.3337, 6142709.614)); // 
 
 		Coord[] output = new Coord[coords.size()];
 		for (int i = 0; i < output.length; i++) {

@@ -20,6 +20,7 @@ public class QFFFRightPriorityNode extends QFFFAbstractNode{ // implements HasLe
 
 
 	private HashMap<Id<Link>, Integer> carInTransformations;
+	private int lastPriorityDirection = -1;
 
 
 	QFFFRightPriorityNode(final QFFFNode qNode, final TreeMap<Double, LinkedList<Link>> bundleMap, QNetwork qNetwork){
@@ -36,12 +37,16 @@ public class QFFFRightPriorityNode extends QFFFAbstractNode{ // implements HasLe
 	protected boolean doSimStep(final double now){	
 		ArrayList<Integer> inLinkOrder = new ArrayList<Integer>(carInLinks.length);
 
+		int priorityDirectionNow = -1;
 		outerLoop: 
 			for(int i = 0; i < carInLinks.length; i++){
 				QLinkI qLink = carInLinks[i];
 				if(qLink != null){
 					for(QLaneI qLane : qLink.getOfferingQLanes()){
 						if(!qLane.isNotOfferingVehicle()){
+							if(i == lastPriorityDirection) {
+								priorityDirectionNow = inLinkOrder.size();
+							}
 							inLinkOrder.add(i);
 							continue outerLoop;
 						}
@@ -51,6 +56,9 @@ public class QFFFRightPriorityNode extends QFFFAbstractNode{ // implements HasLe
 				if(qLink != null){
 					for(QLaneI qLane : qLink.getOfferingQLanes()){
 						if(!qLane.isNotOfferingVehicle()){
+							if(i == lastPriorityDirection) {
+								priorityDirectionNow = inLinkOrder.size();
+							}
 							inLinkOrder.add(i);
 							continue outerLoop;
 						}
@@ -58,6 +66,7 @@ public class QFFFRightPriorityNode extends QFFFAbstractNode{ // implements HasLe
 				}
 			}
 
+		lastPriorityDirection = -1;
 		if(inLinkOrder.isEmpty()){
 			this.qNode.setActive(false);
 			return false;
@@ -67,19 +76,31 @@ public class QFFFRightPriorityNode extends QFFFAbstractNode{ // implements HasLe
 		double nowishCar = getNowPlusDelayCar(now) + 1;
 
 		int n = inLinkOrder.size();
-		int i = (n == 1) ? 0 : random.nextInt(n);
+		int i;
+		if (n == 1) {
+			i = 0;
+		} else 	if(priorityDirectionNow  >= 0) {
+			i = priorityDirectionNow;
+		} else {
+			i = random.nextInt(n);
+		}
 		for(int count = 0; count < n; count++){
 			int direction = inLinkOrder.get(i);
-			bicycleMoveWithFullLeftTurns(direction, now, nowishBicycle,
+			boolean bicycleReturn = bicycleMoveWithFullLeftTurns(direction, now, nowishBicycle,
 					new RightPriorityBicycleTimeoutModifier());
-			carMoveAllowingLeftTurns(direction, now, nowishCar,
+			boolean carReturn = carMoveAllowingLeftTurns(direction, now, nowishCar,
 					new RightPriorityCarTimeoutModifier());
+			if(lastPriorityDirection == -1 && (bicycleReturn || carReturn)) {
+				lastPriorityDirection = direction;
+			}
 			i = QFFFNodeUtils.increaseInt(i, n);
 		}
 
 		return true;
 	}
 
+	
+	
 
 //	@Override
 //	public boolean isCarLeftTurn(Id<Link> fromLink, Id<Link> toLink) {

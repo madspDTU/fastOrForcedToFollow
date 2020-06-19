@@ -115,11 +115,19 @@ public class ConstructSpeedFlowsFromCopenhagen {
 
 
 		ConstructSpeedFlowsFromCopenhagen.run(ScenarioUtils.createScenario(ConfigUtils.createConfig()),
-				"full", -1, Arrays.asList(""), new HashSet<String>(Arrays.asList(TransportMode.bike,TransportMode.car)));
+				"full", -1, Arrays.asList(""), new HashSet<String>(Arrays.asList(TransportMode.bike,TransportMode.car)), false);
+	}
+	
+	public static void run(Scenario scenario, String type, int it, List<String> ignoredModes, Set<String> analysedModes) {
+		try {
+			run(scenario,type,it,ignoredModes,analysedModes,true);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public static void run(Scenario scenario, String type, int it, 
-			List<String> ignoredModes, Set<String> analysedModes) throws IOException {
+			List<String> ignoredModes, Set<String> analysedModes, boolean runMatsim) throws IOException {
 
 		Config config = scenario.getConfig();
 		if(config.controler().isLinkToLinkRoutingEnabled()) {
@@ -128,8 +136,9 @@ public class ConstructSpeedFlowsFromCopenhagen {
 
 		String outDir = config.controler().getOutputDirectory();
 		Network network = scenario.getNetwork();
-		File networkFile = new File(outDir + "/output_network.xml.gz");
-		if(networkFile.exists()) {
+		String networkFileName = outDir + "/output_network.xml.gz";
+		File networkFile = new File(networkFileName);
+		if(!runMatsim && networkFile.exists()) {
 			Iterator<? extends Node> ite = network.getNodes().values().iterator();
 			while(ite.hasNext()) {
 				Node node = ite.next();
@@ -141,7 +150,7 @@ public class ConstructSpeedFlowsFromCopenhagen {
 				network.removeLink(link.getId());
 			}
 			MatsimNetworkReader  mnr = new MatsimNetworkReader(network);
-			mnr.readFile(networkFile.getAbsolutePath());
+			mnr.readFile(networkFileName);
 		} 
 		boolean populationAlreadyLoaded = false;
 		for(Person person : scenario.getPopulation().getPersons().values()) {

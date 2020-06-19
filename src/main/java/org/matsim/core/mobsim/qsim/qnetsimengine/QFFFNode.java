@@ -268,10 +268,10 @@ public final class QFFFNode extends AbstractQNode {
 				} 
 			}
 			//Only allow node type if smallest link is at least trunk_link.
-			//	if(lowestRoadValue >= fffNodeConfig.getRoadTypeToValueMap().get("primary_link")) {
-			isLargeRoadsMerging = true;
-			//	}
-		} else if(carOutThetaMap.size() == 2 && carInThetaMap.size() == 1
+			if(lowestRoadValue >= fffNodeConfig.getRoadTypeToValueMap().get("primary_link")) {
+				isLargeRoadsMerging = true;
+			}
+		} else if(carOutThetaMap.size() >= 2 && carInThetaMap.size() == 1
 				&& bicycleOutThetaMap.size() == 0 && bicycleInThetaMap.size() == 0) {
 			double largestCapacity = -1;
 			for(Link link : carInThetaMap.values()) {
@@ -494,12 +494,12 @@ public final class QFFFNode extends AbstractQNode {
 			 * of if there is space on the next link or not.. optionally we let them
 			 * die here, we have a config setting for that!
 			 */
-				moveVehicleFromInlinkToOutlink(veh, currentLink.getId(), fromLane, nextLinkId, nextQueueLane, moveType);
-				return stuckReturnValue;
-				// (yyyy why is this returning `true'?  Since this is a fix to avoid gridlock, this should proceed in small steps. 
-				// kai, feb'12) 
+			moveVehicleFromInlinkToOutlink(veh, currentLink.getId(), fromLane, nextLinkId, nextQueueLane, moveType);
+			return stuckReturnValue;
+			// (yyyy why is this returning `true'?  Since this is a fix to avoid gridlock, this should proceed in small steps. 
+			// kai, feb'12) 
 		}
-		
+
 		return false;
 
 	}

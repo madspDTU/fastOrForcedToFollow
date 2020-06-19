@@ -19,6 +19,10 @@ import fastOrForcedToFollow.timeoutmodifiers.RightPriorityCarTimeoutModifier;
 public class QFFFAntiPriorityNode extends QFFFAbstractNode {
 
 	private boolean[] isSecondary;
+	private int lastPriorityDirection = 0;
+	private boolean lastPriorityWasSecondary = false;
+
+
 
 
 	protected QFFFAntiPriorityNode(final QFFFNode qNode, final TreeMap<Double, LinkedList<Link>> bundleMap, QNetwork qNetwork,
@@ -32,10 +36,11 @@ public class QFFFAntiPriorityNode extends QFFFAbstractNode {
 
 	@Override
 	boolean doSimStep(double now) {
-			
+
 		ArrayList<Integer> primaryInLinkOrder = new ArrayList<Integer>(carInLinks.length); 
 		ArrayList<Integer> secondaryInLinkOrder = new ArrayList<Integer>(carInLinks.length);
 
+		int priorityDirectionNow = -1;
 		outerLoop: 
 			for(int i = 0; i < carInLinks.length; i++){
 				QLinkI qLink = carInLinks[i];
@@ -43,8 +48,14 @@ public class QFFFAntiPriorityNode extends QFFFAbstractNode {
 					for(QLaneI qLane : qLink.getOfferingQLanes()){
 						if(!qLane.isNotOfferingVehicle()){
 							if(isSecondary[i]){
+								if(lastPriorityWasSecondary && i == lastPriorityDirection) {
+									priorityDirectionNow = secondaryInLinkOrder.size();
+								}
 								secondaryInLinkOrder.add(i);
 							} else {
+								if(!lastPriorityWasSecondary && i == lastPriorityDirection) {
+									priorityDirectionNow = primaryInLinkOrder.size();
+								}
 								primaryInLinkOrder.add(i);
 							}
 							continue outerLoop;
@@ -56,8 +67,14 @@ public class QFFFAntiPriorityNode extends QFFFAbstractNode {
 					for(QLaneI qLane : qLink.getOfferingQLanes()){
 						if(!qLane.isNotOfferingVehicle()){
 							if(isSecondary[i]){
+								if(lastPriorityWasSecondary && i == lastPriorityDirection) {
+									priorityDirectionNow = secondaryInLinkOrder.size();
+								}
 								secondaryInLinkOrder.add(i);
 							} else {
+								if(!lastPriorityWasSecondary && i == lastPriorityDirection) {
+									priorityDirectionNow = primaryInLinkOrder.size();
+								}
 								primaryInLinkOrder.add(i);
 							}
 							continue outerLoop;
@@ -65,45 +82,68 @@ public class QFFFAntiPriorityNode extends QFFFAbstractNode {
 					}
 				}
 			}
+		lastPriorityDirection = -1;
 
 		if(primaryInLinkOrder.isEmpty() && secondaryInLinkOrder.isEmpty()){
-			this.qNode.setActive(false) ;
+			this.qNode.setActive(false);
 			return false;
 		}
 
-		
+
 		double nowishBicycle = getNowPlusDelayBicycle(now) + 1;
 		double nowishCar = getNowPlusDelayCar(now) + 1;
 
-		
+		int i;
 		if(!primaryInLinkOrder.isEmpty()){
-
 			int n = primaryInLinkOrder.size();
-			int i = (n == 0) ? 1 : random.nextInt(n);
-		
+			if(n == 1) {
+				i = 0;
+			} else if(!lastPriorityWasSecondary && priorityDirectionNow >= 0) {
+				i = priorityDirectionNow;
+			} else {
+				i = random.nextInt(n);
+			}
 			for(int count = 0; count < n; count++){
 				int direction = primaryInLinkOrder.get(i);
-				bicycleMoveWithFullLeftTurns(direction, now, nowishBicycle,
+				boolean bicycleBool = bicycleMoveWithFullLeftTurns(direction, now, nowishBicycle,
 						new RightPriorityBicycleTimeoutModifier());
-				carMoveAllowingLeftTurns(direction, now, nowishCar, 
+				boolean carBool = carMoveAllowingLeftTurns(direction, now, nowishCar, 
 						new RightPriorityCarTimeoutModifier());
+				if(lastPriorityDirection == -1 && (bicycleBool || carBool)) {
+					lastPriorityDirection = direction;
+				}
 				i = QFFFNodeUtils.increaseInt(i, n);
 			}
 		}
-		
+
+
 
 		if(!secondaryInLinkOrder.isEmpty()){
 			nowishBicycle--;
-			nowishCar--;			
+			nowishCar--;	
 			int n = secondaryInLinkOrder.size();
-			int i = (n == 0) ? 1 : random.nextInt(n);
-			
+			if(n == 1) {
+				i = 0;
+			} else if(lastPriorityDirection >=0) {
+				 i = n-1;
+				while(i == 0 || secondaryInLinkOrder.get(i) > lastPriorityDirection) {
+					i--;
+				}
+			} else if(lastPriorityWasSecondary && priorityDirectionNow >= 0) {
+				i = priorityDirectionNow;
+			} else {
+				i = random.nextInt(n);
+			}
+
 			for(int count = 0; count < n; count++){
 				int direction = secondaryInLinkOrder.get(i);
-				bicycleMoveWithFullLeftTurns(direction, now, nowishBicycle,
+				boolean bicycleBool = bicycleMoveWithFullLeftTurns(direction, now, nowishBicycle,
 						new RightPriorityBicycleTimeoutModifier());
-				carMoveAllowingLeftTurns(direction, now, nowishCar,
+				boolean carBool = carMoveAllowingLeftTurns(direction, now, nowishCar,
 						new RightPriorityCarTimeoutModifier());
+				if(lastPriorityDirection == -1 && (bicycleBool || carBool)) {
+					lastPriorityDirection = direction;
+				}
 				i = QFFFNodeUtils.increaseInt(i, n);
 			}
 		}

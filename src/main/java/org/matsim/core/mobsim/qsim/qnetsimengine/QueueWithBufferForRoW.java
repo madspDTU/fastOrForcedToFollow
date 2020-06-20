@@ -73,7 +73,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  *
  * @author nagel
  */
-final class QueueWithBufferForRoW implements QLaneI, SignalizeableItem {
+abstract class QueueWithBufferForRoW implements QLaneI, SignalizeableItem, HasLeftBufferTime {
 	private static final Logger log = Logger.getLogger( QueueWithBuffer.class ) ;
 
 	static final class Builder implements LaneFactory {
@@ -85,7 +85,7 @@ final class QueueWithBufferForRoW implements QLaneI, SignalizeableItem {
 		private final NetsimEngineContext context;
 		private FlowEfficiencyCalculator flowEfficiencyCalculator;
 		private Integer leftBufferCapacity = null;
-
+	
 		Builder( final NetsimEngineContext context ) {
 			this.context = context ;
 			if (context.qsimConfig.getLinkDynamics() == QSimConfigGroup.LinkDynamics.PassingQ ||
@@ -100,6 +100,7 @@ final class QueueWithBufferForRoW implements QLaneI, SignalizeableItem {
 		void setEffectiveNumberOfLanes(Double effectiveNumberOfLanes) { this.effectiveNumberOfLanes = effectiveNumberOfLanes; }
 		void setFlowCapacity_s(Double flowCapacity_s) { this.flowCapacity_s = flowCapacity_s; }
 		void setFlowEfficiencyCalculator(FlowEfficiencyCalculator flowEfficiencyCalculator) { this.flowEfficiencyCalculator = flowEfficiencyCalculator; }
+	
 		@Override public QueueWithBufferForRoW createLane( AbstractQLink qLink ) {
 			// a number of things I cannot configure before I have the qlink:
 			if ( id==null ) { id = Id.create( qLink.getLink().getId() , Lane.class ) ; }
@@ -108,7 +109,26 @@ final class QueueWithBufferForRoW implements QLaneI, SignalizeableItem {
 			if ( flowCapacity_s==null ) { flowCapacity_s = ((Link)qLink.getLink()).getFlowCapacityPerSec() ; }
 			if (flowEfficiencyCalculator == null) { flowEfficiencyCalculator = new DefaultFlowEfficiencyCalculator(); }
 			if ( leftBufferCapacity == null) { leftBufferCapacity = Integer.MAX_VALUE; }
-			return new QueueWithBufferForRoW( qLink.getInternalInterface(), vehicleQueue, id, length, effectiveNumberOfLanes, flowCapacity_s, context, flowEfficiencyCalculator, leftBufferCapacity ) ;
+		
+			if(leftBufferCapacity <= 0) {
+				int cnt = Counters.countSingleLanes.incrementAndGet();
+				if(cnt % 1000 == 0) {
+					log.info(cnt + " singleLanes");
+				}
+				return new QueueWithSingleBufferForRoW( qLink.getInternalInterface(), vehicleQueue, id, length, effectiveNumberOfLanes, flowCapacity_s, context, flowEfficiencyCalculator) ;
+			} else if (leftBufferCapacity < Integer.MAX_VALUE) {
+				int cnt = Counters.countInteractingLanes.incrementAndGet();
+				if(cnt % 1000 == 0) {
+					log.info(cnt + " interactingLanes");
+				}
+				return new QueueWithTwoInteractingBuffersForRoW( qLink.getInternalInterface(), vehicleQueue, id, length, effectiveNumberOfLanes, flowCapacity_s, context, flowEfficiencyCalculator, leftBufferCapacity ) ;
+			} else {
+				int cnt = Counters.countSeparatedLanes.incrementAndGet();
+				if(cnt % 1000 == 0) {
+					log.info(cnt + " separatedLanes");
+				}
+				return new QueueWithTwoSeparatedBuffersForRoW( qLink.getInternalInterface(), vehicleQueue, id, length, effectiveNumberOfLanes, flowCapacity_s, context, flowEfficiencyCalculator) ;
+			} 
 		}
 	}
 
@@ -157,8 +177,7 @@ final class QueueWithBufferForRoW implements QLaneI, SignalizeableItem {
 	private final Queue<QueueWithBuffer.Hole> holes = new LinkedList<>();
 
 	/** the last time-step the front-most vehicle in the buffer was moved. Used for detecting dead-locks. */
-	private double generalBufferLastMovedTime = Time.getUndefinedTime() ;
-	private double leftBufferLastMovedTime = Time.getUndefinedTime() ;
+	protected double generalBufferLastMovedTime = Time.getUndefinedTime() ;
 
 	/**
 	 * The list of vehicles that have not yet reached the end of the link
@@ -171,8 +190,7 @@ final class QueueWithBufferForRoW implements QLaneI, SignalizeableItem {
 	/**
 	 * Holds all vehicles that are ready to cross the outgoing intersection
 	 */
-	private final Queue<QVehicle> generalBuffer = new ConcurrentLinkedQueue<>() ;
-	private final Queue<QVehicle> leftBuffer = new ConcurrentLinkedQueue<>() ;
+	protected final Queue<QVehicleAndMoveType> newGeneralBuffer = new ConcurrentLinkedQueue<>() ;
 
 	/**
 	 * null if the link is not signalized
@@ -183,7 +201,7 @@ final class QueueWithBufferForRoW implements QLaneI, SignalizeableItem {
 	 * pointer, and give access only to reduced number of methods (in particular not the full Link information). kai, feb'18
 	 * This is now done with the {@link AbstractQLink.QLinkInternalInterface}.  kai, feb'18
 	 */
-	private final AbstractQLink.QLinkInternalInterface qLink;
+	protected final AbstractQLink.QLinkInternalInterface qLink;
 	private final Id<Lane> id;
 	private static int spaceCapWarningCount = 0;
 	final static double HOLE_SPEED_KM_H = 15.0;
@@ -193,7 +211,7 @@ final class QueueWithBufferForRoW implements QLaneI, SignalizeableItem {
 	private double effectiveNumberOfLanes = Double.NaN ;
 
 	private final VisData visData = new VisDataImpl() ;
-	private final NetsimEngineContext context;
+	protected final NetsimEngineContext context;
 
 	private double maxFlowFromFdiag = Double.POSITIVE_INFINITY ;
 
@@ -201,12 +219,10 @@ final class QueueWithBufferForRoW implements QLaneI, SignalizeableItem {
 
 	private final FlowEfficiencyCalculator flowEfficiencyCalculator;
 
-	private int leftBufferCapacity = Integer.MAX_VALUE;
+	
 
-	private boolean generalBufferMayHaveALeftTurningvehicleInFront = false;
-
-	private QueueWithBufferForRoW(AbstractQLink.QLinkInternalInterface qlink, final VehicleQ<QVehicle> vehicleQueue, Id<Lane> laneId,
-			double length, double effectiveNumberOfLanes, double flowCapacity_s, final NetsimEngineContext context, FlowEfficiencyCalculator flowEfficiencyCalculator, Integer leftBufferCapacity) {
+	protected QueueWithBufferForRoW(AbstractQLink.QLinkInternalInterface qlink, final VehicleQ<QVehicle> vehicleQueue, Id<Lane> laneId,
+			double length, double effectiveNumberOfLanes, double flowCapacity_s, final NetsimEngineContext context, FlowEfficiencyCalculator flowEfficiencyCalculator) {
 		// the general idea is to give this object no longer access to "everything".  Objects get back pointers (here qlink), but they
 		// do not present the back pointer to the outside.  In consequence, this object can go up to qlink, but not any further. kai, mar'16
 		// Now I am even trying to get rid of the full qLink back pointer (since it allows, e.g., going back to Link). kai, feb'18
@@ -222,8 +238,7 @@ final class QueueWithBufferForRoW implements QLaneI, SignalizeableItem {
 		this.length = length;
 		this.unscaledFlowCapacity_s = flowCapacity_s ;
 		this.effectiveNumberOfLanes = effectiveNumberOfLanes;
-		this.leftBufferCapacity = leftBufferCapacity;
-
+		
 		//		freespeedTravelTime = this.length / qlink.getLink().getFreespeed();
 		//		if (Double.isNaN(freespeedTravelTime)) {
 		//			throw new IllegalStateException("Double.NaN is not a valid freespeed travel time for a link. Please check the attributes length and freespeed!");
@@ -255,27 +270,23 @@ final class QueueWithBufferForRoW implements QLaneI, SignalizeableItem {
 	}
 
 
+
+
 	private void addToBuffer(final QVehicle veh) {
 
 		double now = context.getSimTimer().getTimeOfDay() ;
 		flowcap_accumulate.addValue(-getFlowCapacityConsumptionInEquivalents(veh), now);
 
-		//Add to correct buffer
 		Id<Link> nextLinkId = veh.getDriver().chooseNextLinkId();
 		QFFFAbstractNode toQNode = ((QFFFNode) this.qLink.getToNodeQ()).getQFFFAbstractNode();
-		if(toQNode instanceof HasLeftBuffer && ((HasLeftBuffer) toQNode).isCarLeftTurn(this.qLink.getId(), nextLinkId) && 
-				this.leftBufferCapacity == Integer.MAX_VALUE) {
-			if(leftBuffer.isEmpty()) {
-				leftBufferLastMovedTime = now;
-			}
-			leftBuffer.add(veh);
-		} else {  // All other types of HasLeftBufferr initially place vehicles in the generalBuffer. 
-			if(generalBuffer.isEmpty()) {
-				generalBufferLastMovedTime = now;
-				generalBufferMayHaveALeftTurningvehicleInFront = true;
-			}
-			generalBuffer.add(veh);
-		}
+		int outDirection = toQNode.carOutTransformations.get(nextLinkId);
+		MoveType mt = MoveType.GENERAL;
+		if(toQNode instanceof QFFFNodeWithLeftBuffer && ((QFFFNodeWithLeftBuffer) toQNode).isCarLeftTurn(this.qLink.getId(), outDirection)) {
+			mt = MoveType.LEFT_TURN;
+		} 
+		QVehicleAndMoveType qVehAndMt = new QVehicleAndMoveType(veh, mt, outDirection);
+		actuallyAddToBuffer(qVehAndMt, now);
+
 
 		// Activation
 		final QNodeI toNode = this.qLink.getToNodeQ();
@@ -283,6 +294,8 @@ final class QueueWithBufferForRoW implements QLaneI, SignalizeableItem {
 			((AbstractQNode) toNode).activateNode();
 		}
 	}
+
+	protected abstract void actuallyAddToBuffer(QVehicleAndMoveType qVehAndMt, double now);
 
 	@Override
 	public final boolean isAcceptingFromWait(QVehicle veh) {
@@ -680,16 +693,14 @@ final class QueueWithBufferForRoW implements QLaneI, SignalizeableItem {
 			if (veh.getId().equals(vehicleId))
 				return veh;
 		}
-		for (QVehicle veh : this.generalBuffer) {
-			if (veh.getId().equals(vehicleId))
-				return veh;
+		for (QVehicleAndMoveType veh : this.newGeneralBuffer) {
+			if (veh.getQVehicle().getId().equals(vehicleId))
+				return veh.getQVehicle();
 		}
-		for (QVehicle veh : this.leftBuffer) {
-			if (veh.getId().equals(vehicleId))
-				return veh;
-		}
-		return null;
+		return getVehicleInLeftBuffers(vehicleId);
 	}
+
+	protected abstract QVehicle getVehicleInLeftBuffers(Id<Vehicle> vehicleId);
 
 	@Override
 	public final Collection<MobsimVehicle> getAllVehicles() {
@@ -697,12 +708,17 @@ final class QueueWithBufferForRoW implements QLaneI, SignalizeableItem {
 		 * It will be more complicated for passingQueue. amit feb'16
 		 */
 		Collection<MobsimVehicle> vehicles = new ArrayList<>();
-		vehicles.addAll(generalBuffer);
-		vehicles.addAll(leftBuffer);
+		for(QVehicleAndMoveType veh : newGeneralBuffer) {
+			vehicles.add(veh.getQVehicle());
+		}
+		addVehiclesFromLeftBuffer(vehicles);
 		vehicles.addAll(vehQueue);
 		return vehicles ;
 	}
 
+	public abstract double getLeftBufferLastTimeMoved();
+	
+	protected abstract void addVehiclesFromLeftBuffer(Collection<MobsimVehicle> vehicles);
 
 	public final QVehicle popFirstLeftVehicle() {
 		//		double now = context.getSimTimer().getTimeOfDay() ;
@@ -723,24 +739,19 @@ final class QueueWithBufferForRoW implements QLaneI, SignalizeableItem {
 	private final QVehicle removeFirstGeneralVehicle(){
 		double now = context.getSimTimer().getTimeOfDay() ;
 
-		QVehicle veh = generalBuffer.poll();
-		generalBufferMayHaveALeftTurningvehicleInFront = true;
-		generalBufferLastMovedTime = now; // just in case there is another vehicle in the buffer that is now the new front-most
+		QVehicle veh = actuallyRemoveFirstGeneralVehicle(now);
+
 		if( context.qsimConfig.isUsingFastCapacityUpdate() ) {
 			flowcap_accumulate.setTimeStep(now - 1);
 		}
 		return veh;
 	}
 
-	private final QVehicle removeFirstLeftVehicle(){
+	protected abstract QVehicle actuallyRemoveFirstGeneralVehicle(double now);
+
+	protected final QVehicle removeFirstLeftVehicle() {
 		double now = context.getSimTimer().getTimeOfDay() ;
-
-		QVehicle veh = leftBuffer.poll();
-
-		leftBufferLastMovedTime = now; // just in case there is another vehicle in the buffer that is now the new front-most
-		if( context.qsimConfig.isUsingFastCapacityUpdate() ) {
-			flowcap_accumulate.setTimeStep(now - 1);
-		}
+		QVehicle veh = actuallyRemoveFirstLeftVehicle(now);
 		return veh;
 	}
 
@@ -755,6 +766,8 @@ final class QueueWithBufferForRoW implements QLaneI, SignalizeableItem {
 		// (this is only for capacity accumulation.  As soon as at least one turning relation is green, the "link" is considered
 		// green).
 	}
+
+	protected abstract QVehicle actuallyRemoveFirstLeftVehicle(double now2);
 
 	@Override
 	public final boolean hasGreenForToLink(final Id<Link> toLinkId) {
@@ -778,74 +791,17 @@ final class QueueWithBufferForRoW implements QLaneI, SignalizeableItem {
 	}
 
 	@Override
-	public final boolean isNotOfferingVehicle() {
-		return generalBuffer.isEmpty();
-	}
+	public abstract boolean isNotOfferingVehicle() ;
+
+//	public final boolean isOfferingNeitherGeneralNorLeftVehicle() {
+//		return generalBuffer.isEmpty() && leftBuffer.isEmpty();
+//	}
+
+	public abstract boolean isNotOfferingGeneralVehicle() ;
+		
+	public abstract boolean isNotOfferingLeftVehicle();
 	
-	public final boolean isOfferingNeitherGeneralNorLeftVehicle() {
-		return generalBuffer.isEmpty() && leftBuffer.isEmpty();
-	}
-
-	public final boolean isNotOfferingGeneralVehicle(HasLeftBuffer qFFFNode) {
-		if(generalBuffer.isEmpty()) {
-			return true;
-		} 
-		if(!generalBufferMayHaveALeftTurningvehicleInFront || leftBufferCapacity == Integer.MAX_VALUE) {
-			return false;
-		}
-		QVehicle veh;
-		while((veh = generalBuffer.peek()) != null) {
-			if(qFFFNode.isCarLeftTurn(this.qLink.getId(), veh.getDriver().chooseNextLinkId())) {
-				if(leftBuffer.size() < leftBufferCapacity) {
-					generalBufferLastMovedTime = context.getSimTimer().getTimeOfDay();
-					generalBuffer.remove();
-					leftBufferLastMovedTime = context.getSimTimer().getTimeOfDay();
-					leftBuffer.add(veh);
-					continue;
-				} else {
-					generalBufferMayHaveALeftTurningvehicleInFront = true;
-					return true;
-				}
-			} else {
-				generalBufferMayHaveALeftTurningvehicleInFront = false;
-				return false;
-			}
-		}
-		generalBufferMayHaveALeftTurningvehicleInFront = false;
-		return true;
-	}
-
-	public final boolean isNotOfferingLeftVehicle(HasLeftBuffer qFFFNode) {
-		if(!leftBuffer.isEmpty()) {
-			return false;
-		}
-		if(!generalBufferMayHaveALeftTurningvehicleInFront || leftBufferCapacity == Integer.MAX_VALUE || generalBuffer.isEmpty()) {
-			return true;
-		} else {
-			boolean isLeftTurn = false;
-			QVehicle veh;
-			while((veh = generalBuffer.peek()) != null) {
-				isLeftTurn = qFFFNode.isCarLeftTurn(this.qLink.getId(), veh.getDriver().chooseNextLinkId()); 
-				if(isLeftTurn) {
-					generalBufferLastMovedTime = context.getSimTimer().getTimeOfDay();
-					generalBuffer.remove();
-					if(leftBuffer.isEmpty()) {
-						leftBufferLastMovedTime = context.getSimTimer().getTimeOfDay();
-					}
-					leftBuffer.add(veh);
-					if(leftBuffer.size() == leftBufferCapacity) {
-						break;
-					} else {
-						continue;
-					}
-				} else {
-					break;
-				}
-			}
-			generalBufferMayHaveALeftTurningvehicleInFront = isLeftTurn;
-			return leftBuffer.isEmpty();
-		}
-	}
+		
 
 	@Override
 	public final void clearVehicles() {
@@ -862,20 +818,21 @@ final class QueueWithBufferForRoW implements QLaneI, SignalizeableItem {
 		}
 		vehQueue.clear();
 
-		for(Queue<QVehicle> buffer : Arrays.asList(generalBuffer, leftBuffer)){
-			for (QVehicle veh : buffer) {
-				context.getEventsManager().processEvent( new VehicleAbortsEvent(now, veh.getId(), veh.getCurrentLink().getId()));
-				context.getEventsManager().processEvent( new PersonStuckEvent(now, veh.getDriver().getId(), veh.getCurrentLink().getId(), veh.getDriver().getMode()));
+		for (QVehicleAndMoveType veh : newGeneralBuffer) {
+			context.getEventsManager().processEvent( new VehicleAbortsEvent(now, veh.getId(), veh.getCurrentLink().getId()));
+			context.getEventsManager().processEvent( new PersonStuckEvent(now, veh.getDriver().getId(), veh.getCurrentLink().getId(), veh.getDriver().getMode()));
 
-				context.getAgentCounter().incLost();
-				context.getAgentCounter().decLiving();
-			}
-			buffer.clear();
+			context.getAgentCounter().incLost();
+			context.getAgentCounter().decLiving();
 		}
+		newGeneralBuffer.clear();
+		clearLeftBuffer(now);
 
 		holes.clear();
 		this.remainingHolesStorageCapacity = this.storageCapacity;
 	}
+
+	protected abstract void clearLeftBuffer(double now);
 
 	@Override
 	public final void addFromUpstream(final QVehicle veh) {
@@ -945,31 +902,29 @@ final class QueueWithBufferForRoW implements QLaneI, SignalizeableItem {
 
 	@Override
 	public final QVehicle getFirstVehicle() {
-		if (this.generalBuffer.isEmpty() && this.leftBuffer.isEmpty()) {
-			return this.vehQueue.peek();
-		}
-		return this.generalBuffer.peek() ;
-	}
-
-	public final QVehicle getFirstNonLeftVehicle(HasLeftBuffer node) {
-		Iterator<QVehicle> it = this.generalBuffer.iterator();
-		while(it.hasNext()) {
-			QVehicle veh = it.next();
-			if(!node.isCarLeftTurn(this.qLink.getId(), veh.getDriver().chooseNextLinkId())){
-				it.remove();
-				this.generalBufferLastMovedTime = context.getSimTimer().getTimeOfDay();
-				return veh;
-			}
-		}
+		// Deliberately not implemented.
+		log.error("getFirstVehicle() deliberately not implemented as it may be ambigous");
+		log.warn("getFirstVehicle() deliberately not implemented as it may be ambigous");
 		return null;
 	}
 
-	public final QVehicle getFirstGeneralVehicle() {
-		return this.generalBuffer.peek() ;
+//	public final QVehicle getFirstNonLeftVehicle2(QFFFNodeWithLeftBuffer node) {
+//		Iterator<QVehicle> it = this.generalBuffer.iterator();
+//		while(it.hasNext()) {
+//			QVehicle veh = it.next();
+//			if(!node.isCarLeftTurn(this.qLink.getId(), veh.getDriver().chooseNextLinkId())){
+//				it.remove();
+//				this.generalBufferLastMovedTime = context.getSimTimer().getTimeOfDay();
+//				return veh;
+//			}
+//		}
+//		return null;
+//	}
+
+	public final QVehicleAndMoveType getFirstGeneralVehicle() {
+		return this.newGeneralBuffer.peek() ;
 	}
-	public final QVehicle getFirstLeftVehicle() {
-		return this.leftBuffer.peek() ;
-	}
+	public abstract QVehicleAndMoveType getFirstLeftVehicle();
 
 	@Override
 	public final double getLastMovementTimeOfFirstVehicle() {
@@ -980,9 +935,6 @@ final class QueueWithBufferForRoW implements QLaneI, SignalizeableItem {
 		return this.generalBufferLastMovedTime ;
 	}
 
-	public final double getLastMovementTimeOfFirstLeftVehicle() {
-		return this.leftBufferLastMovedTime ;
-	}
 
 	/**
 	 * Needs to be added _upstream_ of the regular stop location so that a possible second stop on the link can also be served.
@@ -1022,7 +974,7 @@ final class QueueWithBufferForRoW implements QLaneI, SignalizeableItem {
 
 		@Override
 		public final Collection<AgentSnapshotInfo> addAgentSnapshotInfo(Collection<AgentSnapshotInfo> positions, double now) {
-			if ( !leftBuffer.isEmpty() || !generalBuffer.isEmpty() || !vehQueue.isEmpty() ||
+			if ( !isLeftBufferEmpty() || !newGeneralBuffer.isEmpty() || !vehQueue.isEmpty() ||
 					!holes.isEmpty() ) {
 				Gbl.assertNotNull(positions);
 				Gbl.assertNotNull( context.snapshotInfoBuilder );
@@ -1088,6 +1040,8 @@ final class QueueWithBufferForRoW implements QLaneI, SignalizeableItem {
 		return returnVeh;
 	}
 
+	protected abstract boolean isLeftBufferEmpty();
+
 	private QVehicle pollFromVehQueue(QVehicle veh2Remove){
 		if(vehQueue.remove(veh2Remove)){
 			return veh2Remove;
@@ -1104,6 +1058,10 @@ final class QueueWithBufferForRoW implements QLaneI, SignalizeableItem {
 	private double getFlowCapacityConsumptionInEquivalents(QVehicle vehicle) {
 		double flowEfficiency = flowEfficiencyCalculator.calculateFlowEfficiency(vehicle.getVehicle(), qLink.getLink());
 		return vehicle.getSizeInEquivalents() / flowEfficiency;
+	}
+
+	public boolean isGeneralBufferEmpty() {
+		return newGeneralBuffer.isEmpty();
 	}
 
 }

@@ -10,7 +10,7 @@ public class SecondaryBicycleTimeoutModifier implements TimeoutModifier {
 
 		int n = bicycleTimeouts[0].length;
 		for(int i = 0; i < n; i++){ // All bicycle movements to out direction except from priorities and inDirection
-			if(isSecondary[i] && i != inDirection){
+			if(i != inDirection){  //secondary removed
 				updateEntry(bicycleTimeouts,i,outDirection,nowish);
 			}
 		}
@@ -24,16 +24,16 @@ public class SecondaryBicycleTimeoutModifier implements TimeoutModifier {
 		while(j != outDirection){
 
 			for(int i = 0; i < n; i++){
-				if(isSecondary[i]){
+			//	if(isSecondary[i]){
 					updateEntry(carTimeouts,i,j,nowish); // all car movements to a road to the right of the movement
 					if(i != inDirection){	
 						updateEntry(bicycleTimeouts,i,j,nowish); // all bicycle movements to the right of the movement (except from indirection)
 					}
-				}
-				if(isSecondary[j]){
+			//	}
+			//	if(isSecondary[j]){
 					updateEntry(carTimeouts,j,i,nowish); // all car movements from the right of the movement 
 					updateEntry(bicycleTimeouts,j,i,nowish); // all bicycle movements from the right of the movement
-				}
+			//	}
 			}
 
 			j = QFFFNodeUtils.increaseInt(j, n);

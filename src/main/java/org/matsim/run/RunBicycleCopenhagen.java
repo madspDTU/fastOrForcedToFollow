@@ -351,6 +351,7 @@ public class RunBicycleCopenhagen {
 			if(resumeNonRoW){
 				config.plans().setInputFile(inputResumeBaseDir + "ResumablePlans_Both_selectedOnly.xml.gz");
 			} else {
+		//		config.plans().setInputFile("/zhome/81/e/64390/MATSim/DTA2020/input/AllPlans_CPH_Small.xml");
 				config.plans().setInputFile(inputBaseDir + "COMPASBicycle100_COMPASSCarOTM100.xml.gz");
 			}
 		} else {

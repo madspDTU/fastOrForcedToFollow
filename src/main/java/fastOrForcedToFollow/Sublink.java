@@ -1,8 +1,13 @@
 package fastOrForcedToFollow;
 
 
+import org.matsim.core.gbl.Gbl;
+import org.matsim.core.mobsim.qsim.qnetsimengine.HasLeftBufferTime;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QCycle;
+import org.matsim.core.mobsim.qsim.qnetsimengine.QCycleAndMoveType;
+import org.matsim.core.mobsim.qsim.qnetsimengine.QFFFNode.MoveType;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QVehicle;
+import org.matsim.core.mobsim.qsim.qnetsimengine.QVehicleAndMoveType;
 
 import fastOrForcedToFollow.configgroups.FFFConfigGroup;
 
@@ -14,24 +19,24 @@ import java.util.PriorityQueue;
  * 
  * @author mpaulsen
  */
-public class Sublink{
+public abstract class Sublink implements HasLeftBufferTime {
 
-	
+
 	private final PriorityQueue<QCycle> queue;
-	
-	
+
+
 	/**
 	 * The id of the link.
 	 */
 	private final String id;
 
-	
+
 	/**
 	 * The total pseudolane distance (buffer distance) occupied of the cyclists currently on the link.
 	 */
 	private double occupiedSpace = 0;
 
-	
+
 	/**
 	 * The array containing all pseudolanes of the link.
 	 */
@@ -46,72 +51,99 @@ public class Sublink{
 	/**
 	 * The last time a vehicle was moved through the downstream end of the link.
 	 */
-	private double lastTimeMoved;
-	
-	
+	protected double generalLastTimeMoved;
+
+
 	/**
 	 * A LinkedList containing the vehicles which will be leaving the link. 
 	 */
-	private final LinkedList<QVehicle> leavingVehicles;
+	protected final LinkedList<QCycleAndMoveType> generalLeavingVehicles;
+
+
 	
 	
-	public void addVehicleToLeavingVehicles(final QVehicle veh){
-		this.leavingVehicles.addLast(veh);
+	public void addVehicleToGeneralLeavingVehiclesWithoutMovetype(final QVehicle veh){
+		Gbl.assertIf(!(veh instanceof QCycleAndMoveType));
+		this.generalLeavingVehicles.addLast( (QCycleAndMoveType) veh); //TODO remove cast
 	}
-	public void addVehicleToFrontOfLeavingVehicles(final QVehicle veh){
-		this.leavingVehicles.addFirst(veh);
+	public abstract void addToLeavingVehicles(final QCycleAndMoveType veh,  double now);
+	
+	public void addVehicleToFrontOfLeavingVehiclesWithoutMovetype(final QVehicle veh, double now) {
+		Gbl.assertIf(!(veh instanceof QCycleAndMoveType));
+		if(this.generalLeavingVehicles.isEmpty()) {
+			this.generalLastTimeMoved = now;
+		}
+		this.generalLeavingVehicles.addFirst( (QCycleAndMoveType) veh); //TODO remove cast
 	}
-	public QVehicle getFirstLeavingVehicle(){
-		return leavingVehicles.peekFirst();
+	
+	public abstract void addVehicleToFrontOfLeavingVehicles(final QCycleAndMoveType veh, double now);
+	
+	public abstract double getLeftBufferLastTimeMoved();
+
+	public QCycleAndMoveType getFirstGeneralLeavingVehicle() {
+		return (QCycleAndMoveType) this.generalLeavingVehicles.getFirst();
 	}
-	public QVehicle pollFirstLeavingVehicle(){
-		return leavingVehicles.pollFirst();
+	
+	public QVehicle getFirstGeneralLeavingVehicleWithoutMovetype() {
+		return this.generalLeavingVehicles.getFirst();
 	}
-	public boolean hasNoLeavingVehicles(){
-		return leavingVehicles.isEmpty();
+	public QCycleAndMoveType pollFirstGeneralLeavingVehicle(double now) {
+		this.generalLastTimeMoved = now;
+		return (QCycleAndMoveType) this.generalLeavingVehicles.pollFirst();
 	}
-	public LinkedList<QVehicle> getLeavingVehicles(){
-		return this.leavingVehicles;
-	}
+	
+	public abstract void setLastTimeMovedLeft(double lastMoved) ;
+	
+	public abstract QCycleAndMoveType getFirstLeftLeavingVehicle() ;
+	
+	public abstract QCycleAndMoveType pollFirstLeftLeavingVehicle(double now);
+	
+	public abstract boolean hasNoLeavingVehicles();
+	public abstract boolean hasNoGeneralLeavingVehicles(double now);
+	public abstract boolean hasNoLeftLeavingVehicles(double now);
+	
+	
+	public abstract LinkedList<QVehicle> getAllLeavingVehicles();
+	
 	public PriorityQueue<QCycle> getQ(){
 		return queue;
 	}
 	public void addToQ(QCycle qCyc){
 		queue.add(qCyc);
 	}
-	
+
 
 	/**
 	 * Static factory method creating a link based on the width of the link. See also the {@link #Link(String, int, double) constructor}.
 	 */
-	public static Sublink createLinkFromWidth(final String id, final double width, final double length, final FFFConfigGroup fffConfig){
-		return new Sublink(id, 1 + (int) Math.floor((width-fffConfig.getUnusedWidth())/fffConfig.getEfficientLaneWidth()), length );
-	}
-	
+	//public static Sublink createLinkFromWidth(final String id, final double width, final double length, final FFFConfigGroup fffConfig){
+	//	return new Sublink(id, 1 + (int) Math.floor((width-fffConfig.getUnusedWidth())/fffConfig.getEfficientLaneWidth()), length );
+	//}
+
 	/**
 	 * Static factory method creating a link based directly on the number of pseudolanes of the link. See also the {@link #Link(String, int, double) constructor}.
 	 */
-	public static Sublink createLinkFromNumberOfPseudoLanes(final String id, final int Psi, final double length){
-		return new Sublink(id, Psi, length);
-	}
-	
+	//public static Sublink createLinkFromNumberOfPseudoLanes(final String id, final int Psi, final double length){
+	//	return new Sublink(id, Psi, length);
+	//}
+
 	/**
 	 * @param id The id of the link.
 	 * @param Psi The number of pseudolanes that the link has.
 	 * @param length The length [m] of the link.
 	 */
-	private Sublink(final String id, final int Psi, final double length){
+	protected Sublink(final String id, final int Psi, final double length){
 		this.id = id;
 		this.psi = createPseudoLanes(Psi, length);
-	
-		this.leavingVehicles = new LinkedList<QVehicle>();
+
+		this.generalLeavingVehicles = new LinkedList<QCycleAndMoveType>(); //TODO remove cast
 
 		double totalLaneLength = 0.;
 		for(PseudoLane pseudoLane : psi){
 			totalLaneLength += pseudoLane.getLength();
 		}
 		this.totalLaneLength = totalLaneLength;
-		
+
 		this.queue = new PriorityQueue<>( new Comparator<QCycle>(){
 			@Override
 			public int compare( QCycle qc1, QCycle qc2 ){
@@ -119,7 +151,7 @@ public class Sublink{
 			}
 		} ) ;
 
-		
+
 	}
 
 	/**
@@ -133,7 +165,7 @@ public class Sublink{
 		return psi;
 	}
 
-	
+
 	public String getId(){
 		return id;
 	}
@@ -155,7 +187,7 @@ public class Sublink{
 		return psi[i];
 	}
 
-	
+
 	/**
 	 * Configured such that the pseudoLane tReadys are automatically updated.
 	 * 
@@ -168,7 +200,7 @@ public class Sublink{
 			return false;
 		}
 	}
-	
+
 
 	/**
 	 * Reduces the occupied space of link by the safety distance corresponding to <code>speed</code> of <code>cyclist</code>.
@@ -179,7 +211,7 @@ public class Sublink{
 	public void reduceOccupiedSpace(final Cyclist cyclist, final double speed){
 		this.supplementOccupiedSpace(-cyclist.getSafetyBufferDistance(speed));
 	}
-	
+
 	public void reduceOccupiedSpaceByBicycleLength(final Cyclist cyclist){
 		this.supplementOccupiedSpace(-cyclist.getBicycleLength());
 	}
@@ -206,31 +238,38 @@ public class Sublink{
 		occupiedSpace += length;
 	}
 
-	
-	
-	public double getLastTimeMoved(){
-		return this.lastTimeMoved;
-	}
-	
-	public void setLastTimeMoved(final double lastTimeMoved){
-		this.lastTimeMoved = lastTimeMoved;
+
+
+	public double getLastTimeMovedGeneral(){
+		return this.generalLastTimeMoved;
 	}
 
-	
+	public void setLastTimeMovedGeneral(final double lastTimeMoved){
+		this.generalLastTimeMoved = lastTimeMoved;
+	}
+
+
 	/**
 	 * Static factory method creating a link based directly on the number of pseudolanes of the link. See also the {@link #Link(String, int, double) constructor}.
 	 */
 	public static Sublink[] createLinkArrayFromNumberOfPseudoLanes(final String id, final int Psi, final double length, 
-			final double L_MAX){
+			final double L_MAX, int leftBufferCapacity){
 		int N = (int) Math.ceil(length / L_MAX);
 		Sublink[] linkArray = new Sublink[N];
 		double subLinkLength = length/N;
-		for(int i = 0; i < linkArray.length; i++){
-			linkArray[i] = new Sublink(id + "_part_" + (i+1) , Psi, subLinkLength);
+		for(int i = 0; i < linkArray.length-1; i++){
+			linkArray[i] = new SublinkWithSingleBuffer(id + "_part_" + (i+1) , Psi, subLinkLength);
+		}
+		if(leftBufferCapacity <= 0) {
+			linkArray[linkArray.length-1] = new SublinkWithSingleBuffer(id + "_part_" + linkArray.length, Psi, subLinkLength);
+		} else if(leftBufferCapacity < Integer.MAX_VALUE) {
+			linkArray[linkArray.length-1] = new SublinkWithTwoInteractingBuffers(id + "_part_" + linkArray.length, Psi, subLinkLength, leftBufferCapacity);
+		} else {
+			linkArray[linkArray.length-1] = new SublinkWithTwoSeparatedBuffers(id + "_part_" + linkArray.length, Psi, subLinkLength);
 		}
 		return linkArray;
 	}
-	
+
 	public double getMinimumNextMoveTime(){
 		double minTime = psi[0].getTEnd();
 		for(int i = 1; i < psi.length; i++){
@@ -241,4 +280,5 @@ public class Sublink{
 		}
 		return minTime;
 	}
+	
 }

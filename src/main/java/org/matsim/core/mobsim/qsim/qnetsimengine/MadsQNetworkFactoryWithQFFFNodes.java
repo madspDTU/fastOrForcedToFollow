@@ -64,12 +64,24 @@ public class MadsQNetworkFactoryWithQFFFNodes extends AbstractMadsQNetworkFactor
 
 			Gbl.assertIf( link.getAllowedModes().size()==1 ); // not possible with multi-modal links! kai, oct'18
 			QLinkImpl.Builder linkBuilder = new QLinkImpl.Builder( context, netsimEngine );
-			linkBuilder.setLaneFactory( new QCycleLaneWithSublinks.Builder(context, fffConfig));
-			return linkBuilder.build( link, toQueueNode );
+			QCycleLaneWithSublinks.Builder laneBuilder = new QCycleLaneWithSublinks.Builder(context, fffConfig);
+			if(link.getNumberOfLanes() == 1) {
+			laneBuilder.setLeftBufferCapacity(-1);
+			} else if (link.getNumberOfLanes() == 2) {
+				laneBuilder.setLeftBufferCapacity(fffNodeConfig.getTwoLaneLeftBufferCapacityForBicycles());
+			} else if (link.getNumberOfLanes() >= 3){
+				laneBuilder.setLeftBufferCapacity(Integer.MAX_VALUE);
+			}
+			linkBuilder.setLaneFactory( laneBuilder);
+			return linkBuilder.build( link, toQueueNode );			
 		} else {
 			QLinkImpl.Builder linkBuilder = new QLinkImpl.Builder( context, netsimEngine );
 			Builder laneBuilder = new QueueWithBufferForRoW.Builder( context );
-			if(link.getNumberOfLanes() == 1 && link.getCapacity() <= 600) {
+			int roadValue = fffNodeConfig.getRoadTypeToValueMap().get(link.getAttributes().getAttribute("type"));
+			int roadValueTol = fffNodeConfig.getRoadTypeToValueMap().get("tertiary_link"); 
+			if(link.getNumberOfLanes() == 1 && roadValue < roadValueTol) {
+				laneBuilder.setMaximumLeftBufferLength(-1);
+			} else if (link.getNumberOfLanes() == 1  && roadValue >= roadValueTol) {
 				laneBuilder.setMaximumLeftBufferLength(fffNodeConfig.getSmallRoadLeftBufferCapacity());
 			} else {
 				laneBuilder.setMaximumLeftBufferLength(Integer.MAX_VALUE);

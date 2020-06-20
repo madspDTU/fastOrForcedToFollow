@@ -8,16 +8,16 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QFFFNode.MoveType;
 
-public class QFFFLargeRoadsDivergingNode extends QFFFAbstractNode implements HasLeftBuffer{
+public class QFFFLargeRoadsDivergingNode extends QFFFNodeWithLeftBuffer{
 
 	private static final Logger log = Logger.getLogger(QFFFLargeRoadsDivergingNode.class);
-	private final Id<Link> leftOutLink; //(doesn't matter which is left and which is right)
+	private final int leftOutLinkDirection; //(doesn't matter which is left and which is right)
 	private int onlyInDirection;
 
 	QFFFLargeRoadsDivergingNode(final QFFFNode qNode, final TreeMap<Double, LinkedList<Link>> thetaMap, QNetwork qNetwork,
 			Id<Link> idOfLargestOutLink){
 		super(qNode, thetaMap, qNetwork);
-		this.leftOutLink = idOfLargestOutLink;
+		this.leftOutLinkDirection = carOutTransformations.get(idOfLargestOutLink);
 		for(int i = 0; i < carInLinks.length; i++) {
 			if(carInLinks[i] != null) {
 				this.onlyInDirection = i;
@@ -30,7 +30,7 @@ public class QFFFLargeRoadsDivergingNode extends QFFFAbstractNode implements Has
 		QLinkI qLink = carInLinks[this.onlyInDirection];
 		boolean someKindOfMove = false;
 		for(QLaneI qLane : qLink.getOfferingQLanes()){
-			if(!((QueueWithBufferForRoW) qLane).isOfferingNeitherGeneralNorLeftVehicle()) {
+			if(!((QueueWithBufferForRoW) qLane).isNotOfferingVehicle()) {
 				someKindOfMove = true;
 				break;
 			}
@@ -53,13 +53,13 @@ public class QFFFLargeRoadsDivergingNode extends QFFFAbstractNode implements Has
 		QLinkI inLink = carInLinks[this.onlyInDirection];
 		for(QLaneI laneI : inLink.getOfferingQLanes()){
 			QueueWithBufferForRoW lane = (QueueWithBufferForRoW) laneI;
-			while(! lane.isNotOfferingGeneralVehicle(this) ){
+			while(! lane.isNotOfferingGeneralVehicle() ){
 				QVehicle veh = lane.getFirstGeneralVehicle();
 				if (! this.qNode.moveVehicleOverNode(veh, inLink, lane, now, MoveType.GENERAL, QFFFAbstractNode.defaultStuckReturnValue)) {
 					break;
 				}
 			}
-			while(! lane.isNotOfferingLeftVehicle(this) ){
+			while(! lane.isNotOfferingLeftVehicle() ){
 				QVehicle veh = lane.getFirstLeftVehicle();
 				if (! this.qNode.moveVehicleOverNode(veh, inLink, lane, now, MoveType.LEFT_TURN, QFFFAbstractNode.defaultStuckReturnValue)) {
 					break;
@@ -68,8 +68,9 @@ public class QFFFLargeRoadsDivergingNode extends QFFFAbstractNode implements Has
 		}
 	}
 
-	public boolean isCarLeftTurn(Id<Link> fromLinkId, Id<Link> toLinkId) {
-		return toLinkId.equals(this.leftOutLink);
+	@Override
+	public boolean isCarLeftTurn(Id<Link> fromLinkId, int outDirection) {
+		return outDirection == this.leftOutLinkDirection;
 	}
 
 }

@@ -69,6 +69,7 @@ public final class QFFFNode extends AbstractQNode {
 			return new QFFFNode( n, context, netsimEngine, fffNodeConfig) ;
 		}
 	}
+	
 	private static final Logger log = Logger.getLogger(QFFFNode.class);
 
 	private static int wrnCnt = 0 ;
@@ -93,7 +94,7 @@ public final class QFFFNode extends AbstractQNode {
 			Entry<Double, Link> baseEntry, double thetaRef) {
 
 		if(!thisThetaMap.isEmpty()){
-
+			
 			Entry<Double, Link> thisEntry = thisThetaMap.ceilingEntry(thetaRef);
 			double thisTheta = Double.NaN;
 			if(thisEntry == null){
@@ -274,7 +275,7 @@ public final class QFFFNode extends AbstractQNode {
 		} else if(carOutThetaMap.size() >= 2 && carInThetaMap.size() == 1
 				&& bicycleOutThetaMap.size() == 0 && bicycleInThetaMap.size() == 0) {
 			double largestCapacity = -1;
-			for(Link link : carInThetaMap.values()) {
+			for(Link link : carOutThetaMap.values()) {
 				if(link.getCapacity() > largestCapacity) {
 					largestCapacity = link.getCapacity();
 					largestOutLinkOfLargeRoadsDiverging = link.getId();
@@ -288,9 +289,17 @@ public final class QFFFNode extends AbstractQNode {
 
 
 		if(isLargeRoadsMerging){
+			int cnt = Counters.countMergingNodes.incrementAndGet();
+			if(cnt % 1000 == 0) {
+				log.info(cnt + " mergingNodes");
+			}
 			this.nodeType = new QFFFLargeRoadsMergingNode(this, bundleMap, network);
 			return;
 		} else if(largestOutLinkOfLargeRoadsDiverging != null) {
+			int cnt = Counters.countDivergingNodes.incrementAndGet();
+			if(cnt % 1000 == 0) {
+				log.info(cnt + " divergingNodes");
+			}
 			this.nodeType = new QFFFLargeRoadsDivergingNode(this, bundleMap, network, largestOutLinkOfLargeRoadsDiverging);
 			return;
 		}
@@ -299,10 +308,18 @@ public final class QFFFNode extends AbstractQNode {
 
 
 		if(bundleMap.size() == 1){ // Determine if capacities are different: We now allow larger intersection types.
+			int cnt = Counters.countRightPriorityNodes.incrementAndGet();
+			if(cnt % 1000 == 0) {
+				log.info(cnt + " rightPriorityNodes");
+			}
 			this.nodeType = new QFFFRightPriorityNode(this, bundleMap, network);
 			return;
 		} else if(bundleMap.size() == 2){
 			//Obviously fine when both bundles are proper bundles...
+			int cnt = Counters.countDirectedPriorityNodes.incrementAndGet();
+			if(cnt % 1000 == 0) {
+				log.info(cnt + " directedPriorityNodes");
+			}
 			this.nodeType = new QFFFNodeDirectedPriorityNode(this, bundleMap, network);
 			return;
 		} else {
@@ -321,6 +338,10 @@ public final class QFFFNode extends AbstractQNode {
 
 
 			if(areBicycleHIsEqual && areCarHIsEqual){
+				int cnt = Counters.countRightPriorityNodes.incrementAndGet();
+				if(cnt % 1000 == 0) {
+					log.info(cnt + " rightPriorityNodes");
+				}
 				this.nodeType = new QFFFRightPriorityNode(this, bundleMap, network);
 				return;
 			} else {
@@ -334,9 +355,17 @@ public final class QFFFNode extends AbstractQNode {
 					largestHIs += headMap.get(headMap.lastKey()).size();
 				}
 				if(largestHIs == 2 || (largestHIs == 3 && bundleMap.size() == 4) ){
+					int cnt = Counters.countDirectedPriorityNodes.incrementAndGet();
+					if(cnt % 1000 == 0) {
+						log.info(cnt + " directedPriorityNodes");
+					}
 					this.nodeType = new QFFFNodeDirectedPriorityNode(this, bundleMap, network, his);
 					return;
 				} else {
+					int cnt = Counters.countAntiPriorityNodes.incrementAndGet();
+					if(cnt % 1000 == 0) {
+						log.info(cnt + " antiPriorityNodes");
+					}
 					this.nodeType = new QFFFAntiPriorityNode(this, bundleMap, network, his);		
 					return;
 				}
@@ -533,15 +562,16 @@ public final class QFFFNode extends AbstractQNode {
 
 	boolean vehicleIsStuck(final QLaneI fromLaneBuffer, final double now, MoveType moveType) {
 		if(moveType == MoveType.LEFT_TURN) {
-			return leftVehicleIsStuck( (QueueWithBufferForRoW) fromLaneBuffer, now);
+			return leftVehicleIsStuck( (HasLeftBufferTime) fromLaneBuffer, now);
 		} else {
 			return generalVehicleIsStuck(fromLaneBuffer, now);
 		}
 	}
 
-	private boolean leftVehicleIsStuck(final QueueWithBufferForRoW fromLaneBuffer, final double now) {
+	private boolean leftVehicleIsStuck(final HasLeftBufferTime fromLaneBuffer, final double now) {
 		final double stuckTime = this.context.qsimConfig.getStuckTime() ;
-		return (now - fromLaneBuffer.getLastMovementTimeOfFirstLeftVehicle()) > stuckTime;
+		double lastMoved = fromLaneBuffer.getLeftBufferLastTimeMoved(); 
+		return (now - lastMoved) > stuckTime;
 	}
 
 	private boolean generalVehicleIsStuck(final QLaneI fromLaneBuffer, final double now) {

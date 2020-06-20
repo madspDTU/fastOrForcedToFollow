@@ -45,13 +45,15 @@ public class FFFNodeConfigGroup extends ReflectiveConfigGroup {
 	/**
 	 * 
 	 */
-	private double bundleTol = Math.PI/4; //Math.PI/12;
+	private double bundleTol = Math.PI/12; //Math.PI/12;
 
 	private boolean omitLinkLeaveEvents = false;
 
 	private boolean approximateNullLinkToLinkTravelTimes = false;
 
 	private int smallRoadLeftBufferCapacity = QFFFAbstractNode.smallRoadLeftBufferCapacity; //change to 3 or to.
+
+	private int twoLaneLeftBufferCapacityForBicycles = 3;
 	
 //	@StringGetter( "bundleAngleTolerance" )	
 	public double getBundleTol() {
@@ -99,5 +101,13 @@ public class FFFNodeConfigGroup extends ReflectiveConfigGroup {
 	
 	public void setSmallRoadLeftBufferCapacity(int cap) {
 		this.smallRoadLeftBufferCapacity = cap ;
+	}
+	
+	public int getTwoLaneLeftBufferCapacityForBicycles() {
+		return this.twoLaneLeftBufferCapacityForBicycles ;
+	}
+	
+	public void setTwoLaneLeftBufferCapacityForBicycles(int newCapacity) {
+		this.twoLaneLeftBufferCapacityForBicycles = newCapacity;
 	}
 }

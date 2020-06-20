@@ -126,9 +126,10 @@ public class QFFFLargeRoadsMergingNode extends QFFFAbstractNode{
 	private void highwayMove(double now, int inDirection){
 		QLinkI inLink = carInLinks[inDirection];
 		if(inLink != null){
-			for(QLaneI lane : inLink.getOfferingQLanes()){
-				while(! lane.isNotOfferingVehicle()){
-					QVehicle veh = lane.getFirstVehicle();
+			for(QLaneI qLaneI : inLink.getOfferingQLanes()){
+				QueueWithBufferForRoW lane = (QueueWithBufferForRoW) qLaneI;
+				while(! lane.isNotOfferingGeneralVehicle()){
+					QVehicle veh = lane.getFirstGeneralVehicle();
 					if (! this.qNode.moveVehicleOverNode(veh, inLink, lane, now, MoveType.GENERAL, false)) {
 						break;
 					}

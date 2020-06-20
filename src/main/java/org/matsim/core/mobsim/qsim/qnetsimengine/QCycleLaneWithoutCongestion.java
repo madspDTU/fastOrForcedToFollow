@@ -30,7 +30,7 @@ class QCycleLaneWithoutCongestion extends QCycleLane{
 		public QLaneI createLane(AbstractQLink qLinkImpl) {
 			Link link = qLinkImpl.getLink();
 			Sublink[] sublinkArray = Sublink.createLinkArrayFromNumberOfPseudoLanes( link.getId().toString() + "_" + TransportMode.bike, 
-					1, link.getLength(), fffConfig.getLMax() );
+					1, link.getLength(), fffConfig.getLMax(), Integer.MAX_VALUE );
 			return new QCycleLaneWithoutCongestion(sublinkArray, qLinkImpl, context );
 		}
 	}
@@ -69,8 +69,8 @@ class QCycleLaneWithoutCongestion extends QCycleLane{
 			}
 
 			//Auxiliary buffer created to fit the piece into MATSim.
-			fffLink.addVehicleToLeavingVehicles(qCyc );
-			fffLink.setLastTimeMoved(qCyc.getEarliestLinkExitTime());
+			fffLink.addVehicleToGeneralLeavingVehiclesWithoutMovetype(qCyc );
+			fffLink.setLastTimeMovedGeneral(qCyc.getEarliestLinkExitTime());
 
 			final QNodeI toNode = qLinkImpl.getToNode();
 			if ( toNode instanceof AbstractQNode ) {
@@ -94,8 +94,8 @@ class QCycleLaneWithoutCongestion extends QCycleLane{
 		
 		Sublink fffLink = fffLinkArray[0];
 		numberOfCyclistsOnLink.incrementAndGet();
-		fffLink.addVehicleToLeavingVehicles(veh);
-		fffLink.setLastTimeMoved(now);
+		fffLink.addVehicleToGeneralLeavingVehiclesWithoutMovetype(veh);
+		fffLink.setLastTimeMovedGeneral(now);
 		qCyc.setEarliestLinkExitTime(now);
 
 		final QNodeI toNode = qLinkImpl.getToNode();
@@ -104,10 +104,5 @@ class QCycleLaneWithoutCongestion extends QCycleLane{
 		}
 	}
 
-	@Override
-	public void placeVehicleAtFront(QVehicle veh){
-		QCycle qCyc = (QCycle) veh; // Upcast
-		numberOfCyclistsOnLink.incrementAndGet();
-		this.fffLinkArray[this.lastIndex].addVehicleToFrontOfLeavingVehicles(qCyc);
-	}
+
 }

@@ -11,18 +11,18 @@ import org.matsim.vehicles.Vehicle;
 
 public class QVehicleAndMoveType implements QVehicle{
 	
-	private QVehicle veh;
+	private QVehicleImpl veh;
 	private QFFFNode.MoveType moveType;
 	private int outDirection;
 	
-	public QVehicleAndMoveType(final QVehicle veh, final QFFFNode.MoveType moveType, int outDirection) {
+	public QVehicleAndMoveType(final QVehicleImpl veh, final QFFFNode.MoveType moveType, int outDirection) {
 		this.veh = veh;
 		this.moveType = moveType;
 		this.outDirection = outDirection;
 	}
 
 	
-	public QVehicle getQVehicle() {
+	public QVehicleImpl getQVehicle() {
 		return veh;
 	}
 

@@ -284,7 +284,13 @@ abstract class QueueWithBufferForRoW implements QLaneI, SignalizeableItem, HasLe
 		if(toQNode instanceof QFFFNodeWithLeftBuffer && ((QFFFNodeWithLeftBuffer) toQNode).isCarLeftTurn(this.qLink.getId(), outDirection)) {
 			mt = MoveType.LEFT_TURN;
 		} 
-		QVehicleAndMoveType qVehAndMt = new QVehicleAndMoveType(veh, mt, outDirection);
+		QVehicleImpl qVeh;
+		if(veh instanceof QVehicleAndMoveType) {
+			qVeh = ((QVehicleAndMoveType) veh).getQVehicle();
+		} else {
+			qVeh = (QVehicleImpl) veh;
+		}
+		QVehicleAndMoveType qVehAndMt = new QVehicleAndMoveType(qVeh, mt, outDirection);
 		actuallyAddToBuffer(qVehAndMt, now);
 
 

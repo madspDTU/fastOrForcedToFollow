@@ -79,13 +79,10 @@ public class RunBicycleCopenhagenIndirectly {
 		System.exit(-1);
 	*/	
 		
-		
-		//	if(args.length==0){
 		args = new String[]{
-				"Full150_10n_qKKos", "1", "bicycle", "true", "8" ,"0.05", "Bounded", "Best", "true", "1.00", "queue", "-1", "1000"}; 
-		//	};
-		RunBicycleCopenhagen.main(args);
-		
+				"FullRoW150_5n_qKKosDLFRMapapStats", "150" ,"bike" ,"true", "20", "0.05" ,"Bounded" ,"Best",
+				"True", "1.00" ,"queue", "-1" ,"5"}; 
+		RunBicycleCopenhagen.main(args);		
 		//Scenario scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
 		//		PopulationReader reader = new PopulationReader(scenario);
 		//		reader.readFile("/zhome/81/e/64390/MATSim/DTA2020/input/AllPlans_CPH_Full.xml.gz");

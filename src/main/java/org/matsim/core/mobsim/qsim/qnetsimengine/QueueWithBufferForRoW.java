@@ -75,6 +75,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 abstract class QueueWithBufferForRoW implements QLaneI, SignalizeableItem, HasLeftBufferTime {
 	private static final Logger log = Logger.getLogger( QueueWithBuffer.class ) ;
+	public static final boolean COUNTLANETYPES = false;
 
 	static final class Builder implements LaneFactory {
 		private VehicleQ<QVehicle> vehicleQueue = new FIFOVehicleQ() ;
@@ -85,7 +86,7 @@ abstract class QueueWithBufferForRoW implements QLaneI, SignalizeableItem, HasLe
 		private final NetsimEngineContext context;
 		private FlowEfficiencyCalculator flowEfficiencyCalculator;
 		private Integer leftBufferCapacity = null;
-	
+
 		Builder( final NetsimEngineContext context ) {
 			this.context = context ;
 			if (context.qsimConfig.getLinkDynamics() == QSimConfigGroup.LinkDynamics.PassingQ ||
@@ -100,7 +101,7 @@ abstract class QueueWithBufferForRoW implements QLaneI, SignalizeableItem, HasLe
 		void setEffectiveNumberOfLanes(Double effectiveNumberOfLanes) { this.effectiveNumberOfLanes = effectiveNumberOfLanes; }
 		void setFlowCapacity_s(Double flowCapacity_s) { this.flowCapacity_s = flowCapacity_s; }
 		void setFlowEfficiencyCalculator(FlowEfficiencyCalculator flowEfficiencyCalculator) { this.flowEfficiencyCalculator = flowEfficiencyCalculator; }
-	
+
 		@Override public QueueWithBufferForRoW createLane( AbstractQLink qLink ) {
 			// a number of things I cannot configure before I have the qlink:
 			if ( id==null ) { id = Id.create( qLink.getLink().getId() , Lane.class ) ; }
@@ -109,23 +110,31 @@ abstract class QueueWithBufferForRoW implements QLaneI, SignalizeableItem, HasLe
 			if ( flowCapacity_s==null ) { flowCapacity_s = ((Link)qLink.getLink()).getFlowCapacityPerSec() ; }
 			if (flowEfficiencyCalculator == null) { flowEfficiencyCalculator = new DefaultFlowEfficiencyCalculator(); }
 			if ( leftBufferCapacity == null) { leftBufferCapacity = Integer.MAX_VALUE; }
-		
+
 			if(leftBufferCapacity <= 0) {
-				int cnt = Counters.countSingleLanes.incrementAndGet();
-				if(cnt % 1000 == 0) {
-					log.info(cnt + " singleLanes");
+				if(COUNTLANETYPES) {
+
+					int cnt = Counters.countSingleLanes.incrementAndGet();
+					if(cnt % 1000 == 0) {
+						log.info(cnt + " singleLanes");
+					}
 				}
 				return new QueueWithSingleBufferForRoW( qLink.getInternalInterface(), vehicleQueue, id, length, effectiveNumberOfLanes, flowCapacity_s, context, flowEfficiencyCalculator) ;
 			} else if (leftBufferCapacity < Integer.MAX_VALUE) {
-				int cnt = Counters.countInteractingLanes.incrementAndGet();
-				if(cnt % 1000 == 0) {
-					log.info(cnt + " interactingLanes");
+				if(COUNTLANETYPES) {
+
+					int cnt = Counters.countInteractingLanes.incrementAndGet();
+					if(cnt % 1000 == 0) {
+						log.info(cnt + " interactingLanes");
+					}
 				}
 				return new QueueWithTwoInteractingBuffersForRoW( qLink.getInternalInterface(), vehicleQueue, id, length, effectiveNumberOfLanes, flowCapacity_s, context, flowEfficiencyCalculator, leftBufferCapacity ) ;
 			} else {
-				int cnt = Counters.countSeparatedLanes.incrementAndGet();
-				if(cnt % 1000 == 0) {
-					log.info(cnt + " separatedLanes");
+				if(COUNTLANETYPES) {
+					int cnt = Counters.countSeparatedLanes.incrementAndGet();
+					if(cnt % 1000 == 0) {
+						log.info(cnt + " separatedLanes");
+					}
 				}
 				return new QueueWithTwoSeparatedBuffersForRoW( qLink.getInternalInterface(), vehicleQueue, id, length, effectiveNumberOfLanes, flowCapacity_s, context, flowEfficiencyCalculator) ;
 			} 
@@ -219,7 +228,7 @@ abstract class QueueWithBufferForRoW implements QLaneI, SignalizeableItem, HasLe
 
 	private final FlowEfficiencyCalculator flowEfficiencyCalculator;
 
-	
+
 
 	protected QueueWithBufferForRoW(AbstractQLink.QLinkInternalInterface qlink, final VehicleQ<QVehicle> vehicleQueue, Id<Lane> laneId,
 			double length, double effectiveNumberOfLanes, double flowCapacity_s, final NetsimEngineContext context, FlowEfficiencyCalculator flowEfficiencyCalculator) {
@@ -238,7 +247,7 @@ abstract class QueueWithBufferForRoW implements QLaneI, SignalizeableItem, HasLe
 		this.length = length;
 		this.unscaledFlowCapacity_s = flowCapacity_s ;
 		this.effectiveNumberOfLanes = effectiveNumberOfLanes;
-		
+
 		//		freespeedTravelTime = this.length / qlink.getLink().getFreespeed();
 		//		if (Double.isNaN(freespeedTravelTime)) {
 		//			throw new IllegalStateException("Double.NaN is not a valid freespeed travel time for a link. Please check the attributes length and freespeed!");
@@ -723,7 +732,7 @@ abstract class QueueWithBufferForRoW implements QLaneI, SignalizeableItem, HasLe
 	}
 
 	public abstract double getLeftBufferLastTimeMoved();
-	
+
 	protected abstract void addVehiclesFromLeftBuffer(Collection<MobsimVehicle> vehicles);
 
 	public final QVehicle popFirstLeftVehicle() {
@@ -799,15 +808,15 @@ abstract class QueueWithBufferForRoW implements QLaneI, SignalizeableItem, HasLe
 	@Override
 	public abstract boolean isNotOfferingVehicle() ;
 
-//	public final boolean isOfferingNeitherGeneralNorLeftVehicle() {
-//		return generalBuffer.isEmpty() && leftBuffer.isEmpty();
-//	}
+	//	public final boolean isOfferingNeitherGeneralNorLeftVehicle() {
+	//		return generalBuffer.isEmpty() && leftBuffer.isEmpty();
+	//	}
 
 	public abstract boolean isNotOfferingGeneralVehicle() ;
-		
+
 	public abstract boolean isNotOfferingLeftVehicle();
-	
-		
+
+
 
 	@Override
 	public final void clearVehicles() {
@@ -914,18 +923,18 @@ abstract class QueueWithBufferForRoW implements QLaneI, SignalizeableItem, HasLe
 		return null;
 	}
 
-//	public final QVehicle getFirstNonLeftVehicle2(QFFFNodeWithLeftBuffer node) {
-//		Iterator<QVehicle> it = this.generalBuffer.iterator();
-//		while(it.hasNext()) {
-//			QVehicle veh = it.next();
-//			if(!node.isCarLeftTurn(this.qLink.getId(), veh.getDriver().chooseNextLinkId())){
-//				it.remove();
-//				this.generalBufferLastMovedTime = context.getSimTimer().getTimeOfDay();
-//				return veh;
-//			}
-//		}
-//		return null;
-//	}
+	//	public final QVehicle getFirstNonLeftVehicle2(QFFFNodeWithLeftBuffer node) {
+	//		Iterator<QVehicle> it = this.generalBuffer.iterator();
+	//		while(it.hasNext()) {
+	//			QVehicle veh = it.next();
+	//			if(!node.isCarLeftTurn(this.qLink.getId(), veh.getDriver().chooseNextLinkId())){
+	//				it.remove();
+	//				this.generalBufferLastMovedTime = context.getSimTimer().getTimeOfDay();
+	//				return veh;
+	//			}
+	//		}
+	//		return null;
+	//	}
 
 	public final QVehicleAndMoveType getFirstGeneralVehicle() {
 		return this.newGeneralBuffer.peek() ;

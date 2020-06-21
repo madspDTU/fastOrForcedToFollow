@@ -53,6 +53,8 @@ import org.matsim.core.mobsim.qsim.qnetsimengine.QNetsimEngineI.NetsimInternalIn
  */
 public final class QFFFNode extends AbstractQNode {
 
+	public static final boolean COUNTNODETYPES = false;
+	
 	public static enum MoveType {GENERAL, LEFT_TURN, PASSING_IMPATIENTLY_ON_THE_RIGHT};
 
 	public static class Builder {
@@ -69,7 +71,7 @@ public final class QFFFNode extends AbstractQNode {
 			return new QFFFNode( n, context, netsimEngine, fffNodeConfig) ;
 		}
 	}
-	
+
 	private static final Logger log = Logger.getLogger(QFFFNode.class);
 
 	private static int wrnCnt = 0 ;
@@ -94,7 +96,7 @@ public final class QFFFNode extends AbstractQNode {
 			Entry<Double, Link> baseEntry, double thetaRef) {
 
 		if(!thisThetaMap.isEmpty()){
-			
+
 			Entry<Double, Link> thisEntry = thisThetaMap.ceilingEntry(thetaRef);
 			double thisTheta = Double.NaN;
 			if(thisEntry == null){
@@ -289,16 +291,23 @@ public final class QFFFNode extends AbstractQNode {
 
 
 		if(isLargeRoadsMerging){
-			int cnt = Counters.countMergingNodes.incrementAndGet();
-			if(cnt % 1000 == 0) {
-				log.info(cnt + " mergingNodes");
+			if(COUNTNODETYPES) {
+
+				int cnt = Counters.countMergingNodes.incrementAndGet();
+				if(cnt % 1000 == 0) {
+					log.info(cnt + " mergingNodes");
+				}
 			}
+
 			this.nodeType = new QFFFLargeRoadsMergingNode(this, bundleMap, network);
 			return;
 		} else if(largestOutLinkOfLargeRoadsDiverging != null) {
-			int cnt = Counters.countDivergingNodes.incrementAndGet();
-			if(cnt % 1000 == 0) {
-				log.info(cnt + " divergingNodes");
+			if(COUNTNODETYPES) {
+
+				int cnt = Counters.countDivergingNodes.incrementAndGet();
+				if(cnt % 1000 == 0) {
+					log.info(cnt + " divergingNodes");
+				}
 			}
 			this.nodeType = new QFFFLargeRoadsDivergingNode(this, bundleMap, network, largestOutLinkOfLargeRoadsDiverging);
 			return;
@@ -308,17 +317,22 @@ public final class QFFFNode extends AbstractQNode {
 
 
 		if(bundleMap.size() == 1){ // Determine if capacities are different: We now allow larger intersection types.
-			int cnt = Counters.countRightPriorityNodes.incrementAndGet();
-			if(cnt % 1000 == 0) {
-				log.info(cnt + " rightPriorityNodes");
+			if(COUNTNODETYPES) {
+
+				int cnt = Counters.countRightPriorityNodes.incrementAndGet();
+				if(cnt % 1000 == 0) {
+					log.info(cnt + " rightPriorityNodes");
+				}
 			}
 			this.nodeType = new QFFFRightPriorityNode(this, bundleMap, network);
 			return;
 		} else if(bundleMap.size() == 2){
 			//Obviously fine when both bundles are proper bundles...
-			int cnt = Counters.countDirectedPriorityNodes.incrementAndGet();
-			if(cnt % 1000 == 0) {
-				log.info(cnt + " directedPriorityNodes");
+			if(COUNTNODETYPES) {	
+				int cnt = Counters.countDirectedPriorityNodes.incrementAndGet();
+				if(cnt % 1000 == 0) {
+					log.info(cnt + " directedPriorityNodes");
+				}
 			}
 			this.nodeType = new QFFFNodeDirectedPriorityNode(this, bundleMap, network);
 			return;
@@ -338,9 +352,11 @@ public final class QFFFNode extends AbstractQNode {
 
 
 			if(areBicycleHIsEqual && areCarHIsEqual){
-				int cnt = Counters.countRightPriorityNodes.incrementAndGet();
-				if(cnt % 1000 == 0) {
-					log.info(cnt + " rightPriorityNodes");
+				if(COUNTNODETYPES) {	
+					int cnt = Counters.countRightPriorityNodes.incrementAndGet();
+					if(cnt % 1000 == 0) {
+						log.info(cnt + " rightPriorityNodes");
+					}
 				}
 				this.nodeType = new QFFFRightPriorityNode(this, bundleMap, network);
 				return;
@@ -355,16 +371,20 @@ public final class QFFFNode extends AbstractQNode {
 					largestHIs += headMap.get(headMap.lastKey()).size();
 				}
 				if(largestHIs == 2 || (largestHIs == 3 && bundleMap.size() == 4) ){
-					int cnt = Counters.countDirectedPriorityNodes.incrementAndGet();
-					if(cnt % 1000 == 0) {
-						log.info(cnt + " directedPriorityNodes");
+					if(COUNTNODETYPES) {	
+						int cnt = Counters.countDirectedPriorityNodes.incrementAndGet();
+						if(cnt % 1000 == 0) {
+							log.info(cnt + " directedPriorityNodes");
+						}
 					}
 					this.nodeType = new QFFFNodeDirectedPriorityNode(this, bundleMap, network, his);
 					return;
 				} else {
-					int cnt = Counters.countAntiPriorityNodes.incrementAndGet();
-					if(cnt % 1000 == 0) {
-						log.info(cnt + " antiPriorityNodes");
+					if(COUNTNODETYPES) {
+						int cnt = Counters.countAntiPriorityNodes.incrementAndGet();
+						if(cnt % 1000 == 0) {
+							log.info(cnt + " antiPriorityNodes");
+						}
 					}
 					this.nodeType = new QFFFAntiPriorityNode(this, bundleMap, network, his);		
 					return;

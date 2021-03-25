@@ -5,6 +5,7 @@ import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QFFFNode.MoveType;
 
@@ -15,8 +16,8 @@ public class QFFFLargeRoadsDivergingNode extends QFFFNodeWithLeftBuffer{
 	private int onlyInDirection;
 
 	QFFFLargeRoadsDivergingNode(final QFFFNode qNode, final TreeMap<Double, LinkedList<Link>> thetaMap, QNetwork qNetwork,
-			Id<Link> idOfLargestOutLink){
-		super(qNode, thetaMap, qNetwork);
+			Id<Link> idOfLargestOutLink, Scenario scenario){
+		super(qNode, thetaMap, qNetwork, scenario);
 		this.leftOutLinkDirection = carOutTransformations.get(idOfLargestOutLink);
 		for(int i = 0; i < carInLinks.length; i++) {
 			if(carInLinks[i] != null) {
@@ -54,14 +55,14 @@ public class QFFFLargeRoadsDivergingNode extends QFFFNodeWithLeftBuffer{
 		for(QLaneI laneI : inLink.getOfferingQLanes()){
 			QueueWithBufferForRoW lane = (QueueWithBufferForRoW) laneI;
 			while(! lane.isNotOfferingGeneralVehicle() ){
-				QVehicle veh = lane.getFirstGeneralVehicle();
-				if (! this.qNode.moveVehicleOverNode(veh, inLink, lane, now, MoveType.GENERAL, QFFFAbstractNode.defaultStuckReturnValue)) {
+				QVehicleAndMoveType veh = (QVehicleAndMoveType) lane.getFirstGeneralVehicle();
+				if (! this.qNode.moveVehicleOverNode(veh, inLink, lane, now, veh.getMoveType(), QFFFAbstractNode.defaultStuckReturnValue)) {
 					break;
 				}
 			}
 			while(! lane.isNotOfferingLeftVehicle() ){
-				QVehicle veh = lane.getFirstLeftVehicle();
-				if (! this.qNode.moveVehicleOverNode(veh, inLink, lane, now, MoveType.LEFT_TURN, QFFFAbstractNode.defaultStuckReturnValue)) {
+				QVehicleAndMoveType veh = (QVehicleAndMoveType)  lane.getFirstLeftVehicle();
+				if (! this.qNode.moveVehicleOverNode(veh, inLink, lane, now, veh.getMoveType(), QFFFAbstractNode.defaultStuckReturnValue)) {
 					break;
 				}
 			}
@@ -71,6 +72,20 @@ public class QFFFLargeRoadsDivergingNode extends QFFFNodeWithLeftBuffer{
 	@Override
 	public boolean isCarLeftTurn(Id<Link> fromLinkId, int outDirection) {
 		return outDirection == this.leftOutLinkDirection;
+	}
+
+
+	@Override
+	int[][] createBicycleRankMatrix(int n) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	@Override
+	int[][] createCarRankMatrix(int n) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

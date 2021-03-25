@@ -1,6 +1,7 @@
 package org.matsim.run;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
@@ -24,7 +25,7 @@ public class RunBicycleCopenhagenIndirectly {
 
 		//Run fullRowBothResume50
 		//Run fullRowBothDasAutoResume50
-/*
+		/*
 		Config config = ConfigUtils.createConfig();
 		Scenario scenario = ScenarioUtils.createScenario(config);
 		Person person = scenario.getPopulation().getFactory().createPerson(Id.create("TheOne",Person.class));
@@ -48,14 +49,14 @@ public class RunBicycleCopenhagenIndirectly {
 		writer.write("/zhome/81/e/64390/MATSim/DTA2020/input/dadadadada.xml");
 
 
-*/ 
+		 */ 
 
 		/*
 		 *
 		Scenario scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
 		PopulationReader pr = new PopulationReader(scenario);
 		pr.readFile("/zhome/81/e/64390/MATSim/DTA2020/input/COMPASBicycle100_COMPASSCarOTM100.xml.gz");
-		
+
 		long bCounter = 0;
 		long cCounter = 0;
 		long tCounter = 0;
@@ -72,17 +73,19 @@ public class RunBicycleCopenhagenIndirectly {
 				}
 			}
 		}
-		
+
 		System.out.println("#Bicycle trips: " + bCounter);
 		System.out.println("#Car trips: " + cCounter);
 		System.out.println("#Truck trips: " + tCounter);
 		System.exit(-1);
-	*/	
-		
-		args = new String[]{
-				"FullRoW150_5n_qKKosDLFRMapapStats", "150" ,"bike" ,"true", "20", "0.05" ,"Bounded" ,"Best",
-				"True", "1.00" ,"queue", "-1" ,"5"}; 
-		RunBicycleCopenhagen.main(args);		
+		 */	
+
+		for(String str : Arrays.asList("FullRoW150_5n_TEST")) {
+			args = new String[]{
+					str, "150" ,"bike" ,"true", "20", "0.05" ,"Bounded" ,"Best",
+					"True", "1.00" ,"queue", "-1" ,"5"}; 
+			RunBicycleCopenhagen.main(args);		
+		}
 		//Scenario scenario = ScenarioUtils.createScenario(ConfigUtils.createConfig());
 		//		PopulationReader reader = new PopulationReader(scenario);
 		//		reader.readFile("/zhome/81/e/64390/MATSim/DTA2020/input/AllPlans_CPH_Full.xml.gz");

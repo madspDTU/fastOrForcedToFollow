@@ -164,7 +164,7 @@ public abstract class QCycleLane implements QLaneI {
 			System.err.println("GetFirstVehicle() is ambiguous... Returning null");
 			return null;
 		} else {
-			return fffLinkArray[lastIndex].getFirstGeneralLeavingVehicle();
+			return fffLinkArray[lastIndex].getFirstGeneralLeavingVehicleWithoutMovetype();
 		}
 	}
 
@@ -306,9 +306,9 @@ public abstract class QCycleLane implements QLaneI {
 		}
 		numberOfCyclistsOnLink.incrementAndGet();
 		if(usingRoW) {
-			QLinkInternalInterface qLinkII = this.qLinkImpl.getInternalInterface();
 			int outDirection = determineOutDirection(veh);
 			MoveType mt = MoveType.GENERAL;
+			QLinkInternalInterface qLinkII = this.qLinkImpl.getInternalInterface();
 			if(isLeftTurn(qLinkII, outDirection)) {
 				mt = MoveType.LEFT_TURN;
 			}

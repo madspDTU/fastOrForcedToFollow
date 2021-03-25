@@ -5,6 +5,7 @@ import java.util.LinkedList;
 import java.util.TreeMap;
 
 import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
 
 public abstract class QFFFNodeWithLeftBuffer extends QFFFAbstractNode {
@@ -13,8 +14,8 @@ public abstract class QFFFNodeWithLeftBuffer extends QFFFAbstractNode {
 		HashMap<Id<Link>, Integer> bicycleInTransformations;
 
 	
-		public QFFFNodeWithLeftBuffer(final QFFFNode qNode, final TreeMap<Double, LinkedList<Link>> bundleMap, QNetwork qNetwork) {
-			super(qNode, bundleMap, qNetwork);
+		public QFFFNodeWithLeftBuffer(final QFFFNode qNode, final TreeMap<Double, LinkedList<Link>> bundleMap, QNetwork qNetwork, Scenario scenario) {
+			super(qNode, bundleMap, qNetwork, scenario);
 			this.carInTransformations = new HashMap<Id<Link>, Integer>();
 			for(int i = 0; i < carInLinks.length; i++){
 				if(carInLinks[i] != null){
@@ -44,7 +45,7 @@ public abstract class QFFFNodeWithLeftBuffer extends QFFFAbstractNode {
 		//Something special here... about overshooting the outdirection.
 		public boolean isBicycleLeftTurn(Id<Link> fromLink, int outDirection) {
 			int inDirection = bicycleInTransformations.get(fromLink);
-			return ! (bicycleTurns[inDirection][outDirection] == outDirection);
+			return increaseInt(inDirection) != outDirection;
 		}
 		
 		//public boolean isBicycleLeftTurn(Id<Link> fromLink, int outDirection) {

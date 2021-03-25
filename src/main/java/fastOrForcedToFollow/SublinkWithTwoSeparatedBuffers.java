@@ -60,6 +60,7 @@ public class SublinkWithTwoSeparatedBuffers extends Sublink {
 			if(this.generalLeavingVehicles.isEmpty()) {
 				this.generalLastTimeMoved = now;
 			}
+			this.generalLeavingVehicles.addFirst(veh);
 		}
 	}
 

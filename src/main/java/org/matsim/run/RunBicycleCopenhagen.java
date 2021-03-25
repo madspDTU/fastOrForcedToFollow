@@ -23,6 +23,7 @@ import org.matsim.api.core.v01.population.Leg;
 import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.ControlerConfigGroup.RoutingAlgorithmType;
+import org.matsim.core.config.groups.QSimConfigGroup.LinkDynamics;
 import org.matsim.core.config.groups.QSimConfigGroup.TrafficDynamics;
 import org.matsim.core.config.groups.QSimConfigGroup.VehiclesSource;
 import org.matsim.core.controler.Controler;
@@ -57,7 +58,10 @@ public class RunBicycleCopenhagen {
 	public static double qSimEndTime = 30 * 3600.;
 	public static double storageCapacityFactor = 1.;
 	public static TrafficDynamics trafficDynamics = TrafficDynamics.queue;
+	public static LinkDynamics linkDynamics = LinkDynamics.PassingQ;
 	private static String intersectionSimplificationSuffix = "";
+	public static double timeOutTime = 1.0;
+	public static double leftCapacity = 2.0;
 
 
 	// final
@@ -93,9 +97,9 @@ public class RunBicycleCopenhagen {
 		boolean runMatsim = true;
 		boolean resumeNonRoW = false;
 
-		
+
 		Set<String> analysedModes = new HashSet<String>(List.of(TransportMode.bike));
-		
+
 		if (args.length > 0) {
 			scenarioType = args[0];
 		}
@@ -165,6 +169,18 @@ public class RunBicycleCopenhagen {
 		if (args.length > 12) {
 			stuckTime = Double.parseDouble(args[12]);
 		}
+		if (args.length > 13) {
+			if(Double.parseDouble(args[13]) >0) {
+				timeOutTime = Double.parseDouble(args[13]);
+			}
+		}
+		if (args.length > 14) {
+			if(Double.parseDouble(args[14]) > 0) {
+				leftCapacity = Double.parseDouble(args[14]);
+			}
+		}
+
+
 
 		if (scenarioType.contains("NoCongestion")) {
 			congestion = false;
@@ -247,13 +263,11 @@ public class RunBicycleCopenhagen {
 		config.global().setNumberOfThreads(numberOfGlobalThreads);
 		if(args[0].toLowerCase().contains("cheat")) {
 			numberOfThreadsReservedForParallelEventHandling = 4;
-		} else if(roW && carsAreSomehowIncluded) {
-			numberOfThreadsReservedForParallelEventHandling = 4;
-		} else if(!roW){
-			numberOfThreadsReservedForParallelEventHandling = 3;
+		} else if(carsAreSomehowIncluded && !carOnly) { // i.e. both
+			numberOfThreadsReservedForParallelEventHandling = 4; // normally 4
 		} else {
-			numberOfThreadsReservedForParallelEventHandling = 2;
-		}
+			numberOfThreadsReservedForParallelEventHandling = 3;
+		} 
 		config.qsim().setNumberOfThreads(numberOfGlobalThreads - numberOfThreadsReservedForParallelEventHandling);
 		config.parallelEventHandling().setNumberOfThreads(numberOfThreadsReservedForParallelEventHandling);
 
@@ -263,7 +277,9 @@ public class RunBicycleCopenhagen {
 		/// C: New TravelTimeCalculator. QSim: 18 WITHOUT linkTravelTime.  Not synchronized. 4 billion
 		/// D: New TravelTimeCalculator. QSim: 16 WITHOUT linkTavelTime. Not synchronized. 550 millon
 		/// E: New TravelTimeCalculator. QSim: 16 WITHOUT linkTravelTime. Not Synchronized. 550 million. (Might have been linkleaveomitted)...
+		///    V V V   This one!   V V V Was the best. Used for initial submission NSE.
 		/// F: New TravelTimeCalculator. QSim: 18 WITHOUT linkTravelTime. Not synchronized. LinkLeaveIn. 0 events. (aiming for fully during)
+		///    ^^^ ^   This one!   ^ ^ ^ Was the best. Used for initial submission NSE.
 		/// G: New TravelTimeCalculator. QSim: 18 WITHOUT linkTravelTime. Not synchronized. LinkLeaveIn. 5 billion evens. (aiming for fully after)
 		/// H: New TravelTimeCalculator. QSim: 16 WITHOUT linkTravelTime. Synchronized. LinkLeaveIn. 42l never read!
 		/// I: New TravelTimeCalculator. QSim: 18 WITHOUT linkTravelTime. Synchronized. LinkLeaveIn. 42l never read!
@@ -289,13 +305,15 @@ public class RunBicycleCopenhagen {
 		config.global().setCoordinateSystem("EPSG:32632"); // /EPSG:32632 is
 		// WGS84 UTM32N
 
-		
+
 		config.qsim().setStartTime(0.);
 		config.qsim().setEndTime(qSimEndTime);
 		config.qsim().setStuckTime(stuckTime);
 		config.qsim().setStorageCapFactor(storageCapacityFactor);
 		config.qsim().setFlowCapFactor(storageCapacityFactor);
 		config.qsim().setTrafficDynamics(trafficDynamics);
+		config.qsim().setLinkDynamics(linkDynamics);
+
 
 		config.travelTimeCalculator().setMaxTime((int) Math.round(qSimEndTime));
 
@@ -318,7 +336,7 @@ public class RunBicycleCopenhagen {
 			// } else if(carOnly){
 			// config.network().setInputFile(
 			// inputBaseDir + "MATSimCopenhagenNetwork_CarsOnly.xml.gz");
-		} else if (carsAreSomehowIncluded) {
+		} else if (carsAreSomehowIncluded || true) { // We need to use the same network across scenarios. //TODO Comment out for studies only focusing on bicycles
 			config.network().setInputFile(inputBaseDir + "MATSimCopenhagenNetwork_WithBicycleInfrastructure" + intersectionSimplificationSuffix + ".xml.gz");
 		} else if (oneLane) {
 			config.network().setInputFile(inputBaseDir + "MATSimCopenhagenNetwork_BicyclesOnly_1Lane" + intersectionSimplificationSuffix + ".xml.gz");
@@ -351,7 +369,7 @@ public class RunBicycleCopenhagen {
 			if(resumeNonRoW){
 				config.plans().setInputFile(inputResumeBaseDir + "ResumablePlans_Both_selectedOnly.xml.gz");
 			} else {
-		//		config.plans().setInputFile("/zhome/81/e/64390/MATSim/DTA2020/input/AllPlans_CPH_Small.xml");
+				//		config.plans().setInputFile("/zhome/81/e/64390/MATSim/DTA2020/input/AllPlans_CPH_Small.xml");
 				config.plans().setInputFile(inputBaseDir + "COMPASBicycle100_COMPASSCarOTM100.xml.gz");
 			}
 		} else {

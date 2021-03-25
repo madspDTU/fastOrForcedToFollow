@@ -56,6 +56,7 @@ public class SublinkWithTwoInteractingBuffers extends Sublink {
 			if(this.generalLeavingVehicles.isEmpty()) {
 				this.generalLastTimeMoved = now;
 			}
+			this.generalLeavingVehicles.addFirst(veh);
 		}
 	}
 
@@ -108,7 +109,8 @@ public class SublinkWithTwoInteractingBuffers extends Sublink {
 
 	@Override
 	public boolean hasNoLeftLeavingVehicles(double now) {
-		if(this.leftLeavingVehicles.size() == leftBufferCapacity) {
+		// can be above capacity if receiving partially left turning cyclists!
+		if(this.leftLeavingVehicles.size() >= leftBufferCapacity) { 
 			return false;
 		}
 		if(this.generalLeavingVehicles.isEmpty()) {

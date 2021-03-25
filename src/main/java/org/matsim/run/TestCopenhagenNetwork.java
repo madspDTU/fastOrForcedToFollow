@@ -339,6 +339,16 @@ public class TestCopenhagenNetwork {
 		}
 		LinkedList<Node> nodesToBeRemoved = new LinkedList<Node>();
 		for(Node node : network.getNodes().values()){
+			for(Link link : node.getInLinks().values()) {
+				if(!link.getAllowedModes().contains(mode)) {
+					node.removeInLink(link.getId());
+				}
+			}
+			for(Link link : node.getOutLinks().values()) {
+				if(!link.getAllowedModes().contains(mode)) {
+					node.removeOutLink(link.getId());
+				}
+			}
 			if( node.getInLinks().isEmpty() && node.getOutLinks().isEmpty()){
 				nodesToBeRemoved.add(node);
 			}

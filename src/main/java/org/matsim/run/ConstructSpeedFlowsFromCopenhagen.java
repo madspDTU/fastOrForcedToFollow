@@ -45,8 +45,8 @@ public class ConstructSpeedFlowsFromCopenhagen {
 
 	public static boolean roW = false;
 
-	public static double highlightStartTime = 8*3600;
-	public static double highlightEndTime = 9*3600;
+	public static double highlightStartTime = 7*3600;
+	public static double highlightEndTime = 8*3600;
 	private static List<String> interestingPersonsList = null;
 	//			Arrays.asList("98075_1_Person","135460_1_Person","116357_1_Person","226582_1_Person","355440_1_Person","336045_1_Person",
 	//					"74274_1_Person","57223_1_Person","313082_2_Person","417066_2_Person","167114_1_Person","238307_4_Person",
@@ -238,7 +238,7 @@ public class ConstructSpeedFlowsFromCopenhagen {
 
 		for(String mode : eventsHandler.totalTravelTimes.keySet()){
 
-			double[] measures = calculateCongestedTravelTimeAndTotalDistance(population, eventsHandler, mode);
+			double[] measures = calculateCongestedTravelTimeAndTotalDistance(population, eventsHandler, mode, outDirWithIt);
 			int nTrips = 0;
 			for(Person person : scenario.getPopulation().getPersons().values()){
 				for(PlanElement planElement : person.getSelectedPlan().getPlanElements()){
@@ -402,13 +402,14 @@ public class ConstructSpeedFlowsFromCopenhagen {
 
 	}
 
-	private static double[] calculateCongestedTravelTimeAndTotalDistance(Population pop, MultiModalBicycleDoorToDoorHandler eventsHandler, String analysedMode) throws IOException{
+	private static double[] calculateCongestedTravelTimeAndTotalDistance(Population pop, MultiModalBicycleDoorToDoorHandler eventsHandler, 
+			String analysedMode, String outDir) throws IOException{
 		double totalFreeFlowTime= 0.;
 		double totalDistance = 0.;
 		double totalHighlightFreeFlowTime= 0.;
 		double totalHighlightDistance = 0.;
 
-		FileWriter writer = new FileWriter("/work1/s103232/DTA2020/withNodeModelling/SmallRoW50/detailedOutputAlt.csv");
+		FileWriter writer = new FileWriter(outDir + "/detailedOutputAlt.csv");
 		writer.append("Person;Trip;FreeT\n");
 
 		double totalTravelTime = eventsHandler.totalTravelTimes.get(analysedMode).get();

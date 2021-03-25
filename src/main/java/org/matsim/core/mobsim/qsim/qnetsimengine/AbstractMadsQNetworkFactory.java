@@ -45,7 +45,7 @@ abstract class AbstractMadsQNetworkFactory implements QNetworkFactory {
 	private static final Logger log = Logger.getLogger( AbstractMadsQNetworkFactory.class ) ;
 
 	private EventsManager events ;
-	private Scenario scenario ;
+	protected Scenario scenario ;
 	// (vis needs network and may need population attributes and config; in consequence, makes sense to have scenario here. kai, apr'16)
 	protected NetsimEngineContext context;
 	protected NetsimInternalInterface netsimEngine ;

@@ -1,6 +1,8 @@
 package fastOrForcedToFollow;
 
+import org.apache.log4j.Logger;
 import org.matsim.core.gbl.Gbl;
+import org.matsim.core.mobsim.qsim.qnetsimengine.QCycleLane;
 
 /**
  * 
@@ -10,6 +12,9 @@ import org.matsim.core.gbl.Gbl;
  */
 
 public final class SqrtLTM extends LinkTransmissionModel {
+	
+	private static final Logger log = Logger.getLogger( SqrtLTM.class ) ;
+
 
 	final double theta_0;
 	final double theta_1;
@@ -64,9 +69,10 @@ public final class SqrtLTM extends LinkTransmissionModel {
 	
 		
 		double vTilde = Math.min(cyclist.getDesiredSpeed(), maxSpeed);
+		
 		PseudoLane pseudoLane = receivingLink.getPseudoLane(maxLane);
-
-//		if(cyclist.getTEarliestExit() > pseudoLane.getTEnd() && pseudoLane.getLength() / vTilde > 60) {
+	
+		//		if(cyclist.getTEarliestExit() > pseudoLane.getTEnd() && pseudoLane.getLength() / vTilde > 60) {
 //			System.out.println("ShortLinkProblem: " + vTilde + "  " + pseudoLane.getLength());
 //		} else if(pseudoLane.getLength() / vTilde > 60) {
 //			System.out.println(vTilde + "\tt_s: " + cyclist.getTEarliestExit() + "\tt_e: " + pseudoLane.getTEnd() + "\ttheta_0: " + this.theta_0 + "\ttheta_1: " +

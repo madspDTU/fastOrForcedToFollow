@@ -91,7 +91,7 @@ public class MadsQNetworkFactoryWithoutCongestion extends AbstractMadsQNetworkFa
 
 	@Override
 	public QNodeI createNetsimNode(final Node node) {
-		QNodeImpl.Builder builder = new QNodeImpl.Builder( netsimEngine, context ) ;
+		QNodeImplWithCounter.Builder builder = new QNodeImplWithCounter.Builder( netsimEngine, context ) ;
 		return builder.build( node ) ;
 	}
 

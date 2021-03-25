@@ -366,7 +366,7 @@ public class MultiModalBicycleDoorToDoorHandler implements BasicEventHandler {
 	public static boolean isHighlightTrip(boolean originTime, boolean destinationTime,
 			boolean originGeography, boolean destinationGeography) {
 	//	return destinationGeography && originTime   && originGeography;
-		return destinationTime && destinationGeography;
+		return originTime && destinationGeography;
 	}
 
 	private double getPlannedDuration(Id<Person> personId, String mode) {

@@ -26,12 +26,14 @@ import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.config.groups.ParallelEventHandlingConfigGroup;
 import org.matsim.core.events.handler.EventHandler;
 import org.matsim.core.gbl.Gbl;
+import org.matsim.core.mobsim.qsim.qnetsimengine.Counters;
 
 import javax.inject.Inject;
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -61,7 +63,7 @@ public class ParallelEventsManagerImplWithPooledHandlers implements EventsManage
 	private boolean parallelMode = false;
 	private int handlerCount = 0;
 	
-	private AtomicLong counter;
+	//private AtomicLong counter;
 	private AtomicReference<Throwable> hadException = new AtomicReference<>();
 
 	@Inject
@@ -80,7 +82,7 @@ public class ParallelEventsManagerImplWithPooledHandlers implements EventsManage
 	}
 	
 	private void init() {
-		this.counter = new AtomicLong(0);
+		//this.counter = new AtomicLong(0);
 		
 		this.iterationEndBarrier = new CyclicBarrier(this.numOfThreads + 1);
 		
@@ -92,7 +94,7 @@ public class ParallelEventsManagerImplWithPooledHandlers implements EventsManage
 
 	@Override
 	public void processEvent(final Event event) {
-		this.counter.incrementAndGet();
+	//	this.counter.incrementAndGet();
 		
 		if (parallelMode) {
 			runnables[0].processEvent(event);
@@ -117,7 +119,8 @@ public class ParallelEventsManagerImplWithPooledHandlers implements EventsManage
 	@Override
 	public void resetHandlers(int iteration) {
 		delegate.resetHandlers(iteration);
-		counter.set(0);
+//		counter.set(0);
+		Counters.countStuckEvents.set(0);
 	}
 
 	@Override
@@ -208,6 +211,8 @@ public class ParallelEventsManagerImplWithPooledHandlers implements EventsManage
 		if (throwable != null) {
 			throw new RuntimeException("Exception while processing events. Cannot guarantee that all events have been fully processed.", throwable);
 		}
+		
+		log.info("A total of " + Counters.countStuckEvents.get() + " stuck events in this iteration.");
 	}
 
 	@Override

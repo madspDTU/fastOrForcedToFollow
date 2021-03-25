@@ -93,7 +93,7 @@ public class MadsQNetworkFactoryWithQFFFNodes extends AbstractMadsQNetworkFactor
 
 	@Override
 	public QNodeI createNetsimNode(final Node node) {
-		QFFFNode.Builder builder = new QFFFNode.Builder( netsimEngine, context, fffNodeConfig ) ;
+		QFFFNode.Builder builder = new QFFFNode.Builder( netsimEngine, context, fffNodeConfig, scenario ) ;
 		return builder.build( node ) ;
 	}
 	

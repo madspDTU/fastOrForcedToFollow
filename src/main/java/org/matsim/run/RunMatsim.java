@@ -65,6 +65,8 @@ import org.matsim.core.mobsim.qsim.qnetsimengine.MadsQNetworkFactoryWithoutConge
 import org.matsim.core.mobsim.qsim.qnetsimengine.MadsQVehicleFactory;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QNetworkFactory;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QVehicleFactory;
+import org.matsim.core.network.io.MatsimNetworkReader;
+import org.matsim.core.network.io.NetworkReaderTeleatlas;
 import org.matsim.core.replanning.strategies.DefaultPlanStrategiesModule.DefaultStrategy;
 import org.matsim.core.replanning.strategies.FFFPlanSelectorProvider;
 import org.matsim.core.replanning.strategies.FFFPlanSelectorWithInertiaProvider;
@@ -110,7 +112,6 @@ public class RunMatsim {
 	public static final long RANDOM_SEED = 5355633;
 
 	public static void main(String[] args) {
-
 		String scenarioExample = "equil";
 		int lanesPerLink = 2;
 		double marketShareOfBicycles = 1.;
@@ -211,8 +212,9 @@ public class RunMatsim {
 	}
 	public static void addRoWModuleToConfig(Config config, boolean uneven){
 		FFFNodeConfigGroup fffNodeConfig = ConfigUtils.addOrGetModule(config, FFFNodeConfigGroup.class);
-		fffNodeConfig.setBicycleDelay(1 + 1.);
-		fffNodeConfig.setCarDelay(1 + 1.);
+		fffNodeConfig.setBicycleDelay(RunBicycleCopenhagen.timeOutTime);
+		fffNodeConfig.setCarDelay(RunBicycleCopenhagen.timeOutTime);
+		fffNodeConfig.setSmallRoadLeftBufferCapacity(RunBicycleCopenhagen.leftCapacity);
 		if(uneven){
 			fffNodeConfig.setCarDelay(1 + 10. * 1);
 			config.qsim().setStuckTime(10.* config.qsim().getStuckTime()); // This has to be calibrated

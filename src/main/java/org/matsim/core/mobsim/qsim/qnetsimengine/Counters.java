@@ -1,8 +1,11 @@
 package org.matsim.core.mobsim.qsim.qnetsimengine;
 
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class Counters {
+	
+	public static AtomicLong countStuckEvents = new AtomicLong(0);
 	
 	public static AtomicInteger countSingleLanes = new AtomicInteger(0);
 	public static AtomicInteger countInteractingLanes = new AtomicInteger(0);

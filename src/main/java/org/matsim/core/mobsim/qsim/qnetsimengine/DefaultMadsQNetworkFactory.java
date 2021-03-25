@@ -35,7 +35,7 @@ public class DefaultMadsQNetworkFactory extends AbstractMadsQNetworkFactory {
 
 	@Override
 	public QNodeI createNetsimNode(final Node node) {
-		QNodeImpl.Builder builder = new QNodeImpl.Builder( netsimEngine, context ) ;
-		return builder.build( node ) ;
+		QNodeImplWithCounter.Builder builder = new QNodeImplWithCounter.Builder( netsimEngine, context ) ;
+		return  builder.build(node);
 	}
 }

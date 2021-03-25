@@ -31,9 +31,11 @@ import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.events.LinkEnterEvent;
 import org.matsim.api.core.v01.events.LinkLeaveEvent;
@@ -61,14 +63,18 @@ public final class QFFFNode extends AbstractQNode {
 		private final NetsimInternalInterface netsimEngine;
 		private final NetsimEngineContext context;
 		private final FFFNodeConfigGroup fffNodeConfig;
+		private final Scenario scenario;
+		
+		
 		public Builder( NetsimInternalInterface netsimEngine2, NetsimEngineContext context,
-				FFFNodeConfigGroup fffNodeConfig) {
+				FFFNodeConfigGroup fffNodeConfig, Scenario scenario) {
 			this.netsimEngine = netsimEngine2;
 			this.context = context;
 			this.fffNodeConfig = fffNodeConfig;
+			this.scenario = scenario;
 		}
 		public QFFFNode build( Node n ) {
-			return new QFFFNode( n, context, netsimEngine, fffNodeConfig) ;
+			return new QFFFNode( n, context, netsimEngine, fffNodeConfig, scenario) ;
 		}
 	}
 
@@ -83,11 +89,14 @@ public final class QFFFNode extends AbstractQNode {
 
 	private final FFFNodeConfigGroup fffNodeConfig;
 
-	protected QFFFNode(final Node n, NetsimEngineContext context, NetsimInternalInterface netsimEngine2, FFFNodeConfigGroup fffNodeConfig) {
+	private final Scenario scenario;
+	
+	protected QFFFNode(final Node n, NetsimEngineContext context, NetsimInternalInterface netsimEngine2, FFFNodeConfigGroup fffNodeConfig, Scenario scenario) {
 		super(n);
 		this.netsimEngine = netsimEngine2 ;
 		this.context = context ;
 		this.fffNodeConfig = fffNodeConfig;
+		this.scenario = scenario;
 	}
 
 
@@ -223,7 +232,7 @@ public final class QFFFNode extends AbstractQNode {
 	 */
 	@Override
 	public void init() {
-
+		
 		// Determining the nodeType.
 		QNetwork network = netsimEngine.getNetsimNetwork();
 
@@ -299,7 +308,7 @@ public final class QFFFNode extends AbstractQNode {
 				}
 			}
 
-			this.nodeType = new QFFFLargeRoadsMergingNode(this, bundleMap, network);
+			this.nodeType = new QFFFLargeRoadsMergingNode(this, bundleMap, network, this.scenario);
 			return;
 		} else if(largestOutLinkOfLargeRoadsDiverging != null) {
 			if(COUNTNODETYPES) {
@@ -309,7 +318,7 @@ public final class QFFFNode extends AbstractQNode {
 					log.info(cnt + " divergingNodes");
 				}
 			}
-			this.nodeType = new QFFFLargeRoadsDivergingNode(this, bundleMap, network, largestOutLinkOfLargeRoadsDiverging);
+			this.nodeType = new QFFFLargeRoadsDivergingNode(this, bundleMap, network, largestOutLinkOfLargeRoadsDiverging,  this.scenario);
 			return;
 		}
 
@@ -324,7 +333,7 @@ public final class QFFFNode extends AbstractQNode {
 					log.info(cnt + " rightPriorityNodes");
 				}
 			}
-			this.nodeType = new QFFFRightPriorityNode(this, bundleMap, network);
+			this.nodeType = new QFFFRightPriorityNode(this, bundleMap, network,  this.scenario);
 			return;
 		} else if(bundleMap.size() == 2){
 			//Obviously fine when both bundles are proper bundles...
@@ -334,7 +343,7 @@ public final class QFFFNode extends AbstractQNode {
 					log.info(cnt + " directedPriorityNodes");
 				}
 			}
-			this.nodeType = new QFFFNodeDirectedPriorityNode(this, bundleMap, network);
+			this.nodeType = new QFFFNodeDirectedPriorityNode(this, bundleMap, network,  this.scenario);
 			return;
 		} else {
 			TreeMap<HierarchyInformation, LinkedList<Integer>> carHIs = new TreeMap<HierarchyInformation, LinkedList<Integer>>();
@@ -358,7 +367,7 @@ public final class QFFFNode extends AbstractQNode {
 						log.info(cnt + " rightPriorityNodes");
 					}
 				}
-				this.nodeType = new QFFFRightPriorityNode(this, bundleMap, network);
+				this.nodeType = new QFFFRightPriorityNode(this, bundleMap, network,  this.scenario);
 				return;
 			} else {
 				TreeMap<HierarchyInformation, LinkedList<Integer>> his = carHIs;
@@ -377,7 +386,7 @@ public final class QFFFNode extends AbstractQNode {
 							log.info(cnt + " directedPriorityNodes");
 						}
 					}
-					this.nodeType = new QFFFNodeDirectedPriorityNode(this, bundleMap, network, his);
+					this.nodeType = new QFFFNodeDirectedPriorityNode(this, bundleMap, network, his,  this.scenario);
 					return;
 				} else {
 					if(COUNTNODETYPES) {
@@ -386,7 +395,7 @@ public final class QFFFNode extends AbstractQNode {
 							log.info(cnt + " antiPriorityNodes");
 						}
 					}
-					this.nodeType = new QFFFAntiPriorityNode(this, bundleMap, network, his);		
+					this.nodeType = new QFFFAntiPriorityNode(this, bundleMap, network, his,  this.scenario);		
 					return;
 				}
 			}
@@ -471,7 +480,12 @@ public final class QFFFNode extends AbstractQNode {
 		if(moveType == MoveType.GENERAL) {
 			fromLane.popFirstVehicle();
 		} else if(moveType == MoveType.LEFT_TURN) {
-			((QueueWithBufferForRoW) fromLane).popFirstLeftVehicle();
+			if(fromLane instanceof QueueWithBufferForRoW) {
+				((QueueWithBufferForRoW) fromLane).popFirstLeftVehicle();
+			} else if (fromLane instanceof QCycleLane) {
+				((QCycleLane) fromLane).popFirstLeftVehicle();
+			}
+			
 		} // else if( moveType == MoeveType.PASSING_IMPATIENTLY_ON_THE_RIGHT { //Passing on the right pops beforehand! }
 
 		// -->
@@ -544,6 +558,10 @@ public final class QFFFNode extends AbstractQNode {
 			 * die here, we have a config setting for that!
 			 */
 			moveVehicleFromInlinkToOutlink(veh, currentLink.getId(), fromLane, nextLinkId, nextQueueLane, moveType);
+			
+			// For analysis purposes
+			Counters.countStuckEvents.incrementAndGet();
+			
 			return stuckReturnValue;
 			// (yyyy why is this returning `true'?  Since this is a fix to avoid gridlock, this should proceed in small steps. 
 			// kai, feb'12) 
@@ -581,16 +599,21 @@ public final class QFFFNode extends AbstractQNode {
 	//	}
 
 	boolean vehicleIsStuck(final QLaneI fromLaneBuffer, final double now, MoveType moveType) {
-		if(moveType == MoveType.LEFT_TURN) {
-			return leftVehicleIsStuck( (HasLeftBufferTime) fromLaneBuffer, now);
+		if( moveType == MoveType.LEFT_TURN) {
+			return leftVehicleIsStuck( fromLaneBuffer, now);
 		} else {
 			return generalVehicleIsStuck(fromLaneBuffer, now);
 		}
 	}
 
-	private boolean leftVehicleIsStuck(final HasLeftBufferTime fromLaneBuffer, final double now) {
+	private boolean leftVehicleIsStuck(final QLaneI fromLaneBuffer, final double now) {
 		final double stuckTime = this.context.qsimConfig.getStuckTime() ;
-		double lastMoved = fromLaneBuffer.getLeftBufferLastTimeMoved(); 
+		double lastMoved;
+		if(fromLaneBuffer instanceof HasLeftBufferTime) {
+			lastMoved = ((HasLeftBufferTime) fromLaneBuffer).getLeftBufferLastTimeMoved();
+		} else {
+			lastMoved = fromLaneBuffer.getLastMovementTimeOfFirstVehicle();	
+		}
 		return (now - lastMoved) > stuckTime;
 	}
 

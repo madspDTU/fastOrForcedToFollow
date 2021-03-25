@@ -57,14 +57,13 @@ public abstract class Sublink implements HasLeftBufferTime {
 	/**
 	 * A LinkedList containing the vehicles which will be leaving the link. 
 	 */
-	protected final LinkedList<QCycleAndMoveType> generalLeavingVehicles;
+	protected final LinkedList<QVehicle> generalLeavingVehicles;
 
 
 	
 	
 	public void addVehicleToGeneralLeavingVehiclesWithoutMovetype(final QVehicle veh){
-		Gbl.assertIf(!(veh instanceof QCycleAndMoveType));
-		this.generalLeavingVehicles.addLast( (QCycleAndMoveType) veh); //TODO remove cast
+		this.generalLeavingVehicles.addLast( veh); 
 	}
 	public abstract void addToLeavingVehicles(final QCycleAndMoveType veh,  double now);
 	
@@ -73,7 +72,7 @@ public abstract class Sublink implements HasLeftBufferTime {
 		if(this.generalLeavingVehicles.isEmpty()) {
 			this.generalLastTimeMoved = now;
 		}
-		this.generalLeavingVehicles.addFirst( (QCycleAndMoveType) veh); //TODO remove cast
+		this.generalLeavingVehicles.addFirst(veh); 
 	}
 	
 	public abstract void addVehicleToFrontOfLeavingVehicles(final QCycleAndMoveType veh, double now);
@@ -87,9 +86,9 @@ public abstract class Sublink implements HasLeftBufferTime {
 	public QVehicle getFirstGeneralLeavingVehicleWithoutMovetype() {
 		return this.generalLeavingVehicles.getFirst();
 	}
-	public QCycleAndMoveType pollFirstGeneralLeavingVehicle(double now) {
+	public QVehicle pollFirstGeneralLeavingVehicle(double now) {
 		this.generalLastTimeMoved = now;
-		return (QCycleAndMoveType) this.generalLeavingVehicles.pollFirst();
+		return  this.generalLeavingVehicles.pollFirst();
 	}
 	
 	public abstract void setLastTimeMovedLeft(double lastMoved) ;
@@ -136,7 +135,7 @@ public abstract class Sublink implements HasLeftBufferTime {
 		this.id = id;
 		this.psi = createPseudoLanes(Psi, length);
 
-		this.generalLeavingVehicles = new LinkedList<QCycleAndMoveType>(); //TODO remove cast
+		this.generalLeavingVehicles = new LinkedList<QVehicle>();
 
 		double totalLaneLength = 0.;
 		for(PseudoLane pseudoLane : psi){

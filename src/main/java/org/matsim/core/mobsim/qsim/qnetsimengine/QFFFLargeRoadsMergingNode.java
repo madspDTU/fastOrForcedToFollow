@@ -7,6 +7,7 @@ import java.util.TreeMap;
 import org.apache.log4j.Logger;
 import org.jfree.util.Log;
 import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.core.gbl.Gbl;
 import org.matsim.core.gbl.MatsimRandom;
@@ -24,8 +25,8 @@ public class QFFFLargeRoadsMergingNode extends QFFFAbstractNode{
 	final HashMap<Id<Link>, Integer> carInTransformations;
 	
 
-	QFFFLargeRoadsMergingNode(final QFFFNode qNode, final TreeMap<Double, LinkedList<Link>> thetaMap, QNetwork qNetwork){
-		super(qNode, thetaMap, qNetwork);
+	QFFFLargeRoadsMergingNode(final QFFFNode qNode, final TreeMap<Double, LinkedList<Link>> thetaMap, QNetwork qNetwork, Scenario scenario){
+		super(qNode, thetaMap, qNetwork, scenario);
 		this.carInTransformations = new HashMap<Id<Link>, Integer>();
 		int outLink = -1;
 		for(int i = 0; i < carInLinks.length; i++){
@@ -129,13 +130,25 @@ public class QFFFLargeRoadsMergingNode extends QFFFAbstractNode{
 			for(QLaneI qLaneI : inLink.getOfferingQLanes()){
 				QueueWithBufferForRoW lane = (QueueWithBufferForRoW) qLaneI;
 				while(! lane.isNotOfferingGeneralVehicle()){
-					QVehicle veh = lane.getFirstGeneralVehicle();
-					if (! this.qNode.moveVehicleOverNode(veh, inLink, lane, now, MoveType.GENERAL, false)) {
+					QVehicleAndMoveType veh = (QVehicleAndMoveType) lane.getFirstGeneralVehicle();
+					if (! this.qNode.moveVehicleOverNode(veh, inLink, lane, now, veh.getMoveType(), false)) {
 						break;
 					}
 				}
 			}
 		}
+	}
+
+	@Override
+	int[][] createBicycleRankMatrix(int n) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	int[][] createCarRankMatrix(int n) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

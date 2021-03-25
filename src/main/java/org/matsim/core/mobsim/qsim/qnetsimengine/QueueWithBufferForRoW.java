@@ -85,7 +85,7 @@ abstract class QueueWithBufferForRoW implements QLaneI, SignalizeableItem, HasLe
 		private Double flowCapacity_s = null ;
 		private final NetsimEngineContext context;
 		private FlowEfficiencyCalculator flowEfficiencyCalculator;
-		private Integer leftBufferCapacity = null;
+		private Double leftBufferCapacity = null;
 
 		Builder( final NetsimEngineContext context ) {
 			this.context = context ;
@@ -97,7 +97,7 @@ abstract class QueueWithBufferForRoW implements QLaneI, SignalizeableItem, HasLe
 		void setVehicleQueue(VehicleQ<QVehicle> vehicleQueue) { this.vehicleQueue = vehicleQueue; }
 		void setLaneId(Id<Lane> id) { this.id = id; }
 		void setLength(Double length) { this.length = length; }
-		void setMaximumLeftBufferLength(int leftBufferCapacity) { this.leftBufferCapacity = leftBufferCapacity; }
+		void setMaximumLeftBufferLength(double leftBufferCapacity) { this.leftBufferCapacity = leftBufferCapacity; }
 		void setEffectiveNumberOfLanes(Double effectiveNumberOfLanes) { this.effectiveNumberOfLanes = effectiveNumberOfLanes; }
 		void setFlowCapacity_s(Double flowCapacity_s) { this.flowCapacity_s = flowCapacity_s; }
 		void setFlowEfficiencyCalculator(FlowEfficiencyCalculator flowEfficiencyCalculator) { this.flowEfficiencyCalculator = flowEfficiencyCalculator; }
@@ -109,7 +109,7 @@ abstract class QueueWithBufferForRoW implements QLaneI, SignalizeableItem, HasLe
 			if ( effectiveNumberOfLanes==null ) { effectiveNumberOfLanes = qLink.getLink().getNumberOfLanes() ; }
 			if ( flowCapacity_s==null ) { flowCapacity_s = ((Link)qLink.getLink()).getFlowCapacityPerSec() ; }
 			if (flowEfficiencyCalculator == null) { flowEfficiencyCalculator = new DefaultFlowEfficiencyCalculator(); }
-			if ( leftBufferCapacity == null) { leftBufferCapacity = Integer.MAX_VALUE; }
+			if ( leftBufferCapacity == null) { leftBufferCapacity = Double.MAX_VALUE; }
 
 			if(leftBufferCapacity <= 0) {
 				if(COUNTLANETYPES) {

@@ -19,7 +19,7 @@ public class FFFNodeConfigGroup extends ReflectiveConfigGroup {
 	/**
 	 * 
 	 */
-	private double bicycleDelay = 1.;
+	private double bicycleDelay = 0.;
 //	@StringGetter( "bicycleDelay" )
 	public double getBicycleDelay() {
 		return this.bicycleDelay;
@@ -32,7 +32,7 @@ public class FFFNodeConfigGroup extends ReflectiveConfigGroup {
 	/**
 	 * 
 	 */
-	private double carDelay = 1.;
+	private double carDelay = 0.;
 //	@StringGetter( "carDelay" )	
 	public double getCarDelay() {
 		return this.carDelay;
@@ -51,7 +51,7 @@ public class FFFNodeConfigGroup extends ReflectiveConfigGroup {
 
 	private boolean approximateNullLinkToLinkTravelTimes = false;
 
-	private int smallRoadLeftBufferCapacity = QFFFAbstractNode.smallRoadLeftBufferCapacity; //change to 3 or to.
+	private double smallRoadLeftBufferCapacity = 2.; 
 
 	private int twoLaneLeftBufferCapacityForBicycles = 3;
 	
@@ -95,11 +95,11 @@ public class FFFNodeConfigGroup extends ReflectiveConfigGroup {
 		return this.roadtypeToValueMap;
 	}
 
-	public int getSmallRoadLeftBufferCapacity() {
+	public double getSmallRoadLeftBufferCapacity() {
 		return this.smallRoadLeftBufferCapacity ;
 	}
 	
-	public void setSmallRoadLeftBufferCapacity(int cap) {
+	public void setSmallRoadLeftBufferCapacity(double cap) {
 		this.smallRoadLeftBufferCapacity = cap ;
 	}
 	

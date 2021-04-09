@@ -36,6 +36,7 @@ The reader is guided towards [Paulsen et al. (2019)](#PaulsenFFF) for further de
 
 The methodology of  [Paulsen et al. (2019)](#PaulsenFFF) was further extended in [Paulsen & Nagel (2019)](#PaulsenNagel)  for application in large-scale bicycle traffic assignment. 
 The bicycle simulation model was implemented in MATSim [(Horni et al, 2016)](#MATSim), and appropriate corrections to the routing and scoring was conducted.
+
 Results of large scale-experiments from Metropolitan Copenhagen and further details can be found in [Paulsen & Nagel (2019)](#PaulsenNagel).
 
 ### Multi-modal right-of-way

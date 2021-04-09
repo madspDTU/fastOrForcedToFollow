@@ -13,16 +13,14 @@ The framework was developed during the PhD project *Mesoscopic Simulation of Mul
   * [Bicycle simulation using speed heterogeneous agents](#bicycle-simulation-using-speed-heterogeneous-agents)
   * [Bicycle traffic assignment](#bicycle-traffic-assignment)
   * [Multi-modal right-of-way](#multi-modal-right-of-way)
-- [How to use it](#how-to-use-it)
-  * [Disclaimer](#disclaimer)
-  * [How to run it](#how-to-run-it)
+- [Technical details about the Java code](#technical-details-about-the-java-code)
+  * [How to use it](#how-to-use-it)
   * [Network simulation](#network-simulation)
   * [Scoring and plan selection](#scoring-and-plan-selection)
 - [Relation to the bicycle contrib](#relation-to-the-bicycle-contrib)
 - [References](#references)
 
 <small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
-
 
 
 ## Methodology

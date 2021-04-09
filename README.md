@@ -151,11 +151,12 @@ The three different strategies are:
 The bounded logit uses a fixed beta throughout all iterations, why all plans have a non-zero probability of being chosen in each iteration.
 Probabilities are calculated according to the bounded logit model, where the probability mass is squeezed into the range \[bestScore, threshold\*bestScore\],
 with a plan of score threshold\*bestscore having a probability of 0. 
-Consult [Watling et al., (2018)](#Watling2018) for more information on bounded logit models. 
+For more information on bounded choice models, see [Watling et al., (2018)](#Watling2018).
 
 The gradual bounded logit increases the value of beta throughout the iterations, so that the best plan is eventually guaranteed to be chosen.
 
 The best bounded always chooses the plan that has the best score. 
+
 
 
 

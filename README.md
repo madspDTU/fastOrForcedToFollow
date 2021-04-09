@@ -6,7 +6,6 @@ The framework was developed during the PhD project *Mesoscopic Simulation of Mul
 
 
 ## Table of contents
-
 - [Methodology](#methodology)
   * [Bicycle simulation using speed heterogeneous agents](#bicycle-simulation-using-speed-heterogeneous-agents)
   * [Bicycle traffic assignment](#bicycle-traffic-assignment)
@@ -14,6 +13,9 @@ The framework was developed during the PhD project *Mesoscopic Simulation of Mul
 - [Technical details about the Java code](#technical-details-about-the-java-code)
   * [How to use it](#how-to-use-it)
   * [Network simulation](#network-simulation)
+    + [Architecture](#architecture)
+      - [Simulating bicycle traffic along links](#simulating-bicycle-traffic-along-links)
+      - [Dealing with right-of-way at intersections](#dealing-with-right-of-way-at-intersections)
   * [Scoring and plan selection](#scoring-and-plan-selection)
 - [Relation to the bicycle contrib](#relation-to-the-bicycle-contrib)
 - [References](#references)
@@ -76,6 +78,19 @@ The framework comes with three possible setups for simulating traffic:
 
 In all cases, the network is simulated according to the default configurations of those setups. 
 These configurations can be adjusted in the config groups, `FFFConfigGroup`, `FFFNodeConfigGroup`.
+
+#### Architecture
+
+This section contains further technical details.
+
+##### Simulating bicycle traffic along links
+
+See also [Paulsen et al. (2019)](#PaulsenFFF).
+
+##### Dealing with right-of-way at intersections
+
+See also [Paulsen et al. (2021)](#PaulsenRoW).
+
 
 ### Scoring and plan selection
 

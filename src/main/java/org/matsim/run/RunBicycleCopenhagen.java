@@ -36,6 +36,7 @@ import org.matsim.core.router.TripStructureUtils;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.vehicles.VehicleType;
 
+import fastOrForcedToFollow.FFFUtils;
 import fastOrForcedToFollow.configgroups.FFFNodeConfigGroup;
 import fastOrForcedToFollow.configgroups.FFFScoringConfigGroup;
 import fastOrForcedToFollow.configgroups.FFFScoringConfigGroup.PlanSelectorType;
@@ -62,23 +63,15 @@ public class RunBicycleCopenhagen {
 	private static String intersectionSimplificationSuffix = "";
 	public static double timeOutTime = 1.0;
 	public static double leftCapacity = 2.0;
+	// Only needed if the network has to remain the same across scenarios (cars, bicycles, cars+bicycles).
+	// If this is not needed, set to false for faster computations in uni-modal runs. 
+	private static boolean enforceSameNetworkAcrossModeScenarios = true;
 
-
-	// final
-	// /
-	// public static String outputBaseDir = "./output/ABMTRANS2019/"; //With
-	// final /
-	// public static String outputBaseDir =
-	// "C:/Users/madsp/git/fastOrForcedToFollowMaven/output/Copenhagen/";
 
 	public final static String inputBaseDir = "/zhome/81/e/64390/MATSim/DTA2020/input/"; // With
 	public final static String inputResumeBaseDir = "/work1/s103232/DTA2020/input/"; // With
 	//public final static String inputBaseDir = "C:/Users/madsp/DTA/Input/"; // With
 	//public final static String inputResumeBaseDir = "C:/Users/madsp/DTA/ResumableInput/"; // With
-
-
-	// final
-	// /
 
 	// public final static String inputBaseDir = "./input/"; //With final /
 	// public final static String inputBaseDir =
@@ -91,9 +84,7 @@ public class RunBicycleCopenhagen {
 		boolean oneLane = false;
 		boolean roW = false;
 		boolean carsAreSomehowIncluded = false;
-		boolean tenPercentCars = false;
 		boolean carOnly = false;
-		boolean berlin = false;
 		boolean runMatsim = true;
 		boolean resumeNonRoW = false;
 
@@ -185,9 +176,6 @@ public class RunBicycleCopenhagen {
 		if (scenarioType.contains("NoCongestion")) {
 			congestion = false;
 		}
-		if (scenarioType.contains("Berlin")) {
-			berlin = true;
-		}
 
 		if (scenarioType.contains("OneLane")) {
 			oneLane = true;
@@ -195,11 +183,8 @@ public class RunBicycleCopenhagen {
 		if(scenarioType.contains("Both")){
 			carsAreSomehowIncluded = true;
 			oneLane = false;
-		} else if(scenarioType.contains("Uneven")) {
-			tenPercentCars = true;
-			carsAreSomehowIncluded = true;
-			oneLane = false;
-		}
+		} 
+		
 		if (scenarioType.contains("RoW")) {
 			roW = true;
 			outputBaseDir += "withNodeModelling/";
@@ -220,8 +205,6 @@ public class RunBicycleCopenhagen {
 
 
 
-
-
 		System.out.println("Running " + scenarioType);
 
 		if (carOnly) {
@@ -232,7 +215,7 @@ public class RunBicycleCopenhagen {
 			networkModes = Arrays.asList(TransportMode.bike);
 		}
 
-		Config config = RunMatsim.createConfigFromExampleName(networkModes, reRoutingProportion, choiceSetSize, planSelectorType);
+		Config config = RunMatsimWithFFF.createConfigWithSuitableSettings(networkModes, reRoutingProportion, choiceSetSize, planSelectorType);
 		config.controler().setOutputDirectory(outputBaseDir + scenarioType);
 
 		String size = null;
@@ -247,6 +230,8 @@ public class RunBicycleCopenhagen {
 			config.controler().setLastIteration(0);
 		}
 
+		
+		config.controler().setOverwriteFileSetting(OverwriteFileSetting.deleteDirectoryIfExists );
 		config.controler().setWritePlansInterval(lastIteration);
 		config.controler().setWritePlansUntilIteration(-1);
 		config.controler().setWriteEventsInterval(lastIteration);
@@ -254,6 +239,7 @@ public class RunBicycleCopenhagen {
 		config.controler().setWriteSnapshotsInterval(0);
 		config.controler().setWriteTripsInterval(0);
 
+		config.counts().setWriteCountsInterval(-1);
 		config.linkStats().setAverageLinkStatsOverIterations(0);
 		config.linkStats().setWriteLinkStatsInterval(0);
 
@@ -318,25 +304,15 @@ public class RunBicycleCopenhagen {
 		config.travelTimeCalculator().setMaxTime((int) Math.round(qSimEndTime));
 
 		if (roW) {
-			RunMatsim.addRoWModuleToConfig(config, tenPercentCars);
+			FFFUtils.addRoWModuleToConfig(config);
 			if(!config.travelTimeCalculator().isCalculateLinkTravelTimes()) {
 				System.out.println("Omitting linkLeaveEvents");
 				ConfigUtils.addOrGetModule(config, FFFNodeConfigGroup.class).setOmitLinkLeaveEvents(true);
 				ConfigUtils.addOrGetModule(config, FFFNodeConfigGroup.class).setApproximateNullLinkToLinkTravelTimes(approximateNullLinkToLinkTravelTimes);				
 			}
 		}
-		if (tenPercentCars) {
-			config.qsim().setFlowCapFactor(flowCapFactor); // This has to be calibrated
-			config.qsim().setStorageCapFactor(storageCapFactorWhenUsing10Percent); // This has to be calibrated
-			config.qsim().setStuckTime(60); // This has to be calibrated
-		}
-
-		if (berlin) {
-			config.network().setInputFile("/zhome/81/e/64390/MATSim/input/Berlin/simplifiedNetwork.xml.gz");
-			// } else if(carOnly){
-			// config.network().setInputFile(
-			// inputBaseDir + "MATSimCopenhagenNetwork_CarsOnly.xml.gz");
-		} else if (carsAreSomehowIncluded || true) { // We need to use the same network across scenarios. //TODO Comment out for studies only focusing on bicycles
+	
+		if (carsAreSomehowIncluded || enforceSameNetworkAcrossModeScenarios ) { // We need to use the same network across scenarios. 
 			config.network().setInputFile(inputBaseDir + "MATSimCopenhagenNetwork_WithBicycleInfrastructure" + intersectionSimplificationSuffix + ".xml.gz");
 		} else if (oneLane) {
 			config.network().setInputFile(inputBaseDir + "MATSimCopenhagenNetwork_BicyclesOnly_1Lane" + intersectionSimplificationSuffix + ".xml.gz");
@@ -348,17 +324,6 @@ public class RunBicycleCopenhagen {
 			config.plans().setInputFile(  "/work1/s103232/DTA2020/withNodeModelling/FullRoWAuto200azFin/output_plans.xml.gz");
 			config.network().setInputFile("/work1/s103232/DTA2020/withNodeModelling/FullRoWAuto200azFin/output_network.xml.gz");
 			config.controler().setLastIteration(0);
-		} else if(args[0].contains("DADADADADA")) {
-			config.plans().setInputFile("/zhome/81/e/64390/MATSim/DTA2020/input/dadadadada.xml");
-		} else if (berlin) {
-			config.plans().setInputFile("/zhome/81/e/64390/MATSim/input/Berlin/AllPlans_CPH_uneven_Berlin.xml.gz");
-		} else if (tenPercentCars) {
-			if(carOnly){
-				config.plans().setInputFile(inputBaseDir + "CarPopulation2019_Micro_10p.xml.gz");
-			} else {
-				config.plans().setInputFile(inputBaseDir + "COMPASBicycle100_COMPASSCarMicro10.xml.gz");
-			}
-			// Must be 100% car or no cars...
 		} else if (carOnly){
 			if(resumeNonRoW){
 				config.plans().setInputFile(inputResumeBaseDir + "ResumablePlans_Cars_selectedOnly.xml.gz");
@@ -382,16 +347,12 @@ public class RunBicycleCopenhagen {
 
 		Scenario scenario = ScenarioUtils.loadScenario(config);
 		FFFPlan.convertToFFFPlans(scenario.getPopulation());
-		if (!berlin &&  !args[0].toLowerCase().contains("cheat") ) {
-			RunMatsim.cleanBicycleNetwork(scenario.getNetwork(), config);
-		}
+		
 
 		System.out.println(size);
-		if (!berlin) {
-			removeSouthWesternPart(scenario.getNetwork());
-		}
-
-		scenario = RunMatsim.addCyclistAttributes(config, scenario);
+		FFFUtils.removeSouthWesternPart(scenario.getNetwork());
+		
+		FFFUtils.addCyclistAttributes(scenario);
 		// RunMatsim.reducePopulationToN(0, scenario.getPopulation());
 		// if(mixed){
 		VehicleType carVehicleType = scenario.getVehicles().getFactory().createVehicleType(Id.create(TransportMode.car, VehicleType.class));
@@ -417,16 +378,16 @@ public class RunBicycleCopenhagen {
 
 		// }
 
-		Controler controler;
+		Controler controler = new Controler(scenario);
 
 		if (congestion) {
 			if (!roW) {
-				controler = RunMatsim.createControler(scenario);
+				FFFUtils.prepareControlerForFFF(controler);
 			} else {
-				controler = RunMatsim.createControlerWithRoW(scenario);
+				FFFUtils.prepareControlerForFFFWithRoW(controler);
 			}
 		} else {
-			controler = RunMatsim.createControlerWithoutCongestion(scenario);
+			FFFUtils.prepareControlerForFFFWithoutCongestion(controler);
 		}
 
 
@@ -465,96 +426,6 @@ public class RunBicycleCopenhagen {
 		System.out.println("Postprocessing finished!");
 		System.exit(-1);
 
-	}
-
-	private static void removeSouthWesternPart(Network network) {
-		// Based on
-		// http://www.ytechie.com/2009/08/determine-if-a-point-is-contained-within-a-polygon/
-		FFFNodeConfigGroup nodeConfig = new FFFNodeConfigGroup();
-		HashMap<String, Integer> map = nodeConfig.getRoadTypeToValueMap();
-
-		Coord[] vertices = getVertices();
-		Coord[] southernVertices = getSouthernVertices();
-
-		int linksBefore = network.getLinks().size();
-		LinkedList<Node> nodesToBeRemoved = new LinkedList<Node>();
-		for (Node node : network.getNodes().values()) {
-			if (!isCoordInsidePolygon(node.getCoord(), vertices)) {
-				if(isCoordInsidePolygon(node.getCoord(), southernVertices)) {
-					nodesToBeRemoved.add(node);
-				} else {
-					int largestRoadValue = Integer.MIN_VALUE;
-					for(Collection<? extends Link> col : Arrays.asList(node.getInLinks().values(), node.getOutLinks().values())) {
-						for(Link link : col) {
-							int roadValue = map.get(link.getAttributes().getAttribute("type"));
-							if(roadValue > largestRoadValue) {
-								largestRoadValue = roadValue;
-							}
-						}
-					}
-					if(largestRoadValue < map.get("secondary") ) {
-						nodesToBeRemoved.add(node);
-					}
-				}
-			}
-		}
-		for (Node node : nodesToBeRemoved) {
-			network.removeNode(node.getId());
-		}
-		// System.out.println(isCoordInsidePolygon(new Coord(671092.33,
-		// 6177550.04), vertices));
-		System.out.println(nodesToBeRemoved.size() + " nodes and " + (linksBefore - network.getLinks().size())
-				+ " links removed from South-Western part...");
-	}
-
-	private static boolean isCoordInsidePolygon(Coord c, Coord[] v) {
-		int j = v.length - 1;
-		boolean oddNodes = false;
-		for (int i = 0; i < v.length; i++) {
-			if ((v[i].getY() < c.getY() && v[j].getY() >= c.getY()) || v[j].getY() < c.getY()
-					&& v[i].getY() >= c.getY()) {
-				if (v[i].getX() + (c.getY() - v[i].getY()) / 
-						(v[j].getY() - v[i].getY()) * (v[j].getX() - v[i].getX()) < c.getX()) {
-					oddNodes = !oddNodes;
-				}
-			}
-			j = i;
-		}
-		return oddNodes;
-	}
-
-	private static Coord[] getVertices() {
-		LinkedList<Coord> coords = new LinkedList<Coord>();
-		coords.addLast(new Coord(673977.7833, 6172099.281)); // 
-		coords.addLast(new Coord(679281.4926, 6189542,191)); // 
-		coords.addLast(new Coord(675045.9795, 6206992.6616)); // 
-		coords.addLast(new Coord(703658.9441, 6228283.6447)); // 
-		coords.addLast(new Coord(728969.9982, 6216640.5598)); // 
-		coords.addLast(new Coord(738845.9346, 6137938.4159)); // 
-		coords.addLast(new Coord(699130.2605, 6135696.2925)); // 
-		coords.addLast(new Coord(686615.3337, 6142709.614)); // 
-
-		Coord[] output = new Coord[coords.size()];
-		for (int i = 0; i < output.length; i++) {
-			output[i] = coords.pollFirst();
-		}
-		return output;
-	}
-
-	private static Coord[] getSouthernVertices() {
-		LinkedList<Coord> coords = new LinkedList<Coord>();
-		// All sites from https://epsg.io/map#srs=32632
-		coords.addLast(new Coord(621986.78, 6111239.17)); // Lohals
-		coords.addLast(new Coord(573186.35, 6022149.54)); // Kiel
-		coords.addLast(new Coord(782969.26, 6027815.34)); // Garz
-		coords.addLast(new Coord(777294.89, 6142058.83)); // Smygehamn
-		coords.addLast(new Coord(697776.79, 6094234.48)); // Tærø
-
-		Coord[] output = new Coord[coords.size()];
-		for (int i = 0; i < output.length; i++) {
-			output[i] = coords.pollFirst();
-		}
-		return output;
 	}
 
 }

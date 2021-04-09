@@ -44,12 +44,12 @@ import javax.inject.Inject;
 
 //Extends the original and overrides a single method
 
-public class MadsQNetworkFactoryWithQFFFNodes extends AbstractMadsQNetworkFactory{
+public class FFFQNetworkFactoryWithQFFFNodes extends AbstractFFFQNetworkFactory{
 
-	private static final Logger log = Logger.getLogger( MadsQNetworkFactoryWithQFFFNodes.class ) ;
+	private static final Logger log = Logger.getLogger( FFFQNetworkFactoryWithQFFFNodes.class ) ;
 	private FFFNodeConfigGroup fffNodeConfig;
 
-	@Inject MadsQNetworkFactoryWithQFFFNodes(EventsManager events, Scenario scenario) {
+	@Inject FFFQNetworkFactoryWithQFFFNodes(EventsManager events, Scenario scenario) {
 		super(events, scenario);
 		this.fffNodeConfig = ConfigUtils.addOrGetModule(scenario.getConfig(), FFFNodeConfigGroup.class);
 	}
@@ -57,8 +57,7 @@ public class MadsQNetworkFactoryWithQFFFNodes extends AbstractMadsQNetworkFactor
 	@Override
 	public QLinkI createNetsimLink(final Link link, final QNodeI toQueueNode) {
 		
-		QFFFAbstractNode nodeType = ((QFFFNode) toQueueNode).getQFFFAbstractNode();
-		// TODO capacity based on nodetype and highway type (from osm);
+	//	QFFFAbstractNode nodeType = ((QFFFNode) toQueueNode).getQFFFAbstractNode();
 		
 		if ( link.getAllowedModes().contains( TransportMode.bike ) ) {
 

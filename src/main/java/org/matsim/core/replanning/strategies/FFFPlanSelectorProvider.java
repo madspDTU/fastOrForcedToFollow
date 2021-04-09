@@ -19,10 +19,13 @@
 
 package org.matsim.core.replanning.strategies;
 
+import org.matsim.api.core.v01.population.Person;
+import org.matsim.api.core.v01.population.Plan;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup;
 import org.matsim.core.replanning.FFFPlanStrategyImpl;
 import org.matsim.core.replanning.PlanStrategy;
 import org.matsim.core.replanning.PlanStrategyImpl;
+import org.matsim.core.replanning.PlanStrategyImpl.Builder;
 import org.matsim.core.replanning.selectors.ExpBetaPlanChanger;
 import org.matsim.core.replanning.selectors.FFFBestBoundedPlanSelector;
 import org.matsim.core.replanning.selectors.FFFBoundedLogitPlanSelector;
@@ -40,22 +43,35 @@ public class FFFPlanSelectorProvider implements Provider<PlanStrategy> {
 
     @Inject private FFFScoringConfigGroup config;
 
-    @Override
+	@SuppressWarnings("unchecked")
+	@Override
 	public PlanStrategy get() {
+
+ 
+    	FFFPlanSelector planSelector;
+    	
     	switch(config.getPlanSelectorType()) {
+
     	case BoundedLogit:
-    		return new PlanStrategyImpl(new FFFBoundedLogitPlanSelector(config.getPlanBeta(), config.getPlanInertia(),
-            		config.getThreshold(), config.getMaximumMemory()));
+    		planSelector =  new FFFBoundedLogitPlanSelector(config.getPlanBeta(),
+            		config.getThreshold(), config.getMaximumMemory());
+    		break;
     	case GradualBoundedLogit: 
-    		return new PlanStrategyImpl(new FFFGradualBoundedLogitPlanSelector(config.getPlanBeta(), config.getPlanInertia(),
-            		config.getThreshold(), config.getMaximumMemory()));
+    		planSelector = new FFFGradualBoundedLogitPlanSelector(config.getPlanBeta(), 
+            		config.getThreshold(), config.getMaximumMemory());
+    		break;
     	case BestBounded:
-    		return new PlanStrategyImpl(new FFFBestBoundedPlanSelector(config.getPlanBeta(), config.getPlanInertia(),
-            		config.getThreshold(), config.getMaximumMemory()));
+    		planSelector = new FFFBestBoundedPlanSelector(config.getPlanBeta(),
+            		config.getThreshold(), config.getMaximumMemory());
+    		break;
     	default:
     		System.err.println("No valid planSelectorType set for FFFPlanSelector");
     		return null;
     	}
+    	
+    	Builder builder = new PlanStrategyImpl.Builder(planSelector);
+    	
+    	return(builder.build());
 	}
     
     public static String getName() {

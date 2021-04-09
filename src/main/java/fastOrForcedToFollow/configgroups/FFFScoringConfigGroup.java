@@ -14,7 +14,7 @@ public class FFFScoringConfigGroup extends ReflectiveConfigGroup {
 		
 	private FFFScoringParameters scoringParameters;
 	private double planBeta = 1;
-	private double planInertia = 2;
+//	private double planInertia = 2;
 	private double threshold = 1.3; // Must be >= 1;
 	private int maximumMemory = 20; // Must be >= 1
 	private PlanSelectorType planSelectorType = PlanSelectorType.BoundedLogit;
@@ -34,13 +34,13 @@ public class FFFScoringConfigGroup extends ReflectiveConfigGroup {
 		this.planBeta = planBeta;
 	}
 	
-	public double getPlanInertia() {
-		return planInertia;
-	}
+//	public double getPlanInertia() {
+//		return planInertia;
+//	}
 	
-	public void setPlanInertia(double planInertia) {
-		this.planInertia = planInertia;
-	}
+//	public void setPlanInertia(double planInertia) {
+//		this.planInertia = planInertia;
+//	}
 
 //	@StringSetter( "scoringParameters" )
 	public void setScoringParameters(Map<String, FFFModeUtilityParameters> modeParams){

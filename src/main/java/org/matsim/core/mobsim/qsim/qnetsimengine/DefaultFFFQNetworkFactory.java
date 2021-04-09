@@ -10,11 +10,11 @@ import org.matsim.api.core.v01.network.Node;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.gbl.Gbl;
 
-public class DefaultMadsQNetworkFactory extends AbstractMadsQNetworkFactory {
+public class DefaultFFFQNetworkFactory extends AbstractFFFQNetworkFactory {
 
-	private static final Logger log = Logger.getLogger( DefaultMadsQNetworkFactory.class ) ;
+	private static final Logger log = Logger.getLogger( DefaultFFFQNetworkFactory.class ) ;
 	
-	@Inject DefaultMadsQNetworkFactory(EventsManager events, Scenario scenario) {
+	@Inject DefaultFFFQNetworkFactory(EventsManager events, Scenario scenario) {
 		super(events, scenario);
 	}	
 	

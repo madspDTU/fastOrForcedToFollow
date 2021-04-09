@@ -76,6 +76,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 abstract class QueueWithBufferForRoW implements QLaneI, SignalizeableItem, HasLeftBufferTime {
 	private static final Logger log = Logger.getLogger( QueueWithBuffer.class ) ;
 	public static final boolean COUNTLANETYPES = false;
+//	private static final QueueWithBuffer delegate = null;
 
 	static final class Builder implements LaneFactory {
 		private VehicleQ<QVehicle> vehicleQueue = new FIFOVehicleQ() ;

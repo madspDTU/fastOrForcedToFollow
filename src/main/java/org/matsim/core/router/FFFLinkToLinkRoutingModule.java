@@ -65,7 +65,7 @@ import org.matsim.vehicles.VehicleUtils;
  * @author dgrether
  * @author michalm
  */
-class MyLinkToLinkRoutingModule implements RoutingModule
+class FFFLinkToLinkRoutingModule implements RoutingModule
 {
 	private final Network invertedNetwork;
 	private final Network network;
@@ -75,7 +75,7 @@ class MyLinkToLinkRoutingModule implements RoutingModule
 	private final Scenario scenario;
 	private final RoutingModule walkRouter;
 
-	MyLinkToLinkRoutingModule(final String mode, final PopulationFactory populationFactory,
+	FFFLinkToLinkRoutingModule(final String mode, final PopulationFactory populationFactory,
 			Network network, LeastCostPathCalculatorFactory leastCostPathCalcFactory,
 			TravelDisutility travelDisutility,
 			TravelTime invertedTravelTimes, Network invertedNetwork, Scenario scenario,

@@ -105,8 +105,8 @@ controler.addOverridingQSimModule(new AbstractQSimModule() {
 		});
 ```
 
-Also included in the code is a method `prepareSimulationForFFF` which samples `Cyclist` attributes to each agent according to the distributions estimated in [Paulsen et al. (2019)](#PaulsenFFF). 
-Parameters can be adjusted for other populations with for instance lower average speeds if needed. 
+Also included in the code is a method `prepareScenarioForFFF(scenario)` which samples `Cyclist` attributes to each agent according to the distributions estimated in [Paulsen et al. (2019)](#PaulsenFFF). 
+Parameters can be adjusted for other populations with for instance lower average speeds if needed, by changing the parameters of the `FFFConfigGroup`.
 Implementing parameters being sampled from other distributions is not included in the code, but can be implemented more or less straightforwardly. 
 
 

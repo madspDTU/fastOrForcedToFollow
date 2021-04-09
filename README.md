@@ -111,9 +111,26 @@ Implementing parameters being sampled from other distributions is not included i
 
 
 
+
 ##### Dealing with right-of-way at intersections
 
-See also [Paulsen et al. (2021)](#PaulsenRoW).
+For adding right-of-way to MATSim it is no longer sufficient to only replace how vehicles are simulated along links. 
+Instead, it is also needed to overrule how vehicles are simulated across nodes.
+This is done by building `QFFFNodes` instead of the standard `QNodeImpl`, which is normally used as the extension for `AbstractQNode`.
+However, the installment is the same as for simulating traffic without right-of-way, but with using the `FFFQNetworkFactoryWithQFFFNodes` instead of the `DefaultQNetworkFactory`.
+
+Some important classes for the extensions are:
+
+* `QVehicleAndMoveType`: Expanding QVehicle to also include a `moveType` (used for determining how the vehicle is processed).
+* `QFFFAbstractNode`:  A class contained as a field in the `QFFFNodes`. Different extensions exists for different nodetypes, see [Paulsen et al., (2021)](#PaulsenRoW). For all of such nodes a double matrices for motorised traffic and bicycle traffic - carTimeouts and bicycleTimeouts, respectively - that hold elements representing the time until which the move from bundle i to bundle j is blocked. 
+* `ConflictingMovesData`: A class containing for any move across the node, the set of conflicting moves with lower or equal prioritisation, and whether that conflicting move is of equal or lower prioritisation. 
+
+In order for the right-of-way modelling to find the best solutions during routing, it is highly recommended that linkToLinkRouting is enabled. 
+When this is the case the `addGeneralStuffToControler(controler)` will automatically enable the adjustments to the link to link routing mentioned in [Paulsen et al., (2021)](#PaulsenRoW).
+
+
+
+
 
 
 ### Scoring and plan selection

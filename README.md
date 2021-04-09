@@ -6,6 +6,24 @@ The theoretic foundation for the contribution is documented in  [Paulsen et al. 
 The framework was developed during the PhD project *Mesoscopic Simulation of Multi-Modal Urban Traffic* at Technical University of Denmark [(Paulsen, 2020)](#PhD)
 
 
+
+## Table of contents
+
+- [Methodology](#methodology)
+  * [Bicycle simulation using speed heterogeneous agents](#bicycle-simulation-using-speed-heterogeneous-agents)
+  * [Bicycle traffic assignment](#bicycle-traffic-assignment)
+  * [Multi-modal right-of-way](#multi-modal-right-of-way)
+- [How to use it](#how-to-use-it)
+  * [Disclaimer](#disclaimer)
+  * [How to use the different parts of the framework](#how-to-use-the-different-parts-of-the-framework)
+    + [Network simulation](#network-simulation)
+    + [Multi-modal right-of-way](#multi-modal-right-of-way-1)
+- [Relation to the bicycle contrib](#relation-to-the-bicycle-contrib)
+- [References](#references)
+
+<small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
+
+
 ## Methodology
 
 ### Bicycle simulation using speed heterogeneous agents
@@ -34,16 +52,55 @@ To circumvent such changes, instead a lot of the classes used in the repository 
 
 ### How to use the different parts of the framework
 
-#### Bicycle simulation using speed heterogeneous agents & Bicycle traffic assignment 
+Any MATSim scenario can be setup to be valid for FFF simulation by running `FFFUtils.prepareScenarioForFFF(scenario)`. In theory, this should work with any scenario.
+
+Likewise, a controler can be enriched to work with FFF by running `FFFUtils.prepareControlerForFFF(controler)`. How well this works with other controlers is an open question, but should in theory be possible (but has not been tested). 
+
+#### Network simulation
+
+The framework comes with three possible setups for simulating traffic:
+
+* FFF with congestion and the standard MATSim node model (`prepareControlerForFFF(controler)`)
+* FFF without and with the standard MATSim node model (`prepareControlerForFFFWithoutCongestion(controler)`)
+* FFF with congestion and a newly proposed right-of-way node model (`prepareControlerForFFFWithRoW(controler)`), see [Paulsen et al. (2021)](#PaulsenRoW)
+
+In all cases, the network is simulated according to the default configurations of those setups. 
+These configurations can be adjusted in the config groups, `FFFConfigGroup`, `FFFNodeConfigGroup`.
+
+#### Scoring and plan selection
+
+New plan selectors (`FFFPlanSelectors`) for selecting between plans are also proposed. 
+Three different strategies are possible (introduced in the list further down).
+Common for all of the strategies, is that they are bounded. 
+This means, that after all iterations, if a plan has a score that is worse than  the score of the best plan times `threshold`, that plan is removed.
+Likewise, all plans that have not been used for the past `maximumMemory` iterations, are also removed. 
+See also [Paulsen et al. (2021)](#PaulsenRoW).
+
+The three different strategies are: 
+
+* `FFFBoundedLogitPlanSelector`
+* `FFFGradualBoundedLogitPlanSelector`
+* `FFFBestBoundedPlanSelector`
+
+The bounded logit uses a fixed beta throughout all iterations, why all plans have a non-zero probability of being chosen in each iteration.
+Probabilities are calculated according to the bounded logit model, where the probability mass is squeezed into the range \[bestScore, threshold\*bestScore\],
+with a plan of score threshold*\bestscore having a probability of 0. 
+Consult [Watling et al., (2018)](#Watling2018) for more information on bounded logit models. 
+
+The gradual bounded logit increases the value of beta throughout the iterations, so that the best plan is eventually guaranteed to be chosen.
+
+The best bounded always chooses the plan that has the best score. 
+
+
 
 #### Multi-modal right-of-way
 
 
 
 
-## The bicycle contrib
+## Relation to the bicycle contrib
 
-This framework is not a plan of the bicycle contrib of MATSim (https://github.com/matsim-org/matsim-libs/tree/master/contribs/bicycle/src/main/java/org/matsim/contrib/bicycle). 
+This framework is not a part of the bicycle contrib of MATSim (https://github.com/matsim-org/matsim-libs/tree/master/contribs/bicycle/src/main/java/org/matsim/contrib/bicycle). 
 I have discussed migrating the entire project or some parts of it to the bicycle contrib with their maintainers, but decided that most of the methodology of this project
 is too specific for inclusion in that contrib. 
 For most purposes it will be fine to ignore bicycle congestion or to model it in a simpler way that does not require simulating 100% of the population. 
@@ -80,7 +137,11 @@ Paulsen, M., Rasmussen, T. K., & Nielsen, O. A. (2021).
 Networks and Spatial Economics. 
 Revised manuscript submitted after first round of review. 
 
-
+<a id="Watling2018">:newspaper:</a>
+Watling, D. P., Rasmussen, T. K., Prato, C. G., & Nielsen, O. A. (2018). 
+Stochastic user equilibrium with a bounded choice model. 
+Transportation Research. Part B: Methodological, 114, 254–280.
+URL: https://doi.org/10.1016/j.trb.2018.05.004 
 
 
 

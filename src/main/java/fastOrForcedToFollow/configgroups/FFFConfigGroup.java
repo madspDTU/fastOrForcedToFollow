@@ -104,6 +104,13 @@ public class FFFConfigGroup extends ReflectiveConfigGroup {
 	 */
 	private double unusedWidth = 0.4;
 
+	/**
+	 * Number of lanes used for bicycle links.
+	 * Only relevant if the FFFNetworkReader has not been 
+	 * used for constructing separated networks initially.
+	 */
+	private int defaultNumberOfLanesPerLink = 1;
+
 
 	public double getEfficientLaneWidth() {
 		return efficientLaneWidth;
@@ -232,6 +239,14 @@ public class FFFConfigGroup extends ReflectiveConfigGroup {
 
 	public void setBeta_alpha(final double beta_alpha) {
 		this.beta_alpha = beta_alpha;
+	}
+
+	public int getDefaultNumberOfLanesPerLink() {
+		return defaultNumberOfLanesPerLink;
+	}
+	
+	public void setDefaultNumberOfLanesPerLink(final int numberOfLanesPerLink) {
+		this.defaultNumberOfLanesPerLink = numberOfLanesPerLink;
 	}
 	
 }

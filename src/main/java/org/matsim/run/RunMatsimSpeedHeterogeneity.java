@@ -51,7 +51,9 @@ import org.matsim.core.replanning.strategies.DefaultPlanStrategiesModule.Default
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.vehicles.VehicleType;
 
+import fastOrForcedToFollow.FFFUtils;
 import fastOrForcedToFollow.configgroups.FFFConfigGroup;
+import fastOrForcedToFollow.configgroups.FFFScoringConfigGroup.PlanSelectorType;
 
 /**
  * @author nagel
@@ -66,7 +68,7 @@ public class RunMatsimSpeedHeterogeneity {
 	final static int lastIteration = 1;
 
 	public static void main(String[] args) {
-		Config config = RunMatsim.createConfigFromExampleName(Arrays.asList(TransportMode.bike), 0.2, 5);	
+		Config config = RunMatsimWithFFF.createConfigWithSuitableSettings(Arrays.asList(TransportMode.bike), 0.2, 5, PlanSelectorType.BestBounded);	
 		config.controler().setLastIteration(lastIteration);
 		config.controler().setOutputDirectory("./output/SpeedHeterogeneity/");
 	
@@ -75,10 +77,12 @@ public class RunMatsimSpeedHeterogeneity {
 		createNetwork(scenario);
 
 		createPopulation(scenario);
-		scenario = RunMatsim.addCyclistAttributes(config, scenario);			
+		FFFUtils.addCyclistAttributes(scenario);			
 	
 		
-		Controler controler = RunMatsim.createControlerWithRoW(scenario); 
+		
+		Controler controler = new Controler(scenario);
+		FFFUtils.prepareControlerForFFFWithRoW(controler);
 
 
 	

@@ -46,7 +46,9 @@ import org.matsim.core.controler.Controler;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.vehicles.VehicleType;
 
+import fastOrForcedToFollow.FFFUtils;
 import fastOrForcedToFollow.configgroups.FFFConfigGroup;
+import fastOrForcedToFollow.configgroups.FFFScoringConfigGroup.PlanSelectorType;
 
 /**
  * @author nagel
@@ -62,8 +64,8 @@ public class RunMatsimWithRoW {
 
 	public static void main(String[] args) {
 
-		Config config = RunMatsim.createConfigFromExampleName(
-				Arrays.asList(TransportMode.bike, TransportMode.car), 0.2, 5);	
+		Config config = RunMatsimWithFFF.createConfigWithSuitableSettings(
+				Arrays.asList(TransportMode.bike, TransportMode.car), 0.2, 5, PlanSelectorType.BestBounded);	
 		
 		//Possible changes to config
 		//	FFFConfigGroup fffConfig = ConfigUtils.addOrGetModule(config, FFFConfigGroup.class);
@@ -75,7 +77,7 @@ public class RunMatsimWithRoW {
 
 		config.facilities().setFacilitiesSource(FacilitiesSource.onePerActivityLocationInPlansFile);
 
-		RunMatsim.addRoWModuleToConfig(config, false);
+		FFFUtils.addRoWModuleToConfig(config);
 		
 
 		Scenario scenario;
@@ -83,7 +85,7 @@ public class RunMatsimWithRoW {
 			scenario = ScenarioUtils.createScenario(config);
 			createNetwork(scenario);
 			createPopulation(scenario, numberOfAgents);
-			scenario = RunMatsim.addCyclistAttributes(config, scenario);
+			FFFUtils.addCyclistAttributes(scenario);
 			scenario.getVehicles().addVehicleType(  scenario.getVehicles().getFactory().createVehicleType( Id.create( TransportMode.car, VehicleType.class  ) ) );
 			VehicleType truckType = scenario.getVehicles().getFactory().createVehicleType( Id.create( TransportMode.car, VehicleType.class  ) );
 			truckType.setMaximumVelocity(80/3.6);
@@ -91,19 +93,18 @@ public class RunMatsimWithRoW {
 			scenario.getVehicles().addVehicleType( truckType  );
 			
 		} else {
-			scenario = RunMatsim.createScenario(config, 2, false, bicycleMarketShare);
+			scenario = ScenarioUtils.loadScenario( config ) ;
+			FFFUtils.prepareScenarioForFFF(scenario);
 		}
+
+		Controler controler = new Controler( scenario ) ;
+		FFFUtils.prepareControlerForFFFWithRoW(controler); 
 		
-		Controler controler = RunMatsim.createControlerWithRoW(scenario); 
-		//Controler controler = RunMatsim.createControler(scenario); 
 
 		config.planCalcScore().addModeParams( new PlanCalcScoreConfigGroup.ModeParams(TransportMode.ride) );
 		config.planCalcScore().addModeParams( new PlanCalcScoreConfigGroup.ModeParams(TransportMode.walk) );
 		
 		
-
-
-
 		try{
 			controler.run();
 		}
@@ -125,7 +126,7 @@ public class RunMatsimWithRoW {
 		double timeC = timeB + 15*60;
 		double timeD = timeC + 5*60;
 
-		Random random = new Random(RunMatsim.RANDOM_SEED);
+		Random random = new Random(RunMatsimWithFFF.RANDOM_SEED);
 		for(int i = 0; i < 200; i ++){
 			random.nextDouble();
 		}

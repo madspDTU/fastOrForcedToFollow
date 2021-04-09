@@ -2,8 +2,19 @@ package org.matsim.core.replanning.selectors;
 
 public class FFFGradualBoundedLogitPlanSelector extends FFFPlanSelector {
 
-	public FFFGradualBoundedLogitPlanSelector(double beta, double inertia, double threshold, int maximumMemory) {
-		super(beta, inertia, threshold, maximumMemory);
+	/**
+	 * Plan selector that always chooses the best available plans according to a logit model, and ensures 
+	 * that plans exceeding some threshold are automatically removed in each iteration.
+	 * The beta increses throughout the iterations.
+	 * Plans that remains unused for several (maximumMemory) consecutive iterations are also removed.
+	 * 
+	 * @param beta Initial scale parameter used in the logit model.
+	 * @param threshold In each iteration, plans that are worse than bestScore * threshold are removed 
+	 * @param maximumMemory If a plan remains unused for maximumMemory iterations, it is removed.
+	 */
+	
+	public FFFGradualBoundedLogitPlanSelector(double beta,  double threshold, int maximumMemory) {
+		super(beta, threshold, maximumMemory);
 	}
 	
 	@Override

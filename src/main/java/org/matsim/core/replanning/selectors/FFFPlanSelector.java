@@ -23,8 +23,6 @@ package org.matsim.core.replanning.selectors;
 
 import java.util.Collections;
 
-import javax.inject.Inject;
-
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.population.BasicPlan;
 import org.matsim.api.core.v01.population.HasPlansAndId;
@@ -33,7 +31,6 @@ import org.matsim.api.core.v01.population.Plan;
 import org.matsim.core.gbl.Gbl;
 import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.population.FFFPlan;
-import org.matsim.core.replanning.ReplanningContext;
 
 /**
  * Changes to another plan if that plan is better.  Probability to change depends on score difference.
@@ -44,13 +41,15 @@ public abstract class FFFPlanSelector<T extends BasicPlan, I> implements PlanSel
 	private static final Logger log = Logger.getLogger(FFFPlanSelector.class);
 
 	protected final double beta;
-	protected final double inertia;
+	// protected final double inertia;
 	protected final double threshold;
 	protected final int maximumMemory;
 
-	public FFFPlanSelector(double beta, double inertia, double threshold, int maximumMemory) {
+	public FFFPlanSelector(double beta, double threshold, int maximumMemory 
+		//	, double inertia
+			) {
 		this.beta = beta;
-		this.inertia = inertia;
+		// this.inertia = inertia;
 		this.threshold = threshold;
 		this.maximumMemory = maximumMemory;
 	}

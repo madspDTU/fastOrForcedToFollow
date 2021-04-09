@@ -41,8 +41,8 @@ import fastOrForcedToFollow.Sublink;
 import fastOrForcedToFollow.configgroups.FFFConfigGroup;
 
 import javax.inject.Inject;
-abstract class AbstractMadsQNetworkFactory implements QNetworkFactory {
-	private static final Logger log = Logger.getLogger( AbstractMadsQNetworkFactory.class ) ;
+abstract class AbstractFFFQNetworkFactory implements QNetworkFactory {
+	private static final Logger log = Logger.getLogger( AbstractFFFQNetworkFactory.class ) ;
 
 	private EventsManager events ;
 	protected Scenario scenario ;
@@ -51,7 +51,7 @@ abstract class AbstractMadsQNetworkFactory implements QNetworkFactory {
 	protected NetsimInternalInterface netsimEngine ;
 	protected FFFConfigGroup fffConfig;
 	
-	@Inject AbstractMadsQNetworkFactory( EventsManager events, Scenario scenario ) {
+	@Inject AbstractFFFQNetworkFactory( EventsManager events, Scenario scenario ) {
 		this.events = events;
 		this.scenario = scenario;
 		this.fffConfig = ConfigUtils.addOrGetModule(scenario.getConfig(), FFFConfigGroup.class);

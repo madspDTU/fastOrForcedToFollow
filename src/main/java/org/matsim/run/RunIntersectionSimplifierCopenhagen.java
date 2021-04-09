@@ -94,7 +94,7 @@ public class RunIntersectionSimplifierCopenhagen {
 		
 		
 
-		RunMatsim.cleanBicycleNetwork(network, ConfigUtils.createConfig());
+		NetworkCleaningUtils.cleanBicycleNetwork(network, ConfigUtils.createConfig());
 	//	LOG.info("\n\n\n\nNetwork statistics after links cleaning...");	
 	//  MyIntersectionSimplifier.reportNetworkStatistics(network);
 

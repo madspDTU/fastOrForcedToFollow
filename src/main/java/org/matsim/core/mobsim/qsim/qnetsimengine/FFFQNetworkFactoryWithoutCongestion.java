@@ -67,12 +67,12 @@ import javax.inject.Inject;
  * 
  * @see ConfigurableQNetworkFactory
  */
-public class MadsQNetworkFactoryWithoutCongestion extends AbstractMadsQNetworkFactory {
-	@Inject MadsQNetworkFactoryWithoutCongestion(EventsManager events, Scenario scenario) {
+public class FFFQNetworkFactoryWithoutCongestion extends AbstractFFFQNetworkFactory {
+	@Inject FFFQNetworkFactoryWithoutCongestion(EventsManager events, Scenario scenario) {
 		super(events, scenario);
 	}
 
-	private static final Logger log = Logger.getLogger( MadsQNetworkFactoryWithoutCongestion.class ) ;
+	private static final Logger log = Logger.getLogger( FFFQNetworkFactoryWithoutCongestion.class ) ;
 
 	@Override
 	public QLinkI createNetsimLink(final Link link, final QNodeI toQueueNode) {

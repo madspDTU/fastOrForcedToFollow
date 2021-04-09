@@ -4,7 +4,7 @@ import org.matsim.api.core.v01.TransportMode;
 import org.matsim.vehicles.Vehicle;
 import org.matsim.vehicles.VehicleUtils;
 
-public final class MadsQVehicleFactory implements QVehicleFactory {
+public final class FFFQVehicleFactory implements QVehicleFactory {
 	
     @Override public QVehicle createQVehicle( Vehicle vehicle ){
     

@@ -26,6 +26,7 @@ import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.population.io.PopulationReader;
 import org.matsim.core.scenario.ScenarioUtils;
 
+import fastOrForcedToFollow.FFFUtils;
 import fastOrForcedToFollow.configgroups.FFFConfigGroup;
 
 public class TestCopenhagenNetwork {
@@ -170,7 +171,7 @@ public class TestCopenhagenNetwork {
 		String dir = "/zhome/81/e/64390/MATSim/DTA2020/input/";
 		PopulationReader bicycleReader = new PopulationReader(bicycleScenario);
 		bicycleReader.readFile(dir + "BicyclePlans_CPH_Full.xml.gz");
-		RunMatsim.addCyclistAttributes(bicycleConfig, bicycleScenario);
+		FFFUtils.addCyclistAttributes(bicycleScenario);
 		PopulationWriter bicycleWriter = new PopulationWriter(bicycleScenario.getPopulation());
 		bicycleWriter.write(dir + "BicyclePlans_CPH_Full.xml.gz");
 		Population bicyclePop = bicycleScenario.getPopulation();

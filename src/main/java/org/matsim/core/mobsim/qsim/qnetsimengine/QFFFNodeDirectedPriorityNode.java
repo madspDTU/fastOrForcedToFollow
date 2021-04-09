@@ -380,14 +380,12 @@ public class QFFFNodeDirectedPriorityNode extends QFFFNodeWithLeftBuffer {
 			if(simulateCars) {
 				//5 ) straight or right moves from secondary for cars
 				for(int count = 0; count < n; count++){
-					//TODO: Is this the correct timeoutModifier to use here???
 					int direction = secondaryInLinkOrder.get(i);
 					straightOrRightTurnCarMove(direction, now, nowishCar, nowishCar2, conflictingMovesData); // left turns handled below
 					i = QFFFNodeUtils.increaseInt(i, n);
 				}
 				//6 ) left turn moves for cars from secondary
 				for(int count = 0; count < n; count++){
-					//TODO: Is this the correct timeoutModifier to use here???
 					int direction = secondaryInLinkOrder.get(i);
 					leftTurnCarMove(direction, now, nowishCar, nowishCar2, conflictingMovesData); // includes step-wise left turns
 					i = QFFFNodeUtils.increaseInt(i, n);

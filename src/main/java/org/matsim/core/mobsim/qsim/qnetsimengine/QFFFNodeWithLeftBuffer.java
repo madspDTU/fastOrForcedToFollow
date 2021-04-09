@@ -29,11 +29,13 @@ public abstract class QFFFNodeWithLeftBuffer extends QFFFAbstractNode {
 				}
 			}
 		}
-	
+
+		
+		//Everything that is not the shortest possible right turn (from i to i+)....
+		// QFFNodeDirectedPriorityNode overwrites this class....
 		public boolean isCarLeftTurn(Id<Link> fromLink, int outDirection) {
 			int inDirection = carInTransformations.get(fromLink) + 1;
-			//int outDirection = carOutTransformations.get(toLink);
-	
+			
 			if(inDirection == carInLinks.length) {
 				return outDirection != 0;
 			} else {

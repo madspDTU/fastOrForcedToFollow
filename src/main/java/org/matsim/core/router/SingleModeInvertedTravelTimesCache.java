@@ -24,7 +24,7 @@
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.matsim.core.router.MyLinkToLinkRouting.FFFTravelTimesInvertedNetworkProxy;
+import org.matsim.core.router.FFFLinkToLinkRouting.FFFTravelTimesInvertedNetworkProxy;
 
 public class SingleModeInvertedTravelTimesCache {
 

@@ -51,10 +51,10 @@ import org.matsim.vehicles.Vehicle;
 
 import com.google.inject.name.Named;
 
-public class MyLinkToLinkRouting
+public class FFFLinkToLinkRouting
     implements Provider<RoutingModule>
 {
-	private static final Logger log = Logger.getLogger( MyLinkToLinkRouting.class ) ;
+	private static final Logger log = Logger.getLogger( FFFLinkToLinkRouting.class ) ;
     private final String mode;
 
     @Inject PopulationFactory populationFactory;
@@ -73,7 +73,7 @@ public class MyLinkToLinkRouting
 	
 	
 
-    public MyLinkToLinkRouting(String mode)
+    public FFFLinkToLinkRouting(String mode)
     {
         this.mode = mode;
     }
@@ -134,7 +134,7 @@ public class MyLinkToLinkRouting
 				Gbl.assertIf(linkMode.equals(this.mode));
 			}
 		}
-        return new MyLinkToLinkRoutingModule(mode, populationFactory, filteredNetwork,
+        return new FFFLinkToLinkRoutingModule(mode, populationFactory, filteredNetwork,
                 leastCostPathCalcFactory, travelDisutility,  invertedTravelTimes, invertedNetwork,
                 scenario, walkRouter);
     }

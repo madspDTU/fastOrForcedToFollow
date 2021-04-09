@@ -44,7 +44,7 @@ import org.matsim.core.replanning.strategies.FFFReRouteProvider;
 import org.matsim.core.router.DesiredSpeedBicycleDijkstraFactory;
 import org.matsim.core.router.DesiredSpeedBicycleFastAStarLandmarksFactory;
 import org.matsim.core.router.DesiredSpeedBicycleFastDijkstraFactory;
-import org.matsim.core.router.MyLinkToLinkRouting;
+import org.matsim.core.router.FFFLinkToLinkRouting;
 import org.matsim.core.router.NetworkRoutingProviderWithCleaning;
 import org.matsim.core.router.SingleModeInvertedNetworksCache;
 import org.matsim.core.router.SingleModeInvertedTravelTimesCache;
@@ -271,14 +271,14 @@ public class FFFUtils {
 				for(String mode : networkModes){
 					addTravelDisutilityFactoryBinding(mode).toInstance( new FFFTravelDisutilityFactory( mode, getConfig() ) );
 					if(getConfig().controler().isLinkToLinkRoutingEnabled()){
-						this.addRoutingModuleBinding(mode).toProvider(new MyLinkToLinkRouting(mode));
+						this.addRoutingModuleBinding(mode).toProvider(new FFFLinkToLinkRouting(mode));
 					} else {
 						this.addRoutingModuleBinding(mode).toProvider(new NetworkRoutingProviderWithCleaning(mode));
 					}
 				}
 
 
-				// If link-to-link routing is enabled, adjusting the traveltimecalculators, so that they become pessimistic
+				// Adjusting the traveltimecalculators, so that they can become pessimistic and can work without using linkLeaveEvents. 
 				{
 					// bind the TravelTimeCalculator, which is the observer and aggregator:
 					//	bind(FFFTravelTimeCalculator.class).in(Singleton.class);

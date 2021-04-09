@@ -2,9 +2,9 @@ package fastOrForcedToFollow;
 
 import java.util.LinkedList;
 
-import org.matsim.core.mobsim.qsim.qnetsimengine.QVehicle;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QCycleAndMoveType;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QFFFNode.MoveType;
+import org.matsim.core.mobsim.qsim.qnetsimengine.QVehicle;
 
 public class SublinkWithTwoInteractingBuffers extends Sublink {
 

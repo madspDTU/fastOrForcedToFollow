@@ -7,7 +7,6 @@ import org.matsim.api.core.v01.network.Network;
 import org.matsim.core.api.experimental.events.EventsManager;
 import org.matsim.core.config.groups.TravelTimeCalculatorConfigGroup;
 import org.matsim.core.config.groups.TravelTimeCalculatorConfigGroup.TravelTimeCalculatorType;
-import org.matsim.core.utils.collections.CollectionUtils;
 
 import fastOrForcedToFollow.configgroups.FFFNodeConfigGroup;
 

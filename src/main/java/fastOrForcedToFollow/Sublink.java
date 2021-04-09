@@ -1,19 +1,15 @@
 package fastOrForcedToFollow;
 
 
+import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.PriorityQueue;
+
 import org.matsim.core.gbl.Gbl;
 import org.matsim.core.mobsim.qsim.qnetsimengine.HasLeftBufferTime;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QCycle;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QCycleAndMoveType;
-import org.matsim.core.mobsim.qsim.qnetsimengine.QFFFNode.MoveType;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QVehicle;
-import org.matsim.core.mobsim.qsim.qnetsimengine.QVehicleAndMoveType;
-
-import fastOrForcedToFollow.configgroups.FFFConfigGroup;
-
-import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.PriorityQueue;
 
 /**
  * 

@@ -2,18 +2,12 @@ package org.matsim.core.mobsim.qsim.qnetsimengine;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.TreeMap;
 
-import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
-import org.matsim.core.mobsim.qsim.qnetsimengine.QLaneI;
-import org.matsim.core.mobsim.qsim.qnetsimengine.QLinkI;
-import org.matsim.core.mobsim.qsim.qnetsimengine.QNetwork;
 
 import fastOrForcedToFollow.timeoutmodifiers.ConflictingMovesData;
 

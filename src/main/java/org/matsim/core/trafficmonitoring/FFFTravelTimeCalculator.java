@@ -19,31 +19,6 @@
  * *********************************************************************** */
 package org.matsim.core.trafficmonitoring;
 
-import com.google.inject.Inject;
-
-import fastOrForcedToFollow.configgroups.FFFNodeConfigGroup;
-
-import org.apache.log4j.Logger;
-import org.matsim.api.core.v01.Id;
-import org.matsim.api.core.v01.events.*;
-import org.matsim.api.core.v01.events.handler.*;
-import org.matsim.api.core.v01.network.Link;
-import org.matsim.api.core.v01.network.Network;
-import org.matsim.api.core.v01.population.Person;
-import org.matsim.core.api.experimental.events.EventsManager;
-import org.matsim.core.api.experimental.events.VehicleArrivesAtFacilityEvent;
-import org.matsim.core.api.experimental.events.handler.VehicleArrivesAtFacilityEventHandler;
-import org.matsim.core.config.Config;
-import org.matsim.core.config.ConfigUtils;
-import org.matsim.core.config.groups.TravelTimeCalculatorConfigGroup;
-import org.matsim.core.gbl.Gbl;
-import org.matsim.core.router.util.LinkToLinkTravelTime;
-import org.matsim.core.router.util.TravelTime;
-import org.matsim.core.utils.collections.CollectionUtils;
-import org.matsim.core.utils.collections.Tuple;
-import org.matsim.vehicles.Vehicle;
-import org.matsim.vehicles.VehicleType;
-
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
@@ -51,6 +26,33 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.inject.Provider;
+
+import org.apache.log4j.Logger;
+import org.matsim.api.core.v01.Id;
+import org.matsim.api.core.v01.events.LinkEnterEvent;
+import org.matsim.api.core.v01.events.LinkLeaveEvent;
+import org.matsim.api.core.v01.events.VehicleAbortsEvent;
+import org.matsim.api.core.v01.events.VehicleEntersTrafficEvent;
+import org.matsim.api.core.v01.events.VehicleLeavesTrafficEvent;
+import org.matsim.api.core.v01.events.handler.LinkEnterEventHandler;
+import org.matsim.api.core.v01.events.handler.LinkLeaveEventHandler;
+import org.matsim.api.core.v01.events.handler.VehicleAbortsEventHandler;
+import org.matsim.api.core.v01.events.handler.VehicleEntersTrafficEventHandler;
+import org.matsim.api.core.v01.events.handler.VehicleLeavesTrafficEventHandler;
+import org.matsim.api.core.v01.network.Link;
+import org.matsim.api.core.v01.network.Network;
+import org.matsim.api.core.v01.population.Person;
+import org.matsim.core.api.experimental.events.VehicleArrivesAtFacilityEvent;
+import org.matsim.core.api.experimental.events.handler.VehicleArrivesAtFacilityEventHandler;
+import org.matsim.core.config.groups.TravelTimeCalculatorConfigGroup;
+import org.matsim.core.gbl.Gbl;
+import org.matsim.core.router.util.LinkToLinkTravelTime;
+import org.matsim.core.router.util.TravelTime;
+import org.matsim.core.utils.collections.Tuple;
+import org.matsim.vehicles.Vehicle;
+import org.matsim.vehicles.VehicleType;
+
+import com.google.inject.Inject;
 
 /**
  * Calculates actual travel times on link from events and optionally also the

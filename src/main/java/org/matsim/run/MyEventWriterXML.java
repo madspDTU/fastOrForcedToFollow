@@ -20,14 +20,6 @@
 
 package org.matsim.run;
 
-import org.matsim.api.core.v01.events.Event;
-import org.matsim.api.core.v01.events.PersonEntersVehicleEvent;
-import org.matsim.api.core.v01.events.PersonLeavesVehicleEvent;
-import org.matsim.core.events.algorithms.EventWriter;
-import org.matsim.core.events.handler.BasicEventHandler;
-import org.matsim.core.utils.io.IOUtils;
-import org.matsim.core.utils.io.UncheckedIOException;
-
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -35,6 +27,14 @@ import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Map;
+
+import org.matsim.api.core.v01.events.Event;
+import org.matsim.api.core.v01.events.PersonEntersVehicleEvent;
+import org.matsim.api.core.v01.events.PersonLeavesVehicleEvent;
+import org.matsim.core.events.algorithms.EventWriter;
+import org.matsim.core.events.handler.BasicEventHandler;
+import org.matsim.core.utils.io.IOUtils;
+import org.matsim.core.utils.io.UncheckedIOException;
 
 public class MyEventWriterXML implements EventWriter, BasicEventHandler {
 	private final BufferedWriter out;

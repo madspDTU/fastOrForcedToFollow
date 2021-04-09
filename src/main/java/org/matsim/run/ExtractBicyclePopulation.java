@@ -1,6 +1,5 @@
 package org.matsim.run;
 
-import java.util.LinkedList;
 import java.util.Random;
 
 import org.matsim.api.core.v01.Coord;
@@ -20,7 +19,6 @@ import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.population.io.PopulationReader;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.facilities.ActivityFacilities;
-import org.matsim.facilities.ActivityFacility;
 import org.matsim.facilities.MatsimFacilitiesReader;
 
 public class ExtractBicyclePopulation {

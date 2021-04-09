@@ -2,6 +2,7 @@ package org.matsim.run;
 
 import java.util.Arrays;
 import java.util.HashSet;
+
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.population.Activity;
@@ -17,7 +18,6 @@ import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.population.PopulationUtils;
 import org.matsim.core.population.io.PopulationReader;
 import org.matsim.core.scenario.ScenarioUtils;
-import org.matsim.facilities.ActivityFacilities;
 
 public class ExtractCertainModesPlansFile {
 

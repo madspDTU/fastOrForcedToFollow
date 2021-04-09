@@ -39,15 +39,13 @@ import org.matsim.api.core.v01.population.Plan;
 import org.matsim.api.core.v01.population.Population;
 import org.matsim.api.core.v01.population.PopulationFactory;
 import org.matsim.core.config.Config;
-import org.matsim.core.config.ConfigUtils;
-import org.matsim.core.config.groups.PlanCalcScoreConfigGroup;
 import org.matsim.core.config.groups.FacilitiesConfigGroup.FacilitiesSource;
+import org.matsim.core.config.groups.PlanCalcScoreConfigGroup;
 import org.matsim.core.controler.Controler;
 import org.matsim.core.scenario.ScenarioUtils;
 import org.matsim.vehicles.VehicleType;
 
 import fastOrForcedToFollow.FFFUtils;
-import fastOrForcedToFollow.configgroups.FFFConfigGroup;
 import fastOrForcedToFollow.configgroups.FFFScoringConfigGroup.PlanSelectorType;
 
 /**

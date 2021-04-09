@@ -1,8 +1,6 @@
 package fastOrForcedToFollow;
 
 import org.apache.log4j.Logger;
-import org.matsim.core.gbl.Gbl;
-import org.matsim.core.mobsim.qsim.qnetsimengine.QCycleLane;
 
 /**
  * 

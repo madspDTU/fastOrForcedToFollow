@@ -1,16 +1,15 @@
 package org.matsim.core.mobsim.qsim.qnetsimengine;
 
-import fastOrForcedToFollow.Cyclist;
-import fastOrForcedToFollow.Sublink;
-import fastOrForcedToFollow.configgroups.FFFConfigGroup;
-
 import org.apache.log4j.Logger;
-import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.core.mobsim.qsim.qnetsimengine.AbstractQLink.QLinkInternalInterface;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QFFFNode.MoveType;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QLinkImpl.LaneFactory;
+
+import fastOrForcedToFollow.Cyclist;
+import fastOrForcedToFollow.Sublink;
+import fastOrForcedToFollow.configgroups.FFFConfigGroup;
 
 class QCycleLaneWithSublinks extends QCycleLane{
 	private static final Logger log = Logger.getLogger( QCycleLaneWithSublinks.class ) ;

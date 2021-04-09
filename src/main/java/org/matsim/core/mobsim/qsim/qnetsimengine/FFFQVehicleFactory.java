@@ -2,7 +2,6 @@ package org.matsim.core.mobsim.qsim.qnetsimengine;
 
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.vehicles.Vehicle;
-import org.matsim.vehicles.VehicleUtils;
 
 public final class FFFQVehicleFactory implements QVehicleFactory {
 	

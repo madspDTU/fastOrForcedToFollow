@@ -1,15 +1,15 @@
 package org.matsim.core.mobsim.qsim.qnetsimengine;
 
-import fastOrForcedToFollow.Cyclist;
-import fastOrForcedToFollow.Sublink;
-import fastOrForcedToFollow.configgroups.FFFConfigGroup;
+import java.util.PriorityQueue;
 
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QLinkImpl.LaneFactory;
 
-import java.util.PriorityQueue;
+import fastOrForcedToFollow.Cyclist;
+import fastOrForcedToFollow.Sublink;
+import fastOrForcedToFollow.configgroups.FFFConfigGroup;
 
 class QCycleLaneWithoutCongestion extends QCycleLane{
 	private static final Logger log = Logger.getLogger( QCycleLaneWithoutCongestion.class ) ;

@@ -1,30 +1,23 @@
 package org.matsim.core.mobsim.qsim.qnetsimengine;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Queue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Id;
-import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.events.PersonStuckEvent;
 import org.matsim.api.core.v01.events.VehicleAbortsEvent;
 import org.matsim.api.core.v01.network.Link;
-import org.matsim.core.gbl.Gbl;
 import org.matsim.core.mobsim.qsim.interfaces.MobsimVehicle;
 import org.matsim.core.mobsim.qsim.qnetsimengine.AbstractQLink.QLinkInternalInterface;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QFFFNode.MoveType;
-import org.matsim.core.mobsim.qsim.qnetsimengine.QLaneI.VisData;
-import org.matsim.core.mobsim.qsim.qnetsimengine.QLinkImpl.LaneFactory;
 import org.matsim.lanes.Lane;
 import org.matsim.vehicles.Vehicle;
 
 import fastOrForcedToFollow.Cyclist;
 import fastOrForcedToFollow.Sublink;
 import fastOrForcedToFollow.SublinkWithTwoInteractingBuffers;
-import fastOrForcedToFollow.configgroups.FFFConfigGroup;
 
 public abstract class QCycleLane implements QLaneI {
 

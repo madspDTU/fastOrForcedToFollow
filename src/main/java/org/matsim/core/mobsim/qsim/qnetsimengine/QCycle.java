@@ -1,7 +1,6 @@
 package org.matsim.core.mobsim.qsim.qnetsimengine;
 
-import fastOrForcedToFollow.Cyclist;
-import fastOrForcedToFollow.configgroups.FFFConfigGroup;
+import java.util.Collection;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.TransportMode;
@@ -15,7 +14,8 @@ import org.matsim.vehicles.Vehicle;
 import org.matsim.vehicles.VehicleType;
 import org.matsim.vehicles.VehicleUtils;
 
-import java.util.Collection;
+import fastOrForcedToFollow.Cyclist;
+import fastOrForcedToFollow.configgroups.FFFConfigGroup;
 
 /**
  * The {@link this.qVehicle} is the thing that is passed from one link through the other, via {@link QNodeI}.  (The cycle plugin here replaces only

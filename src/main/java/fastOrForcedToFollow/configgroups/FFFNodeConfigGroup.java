@@ -3,8 +3,6 @@ package fastOrForcedToFollow.configgroups;
 import java.util.HashMap;
 
 import org.matsim.core.config.ReflectiveConfigGroup;
-import org.matsim.core.config.ReflectiveConfigGroup.StringGetter;
-import org.matsim.core.mobsim.qsim.qnetsimengine.QFFFAbstractNode;
 
 public class FFFNodeConfigGroup extends ReflectiveConfigGroup {
 

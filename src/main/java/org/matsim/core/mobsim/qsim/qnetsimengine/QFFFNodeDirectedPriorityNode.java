@@ -10,11 +10,8 @@ import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.core.gbl.Gbl;
-import org.matsim.core.mobsim.qsim.qnetsimengine.QFFFNode.MoveType;
 
 import fastOrForcedToFollow.timeoutmodifiers.ConflictingMovesData;
-import fastOrForcedToFollow.timeoutmodifiers.ConflictingMovesData.Element;
-import fastOrForcedToFollow.timeoutmodifiers.ConflictingMovesData.ModeIdentifier;
 import fastOrForcedToFollow.timeoutmodifiers.TimeoutModifier;
 
 public class QFFFNodeDirectedPriorityNode extends QFFFNodeWithLeftBuffer {

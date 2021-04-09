@@ -20,18 +20,13 @@
 
 package org.matsim.core.router;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import org.matsim.api.core.v01.TransportMode;
-import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
-import org.matsim.core.config.Config;
-import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.GlobalConfigGroup;
 import org.matsim.core.gbl.Gbl;
 import org.matsim.core.router.util.ArrayRoutingNetworkFactory;
@@ -43,9 +38,6 @@ import org.matsim.core.router.util.RoutingNetworkFactory;
 import org.matsim.core.router.util.RoutingNetworkNode;
 import org.matsim.core.router.util.TravelDisutility;
 import org.matsim.core.router.util.TravelTime;
-
-import fastOrForcedToFollow.configgroups.FFFConfigGroup;
-import fastOrForcedToFollow.configgroups.FFFScoringConfigGroup;
 
 @Singleton
 public class DesiredSpeedBicycleFastAStarLandmarksFactory implements LeastCostPathCalculatorFactory {

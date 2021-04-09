@@ -85,7 +85,31 @@ This section contains further technical details.
 
 ##### Simulating bicycle traffic along links
 
-See also [Paulsen et al. (2019)](#PaulsenFFF).
+The FFF simulation model overrules the standard way of simulating vehicles across links.
+In order to potentially allow cars to be simulated normally alongside, separate links are created to handle the bicycle traffic. 
+For these links, the buffers are changed so that the simulation happens in the `sublink`-class instead of the traditional `QueueWithBuffer`. Because the methodology is sensitive to the link length, links longer than some distance (default 60m) are split into multiple `sublink`s.
+
+Furthermore, as each cyclist has unique parameters that determine the desired speed and headway preferences of that cyclist, the traditional `QVehicle` is not sufficient, why the extended `QCycle` is used instead.
+A `QCycle` is a `QVehicle` but further has a `Cyclist` that holds the parameters of the agent. 
+
+
+The FFF simulation model is installed by replacing the `QNetworkFactory` and the `QVehicleFactory` with an implementation of `AbstractFFFQNetworkFactory` and the `FFFQVehicleFactory`:
+
+```
+controler.addOverridingQSimModule(new AbstractQSimModule() {
+			@Override
+			protected void configureQSim() {
+				this.bind( QNetworkFactory.class ).to( DefaultFFFQNetworkFactory.class );
+				this.bind( QVehicleFactory.class ).to( FFFQVehicleFactory.class ) ;
+			}
+		});
+```
+
+Also included in the code is a method `prepareSimulationForFFF` which samples `Cyclist` attributes to each agent according to the distributions estimated in [Paulsen et al. (2019)](#PaulsenFFF). 
+Parameters can be adjusted for other populations with for instance lower average speeds if needed. 
+Implementing parameters being sampled from other distributions is not included in the code, but can be implemented more or less straightforwardly. 
+
+
 
 ##### Dealing with right-of-way at intersections
 

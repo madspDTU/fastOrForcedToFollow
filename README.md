@@ -1,8 +1,6 @@
 # Fast or Forced to Follow - A mesoscopic simulation framework for handling speed heterogeneous multi-lane bicycle traffic :bicyclist:
 Fast or Forced to Follow (FFF) is a simulation framework for MATSim [(Horni et al., 2016)](#MATSim).
 
-The theoretic foundation for the contribution is documented in  [Paulsen et al. (2019)](#PaulsenFFF); [Paulsen & Nagel (2019)](#PaulsenNagel); [Paulsen et al. (2021)](#PaulsenRoW). 
-
 The framework was developed during the PhD project *Mesoscopic Simulation of Multi-Modal Urban Traffic* at Technical University of Denmark [(Paulsen, 2020)](#PhD)
 
 

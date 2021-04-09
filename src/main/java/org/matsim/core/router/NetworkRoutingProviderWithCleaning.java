@@ -8,15 +8,11 @@ import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Provider;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
-import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.population.PopulationFactory;
-import org.matsim.core.config.ConfigUtils;
-import org.matsim.core.config.groups.GlobalConfigGroup;
 import org.matsim.core.config.groups.PlansCalcRouteConfigGroup;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.algorithms.NetworkCleaner;
@@ -27,9 +23,6 @@ import org.matsim.core.router.util.LeastCostPathCalculatorFactory;
 import org.matsim.core.router.util.TravelTime;
 
 import com.google.inject.name.Named;
-
-import fastOrForcedToFollow.configgroups.FFFConfigGroup;
-import fastOrForcedToFollow.configgroups.FFFScoringConfigGroup;
 
 public class NetworkRoutingProviderWithCleaning implements Provider<RoutingModule> {
 	private static final Logger log = Logger.getLogger( NetworkRoutingProviderWithCleaning.class ) ;

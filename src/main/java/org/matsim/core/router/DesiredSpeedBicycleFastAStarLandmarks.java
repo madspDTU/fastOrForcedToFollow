@@ -2,23 +2,18 @@ package org.matsim.core.router;
 
 import org.matsim.api.core.v01.Id;
 import org.matsim.api.core.v01.TransportMode;
-import org.matsim.api.core.v01.network.Link;
-import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.network.Node;
 import org.matsim.api.core.v01.population.Person;
-import org.matsim.core.config.groups.GlobalConfigGroup;
 import org.matsim.core.gbl.Gbl;
-import org.matsim.core.router.util.*;
+import org.matsim.core.router.util.PreProcessLandmarks;
+import org.matsim.core.router.util.RoutingNetwork;
+import org.matsim.core.router.util.TravelDisutility;
+import org.matsim.core.router.util.TravelTime;
 import org.matsim.vehicles.Vehicle;
 import org.matsim.vehicles.VehicleType;
 import org.matsim.vehicles.VehicleUtils;
 
 import fastOrForcedToFollow.configgroups.FFFConfigGroup;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.util.HashMap;
-import java.util.Map;
 
 public class DesiredSpeedBicycleFastAStarLandmarks extends FastAStarLandmarks {
 

@@ -3,7 +3,6 @@ package fastOrForcedToFollow.configgroups;
 import java.util.Map;
 
 import org.matsim.core.config.ReflectiveConfigGroup;
-import org.matsim.core.config.ReflectiveConfigGroup.StringGetter;
 
 import fastOrForcedToFollow.scoring.FFFModeUtilityParameters;
 import fastOrForcedToFollow.scoring.FFFScoringParameters;

@@ -19,23 +19,18 @@
 
 package org.matsim.core.replanning.strategies;
 
-import org.matsim.api.core.v01.population.Person;
-import org.matsim.api.core.v01.population.Plan;
-import org.matsim.core.config.groups.PlanCalcScoreConfigGroup;
-import org.matsim.core.replanning.FFFPlanStrategyImpl;
+import javax.inject.Inject;
+import javax.inject.Provider;
+
 import org.matsim.core.replanning.PlanStrategy;
 import org.matsim.core.replanning.PlanStrategyImpl;
 import org.matsim.core.replanning.PlanStrategyImpl.Builder;
-import org.matsim.core.replanning.selectors.ExpBetaPlanChanger;
 import org.matsim.core.replanning.selectors.FFFBestBoundedPlanSelector;
 import org.matsim.core.replanning.selectors.FFFBoundedLogitPlanSelector;
 import org.matsim.core.replanning.selectors.FFFGradualBoundedLogitPlanSelector;
 import org.matsim.core.replanning.selectors.FFFPlanSelector;
 
 import fastOrForcedToFollow.configgroups.FFFScoringConfigGroup;
-
-import javax.inject.Inject;
-import javax.inject.Provider;
 
 public class FFFPlanSelectorProvider implements Provider<PlanStrategy> {
 	

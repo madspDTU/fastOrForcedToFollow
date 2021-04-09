@@ -18,18 +18,16 @@
  * *********************************************************************** */
 package org.matsim.core.replanning;
 
+import java.util.ArrayList;
+
 import org.apache.log4j.Logger;
 import org.matsim.api.core.v01.population.BasicPlan;
 import org.matsim.api.core.v01.population.HasPlansAndId;
 import org.matsim.api.core.v01.population.Plan;
 import org.matsim.core.population.FFFPlan;
-import org.matsim.core.replanning.GenericStrategyManager.StrategyWeights;
 import org.matsim.core.replanning.modules.GenericPlanStrategyModule;
-import org.matsim.core.replanning.selectors.FFFPlanSelector;
 import org.matsim.core.replanning.selectors.PlanSelector;
 import org.matsim.core.replanning.selectors.RandomUnscoredPlanSelector;
-
-import java.util.ArrayList;
 
 /**
  * @author nagel

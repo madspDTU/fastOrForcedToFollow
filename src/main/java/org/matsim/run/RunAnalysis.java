@@ -1,9 +1,6 @@
 package org.matsim.run;
 
 import java.io.IOException;
-import java.util.Arrays;
-
-import org.matsim.api.core.v01.TransportMode;
 
 public class RunAnalysis {
 

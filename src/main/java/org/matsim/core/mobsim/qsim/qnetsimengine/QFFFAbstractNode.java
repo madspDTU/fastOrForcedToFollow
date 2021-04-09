@@ -12,18 +12,13 @@ import org.matsim.api.core.v01.Scenario;
 import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Link;
 import org.matsim.api.core.v01.network.Node;
-import org.matsim.core.gbl.Gbl;
 import org.matsim.core.gbl.MatsimRandom;
 import org.matsim.core.mobsim.qsim.qnetsimengine.QFFFNode.MoveType;
-import org.matsim.core.mobsim.qsim.qnetsimengine.QLaneI;
-import org.matsim.core.mobsim.qsim.qnetsimengine.QLinkI;
-import org.matsim.core.mobsim.qsim.qnetsimengine.QNetwork;
-import org.matsim.core.mobsim.qsim.qnetsimengine.QVehicle;
 
 import fastOrForcedToFollow.timeoutmodifiers.ConflictingMovesData;
-import fastOrForcedToFollow.timeoutmodifiers.TimeoutModifier;
 import fastOrForcedToFollow.timeoutmodifiers.ConflictingMovesData.Element;
 import fastOrForcedToFollow.timeoutmodifiers.ConflictingMovesData.ModeIdentifier;
+import fastOrForcedToFollow.timeoutmodifiers.TimeoutModifier;
 
 public abstract class QFFFAbstractNode { //Interface or abstract
 

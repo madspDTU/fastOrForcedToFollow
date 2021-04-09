@@ -301,7 +301,7 @@ public class RunBicycleCopenhagen {
 		if (carsAreSomehowIncluded || enforceSameNetworkAcrossModeScenarios ) { // We need to use the same network across scenarios. 
 			config.network().setInputFile(inputBaseDir + "MATSimCopenhagenNetwork_WithBicycleInfrastructure" + intersectionSimplificationSuffix + ".xml.gz");
 		} else if (oneLane) {
-			config.network().setInputFile(inputBaseDir + "MATSimCopenhagenNetwork_BicyclesOnly_1Lane" + intersectionSimplificationSuffix + ".xml.gz");
+			config.network().setInputFile(inputBaseDir + "MATSimCopenhagenNetwork_BicyclesOnly_1Lane" + intersectionSimplificationSuffix + "_old.xml.gz");
 		} else {
 			config.network().setInputFile(inputBaseDir + "MATSimCopenhagenNetwork_BicyclesOnly" + intersectionSimplificationSuffix + ".xml.gz");
 		}

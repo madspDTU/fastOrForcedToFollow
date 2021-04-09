@@ -51,8 +51,7 @@ During the simulation, the model ensures that no conflicting moves can take plac
 For further details, the reader is guided towards [Paulsen et al. (2021)](#PaulsenRoW) which also contains results of large-scale experiments from Metroplitan Copenhagen. 
 
 
-## How to use it
-
+## Technical details about the Java code
 _DISCLAIMER_
 
 Unfortunately, it has not yet been possible to integrate the entire code properly in MATSim. 
@@ -64,7 +63,7 @@ To circumvent such changes, instead a lot of the classes used in the repository 
 `QueueWithBuffer` with only very few changes. 
 
 
-### How to run it
+### How to use it
 
 Any MATSim scenario can be setup to be valid for FFF simulation by running `FFFUtils.prepareScenarioForFFF(scenario)`. In theory, this should work with any scenario.
 

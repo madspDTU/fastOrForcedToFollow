@@ -1,186 +1,187 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.matsim</groupId>
-	<artifactId>matsim-code-examples</artifactId>
+	<artifactId>matsim-example-project</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 
-	<name>MATSim code example</name>
-	<description>MATSim code example</description>
+	<name>MATSim example project</name>
+	<description>MATSim example project</description>
 
-    <properties>
-        <kotlin.version>1.2.0</kotlin.version>
-    </properties>
+	<properties>
+		<!-- release -->
+		<matsim.version>13.0</matsim.version>
 
-    <repositories>
-      <!--Note that in general repositories are not transitive, so they need to be repeated at every level where needed.-->
+		<!-- smapshot -->
+		<!--<matsim.version>14.0-SNAPSHOT</matsim.version>-->
+
+		<!-- weekly release -->
+		<!--<matsim.version>14.0-2021w15-SNAPSHOT</matsim.version>-->
+
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<maven.compiler.source>11</maven.compiler.source>
+		<maven.compiler.target>11</maven.compiler.target>
+	</properties>
+
+	<repositories>
+	  <!--Note that in general repositories are not transitive, so they need to be repeated at every level where needed.-->
 		<repository>
 			<!-- Geotools is not on Maven central -->
 			<id>osgeo</id>
 			<name>Geotools repository</name>
-			<url>http://download.osgeo.org/webdav/geotools</url>
+			<!-- <url>http://download.osgeo.org/webdav/geotools</url> -->
+			<url>https://repo.osgeo.org/repository/release/</url>
 		</repository>
 		<repository>
-			<!-- For MATSim releases: -->
+			<!-- Repository for MATSim (MATSim is not on Maven central, releases and snapshots) -->
 			<id>matsim</id>
-			<url>https://dl.bintray.com/matsim/matsim</url>
+			<url>https://repo.matsim.org/repository/matsim</url>
 		</repository>
+		<!-- for dependencies of osm-network-reader -->
 		<repository>
-		  <!-- For MATSim monthly snapshots: -->
-		  <id>bintray-matsim-eth-matsim</id>
-		  <name>bintray</name>
-		  <url>https://dl.bintray.com/matsim-eth/matsim</url>
+			<id>topobyte</id>
+			<url>https://mvn.topobyte.de</url>
 		</repository>
- 		<repository>
-		  <!-- For MATSim snapshots: -->
-		  <id>ojo-snapshots</id>
-		  <url>http://oss.jfrog.org/libs-snapshot</url>
-		</repository>	
-	</repositories>	
+		<!-- for dependencies of osm-network-reader -->
+		<repository>
+			<id>slimjars</id>
+			<url>https://mvn.slimjars.com</url>
+		</repository>
+	</repositories>
 
 	<dependencies>
-
-		<!--MATSim core:-->
 		<dependency>
+			<!-- This is the matsim "core": -->
 			<groupId>org.matsim</groupId>
 			<artifactId>matsim</artifactId>
- 			<!--<version>0.11.0</version>-->
-			<!--<version>0.11.0-apr17</version>-->
-			<version>12.0-2020w14-SNAPSHOT</version>
-			<!--<version>0.11.0-2018w45</version>-->
+			<version>${matsim.version}</version>
 		</dependency>
 
 		<dependency>
-			<!-- (to get MatsimTestUtils) -->
+			<!-- Include the JUnit testing library.  Not transitive. -->
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.13.1</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<!--MATSim test infrastructure.  Not transitive.-->
 			<groupId>org.matsim</groupId>
 			<artifactId>matsim</artifactId>
 			<type>test-jar</type>
- 			<!--<version>0.11.0</version>-->
-			<!--<version>0.11.0-apr17</version>-->
-			<version>12.0-2020w14-SNAPSHOT</version>
+			<version>${matsim.version}</version>
 			<scope>test</scope>
 		</dependency>
 
-		<!--MATSim test infrastructure.  Not transitive.-->
+		<!--dependencies from here to where stated below are added as a service; they can be removed if you don't need them-->
+		<!--to get ExamplesUtils: -->
 		<dependency>
 			<groupId>org.matsim</groupId>
 			<artifactId>matsim-examples</artifactId>
- 			<!--<version>0.11.0</version>-->
-			<!--<version>0.11.0-apr17</version>-->
-			<version>12.0-2020w14-SNAPSHOT</version>
+			<version>${matsim.version}</version>
+<!--			<scope>test</scope>-->
+<!--			I think that having it in the "main" scope is acceptable for a "leaf" project, and makes life easier.  move the-->
+<!--			matsim-examples dependency into "test" scope if you want to make other projects dependent on your this project here. kai,-->
+<!--			jan'21-->
 		</dependency>
 
-		<!-- Include the JUnit testing library -->
+		<!--some contribs:-->
 		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.12</version>
-			<scope>test</scope>
+			<groupId>org.matsim.contrib</groupId>
+			<artifactId>minibus</artifactId>
+			<version>${matsim.version}</version>
 		</dependency>
-    </dependencies>
+		<dependency>
+			<groupId>org.matsim.contrib</groupId>
+			<artifactId>otfvis</artifactId>
+			<version>${matsim.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.matsim.contrib</groupId>
+			<artifactId>roadpricing</artifactId>
+			<version>${matsim.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.matsim.contrib</groupId>
+			<artifactId>taxi</artifactId>
+			<version>${matsim.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.matsim.contrib</groupId>
+			<artifactId>av</artifactId>
+			<version>${matsim.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.matsim.contrib</groupId>
+			<artifactId>freight</artifactId>
+			<version>${matsim.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.matsim.contrib</groupId>
+			<artifactId>bicycle</artifactId>
+			<version>${matsim.version}</version>
+		</dependency>
+		<!--Dependencies from where stated above to here are added as a service; they can be removed if you don't need them-->
+
+	</dependencies>
 
 	<build>
 		<plugins>
-            <plugin>
-			  <groupId>org.apache.maven.plugins</groupId>
-			  <artifactId>maven-eclipse-plugin</artifactId>
-			  <version>2.10</version>
-			  <configuration>
-			    <downloadSources>true</downloadSources>
-			    <downloadJavadocs>true</downloadJavadocs>
-			  </configuration>
+			<plugin>
+				<!-- This plugin makes source files and javadocs available inside eclipse.  In IntelliJ, this works without plugin.-->
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-eclipse-plugin</artifactId>
+				<version>2.10</version>
+				<configuration>
+					<downloadSources>true</downloadSources>
+					<downloadJavadocs>true</downloadJavadocs>
+				</configuration>
 			</plugin>
 			<plugin>
-				<artifactId>maven-assembly-plugin</artifactId>
-				<configuration>
-					<descriptorRefs>
-						<descriptorRef>jar-with-dependencies</descriptorRef>
-					</descriptorRefs>
-					<archive>
-						<manifest>
-							<mainClass>org.matsim.gui.MATSimGUI</mainClass>
-						</manifest>
-					</archive>
-				</configuration>
+<!--				The maven-shade-plugin replaces the maven-assembly-plugin to configure "mvn package". The assembly-plugin regularly-->
+<!--				creates problems when GeoTools are used, which the shade-plugin does not (see-->
+<!--				https://stackoverflow.com/questions/27429097/geotools-cannot-find-hsql-epsg-db-throws-error-nosuchauthoritycodeexception/27431381#27431381)-->
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>3.2.2</version>
 				<executions>
 					<execution>
-						<id>make-assembly</id>
 						<phase>package</phase>
 						<goals>
-							<goal>single</goal>
+							<goal>shade</goal>
 						</goals>
+						<configuration>
+							<outputFile>${project.basedir}/${project.build.finalName}.jar</outputFile>
+							<transformers>
+								<!-- The following sets the main class for the executable jar as you otherwise would with the assembly plugin -->
+								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+									<manifestEntries>
+										<Main-Class>org.matsim.gui.MATSimGUI</Main-Class>
+										<Specification-Vendor>org.matsim</Specification-Vendor>
+										<Implementation-Vendor>org.matsim</Implementation-Vendor>
+										<Implementation-Version>${project.version}</Implementation-Version>
+									</manifestEntries>
+								</transformer>
+								<!-- The following merges the various GeoTools META-INF/services files         -->
+								<transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+							</transformers>
+							<filters>
+								<filter>
+									<artifact>*:*</artifact>
+									<excludes>
+										<exclude>META-INF/*.RSA</exclude>
+										<exclude>META-INF/*.SF</exclude>
+										<exclude>META-INF/*.RSA</exclude>
+									</excludes>
+								</filter>
+							</filters>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
-                <executions>
-                    <execution>
-                        <id>compile</id>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>compile</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>testCompile</id>
-                        <phase>test-compile</phase>
-                        <goals>
-                            <goal>testCompile</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                    <showWarnings>false</showWarnings>
-                    <showDeprecation>false</showDeprecation>
-                    <encoding>UTF-8</encoding>
-                    <!-- configure initial and maximal memory for compiling -->
-                    <fork>true</fork>
-                    <meminitial>128m</meminitial>
-                    <maxmem>512m</maxmem>
-                    <compilerArguments>
-                        <Xmaxwarns>4000</Xmaxwarns>
-                        <Xmaxerrs>100</Xmaxerrs>
-                    </compilerArguments>
-                </configuration>
-            </plugin>
-        </plugins>
-		
+		</plugins>
 	</build>
-	<profiles>
-		<profile>
-			<id>release</id>
-			<build>
-				<defaultGoal>assembly:assembly</defaultGoal>
-				<pluginManagement>
-					<plugins>
-						<plugin>
-							<artifactId>maven-assembly-plugin</artifactId>
-							<configuration>
-								<descriptors>
-									<descriptor>src/main/assembly/assembly-release.xml</descriptor>
-								</descriptors>
-							</configuration>
-						</plugin>
-						<plugin>
-							<artifactId>maven-jar-plugin</artifactId>
-							<configuration>
-								<archive>
-									<manifest>
-										<addClasspath>true</addClasspath>
-										<classpathPrefix>libs/</classpathPrefix>
-									</manifest>
-								</archive>
-							</configuration>
-						</plugin>
-					</plugins>
-				</pluginManagement>
-			</build>
-		</profile>
-	</profiles>
 </project>

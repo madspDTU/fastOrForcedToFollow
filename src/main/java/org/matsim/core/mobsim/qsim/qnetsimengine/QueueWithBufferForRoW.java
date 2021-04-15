@@ -189,7 +189,7 @@ abstract class QueueWithBufferForRoW implements QLaneI, SignalizeableItem, HasLe
 	private final Queue<QueueWithBuffer.Hole> holes = new LinkedList<>();
 
 	/** the last time-step the front-most vehicle in the buffer was moved. Used for detecting dead-locks. */
-	protected double generalBufferLastMovedTime = Time.getUndefinedTime() ;
+	protected double generalBufferLastMovedTime = Double.NEGATIVE_INFINITY;
 
 	/**
 	 * The list of vehicles that have not yet reached the end of the link
@@ -287,7 +287,7 @@ abstract class QueueWithBufferForRoW implements QLaneI, SignalizeableItem, HasLe
 	private void addToBuffer(final QVehicle veh) {
 
 		double now = context.getSimTimer().getTimeOfDay() ;
-		flowcap_accumulate.addValue(-getFlowCapacityConsumptionInEquivalents(veh), now);
+		flowcap_accumulate.addValue(-getFlowCapacityConsumptionInEquivalents(veh, null, null), now);
 
 		Id<Link> nextLinkId = veh.getDriver().chooseNextLinkId();
 		QFFFAbstractNode toQNode = ((QFFFNode) this.qLink.getToNodeQ()).getQFFFAbstractNode();
@@ -899,7 +899,7 @@ abstract class QueueWithBufferForRoW implements QLaneI, SignalizeableItem, HasLe
 			break;
 		case kinematicWaves:
 			this.remainingHolesStorageCapacity -= veh.getSizeInEquivalents();
-			this.accumulatedInflowCap -= getFlowCapacityConsumptionInEquivalents(veh) ;
+			this.accumulatedInflowCap -= getFlowCapacityConsumptionInEquivalents(veh, null, null) ;
 			break;
 		default: throw new RuntimeException("The traffic dynamics "+context.qsimConfig.getTrafficDynamics()+" is not implemented yet.");
 		}
@@ -1073,9 +1073,9 @@ abstract class QueueWithBufferForRoW implements QLaneI, SignalizeableItem, HasLe
 		return usedStorageCapacity;
 	}
 
-	private double getFlowCapacityConsumptionInEquivalents(QVehicle vehicle) {
-		double flowEfficiency = flowEfficiencyCalculator.calculateFlowEfficiency(vehicle.getVehicle(), qLink.getLink());
-		return vehicle.getSizeInEquivalents() / flowEfficiency;
+	 private double getFlowCapacityConsumptionInEquivalents(QVehicle vehicle, QVehicle prevVehicle, Double timeDiff) {
+	        double flowEfficiency = flowEfficiencyCalculator.calculateFlowEfficiency(vehicle, prevVehicle, timeDiff, qLink.getLink(), id);
+	        return vehicle.getSizeInEquivalents() / flowEfficiency;
 	}
 
 	public boolean isGeneralBufferEmpty() {

@@ -14,6 +14,7 @@ import org.matsim.api.core.v01.TransportMode;
 import org.matsim.api.core.v01.network.Network;
 import org.matsim.api.core.v01.population.PopulationFactory;
 import org.matsim.core.config.groups.PlansCalcRouteConfigGroup;
+import org.matsim.core.config.groups.PlansCalcRouteConfigGroup.AccessEgressType;
 import org.matsim.core.network.NetworkUtils;
 import org.matsim.core.network.algorithms.NetworkCleaner;
 import org.matsim.core.network.algorithms.TransportModeNetworkFilter;
@@ -128,7 +129,8 @@ public class NetworkRoutingProviderWithCleaning implements Provider<RoutingModul
 		}
 
 		// the following again refers to the (transport)mode, since it will determine the mode of the leg on the network:
-		if ( plansCalcRouteConfigGroup.isInsertingAccessEgressWalk() ) {
+		if ( plansCalcRouteConfigGroup.getAccessEgressType() == AccessEgressType.accessEgressModeToLink || 
+				plansCalcRouteConfigGroup.getAccessEgressType() == AccessEgressType.accessEgressModeToLinkPlusTimeConstant){
 			RoutingModule router = walkRouter;
 			if (mode.equals(TransportMode.walk)) {
 				router = null;

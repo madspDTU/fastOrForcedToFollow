@@ -55,5 +55,11 @@ public class FFFScoringFunction implements ScoringFunction {
 	public void handleEvent(Event event) {
 		//Do nothing
 	}
+
+
+	@Override
+	public void addScore(double amount) {
+		// TODO Do nothing
+	}
 	
 }

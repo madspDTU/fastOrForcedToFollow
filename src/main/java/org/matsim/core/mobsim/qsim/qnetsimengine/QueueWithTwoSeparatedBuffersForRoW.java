@@ -18,7 +18,7 @@ import org.matsim.vehicles.Vehicle;
 public class QueueWithTwoSeparatedBuffersForRoW extends QueueWithBufferForRoW {
 
 	private final Queue<QVehicleAndMoveType> leftBuffer = new ConcurrentLinkedQueue<>() ;
-	private double leftBufferLastMovedTime = Time.getUndefinedTime() ;
+	private double leftBufferLastMovedTime = Double.NEGATIVE_INFINITY;
 
 	
 	public QueueWithTwoSeparatedBuffersForRoW(AbstractQLink.QLinkInternalInterface qlink, final VehicleQ<QVehicle> vehicleQueue, Id<Lane> laneId,

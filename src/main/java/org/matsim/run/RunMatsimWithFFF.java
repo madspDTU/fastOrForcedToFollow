@@ -30,6 +30,7 @@ import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.config.groups.ControlerConfigGroup.RoutingAlgorithmType;
 import org.matsim.core.config.groups.PlanCalcScoreConfigGroup.ModeParams;
+import org.matsim.core.config.groups.PlansCalcRouteConfigGroup.AccessEgressType;
 import org.matsim.core.config.groups.QSimConfigGroup;
 import org.matsim.core.config.groups.QSimConfigGroup.VehicleBehavior;
 import org.matsim.core.config.groups.StrategyConfigGroup.StrategySettings;
@@ -127,7 +128,7 @@ public class RunMatsimWithFFF {
 		}
 		config.qsim().setMainModes(networkModes);
 		config.plansCalcRoute().setNetworkModes(networkModes);
-		config.plansCalcRoute().setInsertingAccessEgressWalk(true);
+		config.plansCalcRoute().setAccessEgressType(AccessEgressType.accessEgressModeToLink);
 		//	config.plansCalcRoute().setInsertingAccessEgressWalk(false); // TODO MIGHT HAVE TO DELETE THIS.
 		config.travelTimeCalculator().setAnalyzedModes(new HashSet<String>(networkModes)); //To avoid warning
 

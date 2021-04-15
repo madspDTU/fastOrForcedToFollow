@@ -173,7 +173,7 @@ public class QueueWithTwoInteractingBuffersForRoW extends QueueWithBufferForRoW 
 		
 		protected LeftBufferWithCapacity(double capacity) {
 			this.Q = new ConcurrentLinkedQueue<>();
-			this.lastTimeMoved = Time.getUndefinedTime();
+			this.lastTimeMoved = Double.NEGATIVE_INFINITY;
 			this.capacity = capacity;
 			this.currentSize = 0;
 		}

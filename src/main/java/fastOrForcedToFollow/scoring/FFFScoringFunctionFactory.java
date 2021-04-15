@@ -7,7 +7,6 @@ import org.matsim.core.config.Config;
 import org.matsim.core.config.ConfigUtils;
 import org.matsim.core.scoring.ScoringFunction;
 import org.matsim.core.scoring.ScoringFunctionFactory;
-import org.matsim.core.utils.misc.Time;
 
 import com.google.inject.Inject;
 
@@ -32,16 +31,16 @@ public class FFFScoringFunctionFactory implements ScoringFunctionFactory {
 		this.params = fffScoringConfig.getMyScoringParameters();
 		this.network = network;
 		
-		if(Time.isUndefinedTime(config.qsim().getStartTime()) || Double.isInfinite(config.qsim().getStartTime())) {
+		if(config.qsim().getStartTime().isUndefined() || Double.isInfinite(config.qsim().getStartTime().seconds())) {
 			this.simulationStartTime = 0.;
 		} else {
-			this.simulationStartTime = config.qsim().getStartTime();
+			this.simulationStartTime = config.qsim().getStartTime().seconds();
 		}
 		
-		if(Time.isUndefinedTime(config.qsim().getEndTime()) || Double.isInfinite(config.qsim().getEndTime())) {
+		if(config.qsim().getEndTime().isUndefined() || Double.isInfinite(config.qsim().getEndTime().seconds())) {
 			this.simulationEndTime = 30*3600.;
 		} else {
-			this.simulationEndTime = config.qsim().getEndTime();
+			this.simulationEndTime = config.qsim().getEndTime().seconds()	;
 		}
 	}
 

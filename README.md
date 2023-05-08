@@ -194,11 +194,10 @@ Transportation Research Part B: Methodological, 127, 72–98.
 URL: https://doi.org/10.1016/j.trb.2019.07.002 
 
 <a id="PaulsenRoW">:newspaper:</a>
-Paulsen, M., Rasmussen, T. K., & Nielsen, O. A. (2021). 
+Paulsen, M., Rasmussen, T. K., & Nielsen, O. A. (2022). 
 *Including Right-of-Way in a Joint Large-Scale Agent-Based Dynamic Traffic Assignment Model for Cars and Bicycles.* 
-Networks and Spatial Economics. 
-Revised manuscript submitted after first round of review. 
-Working paper available upon request (madsp at dtu.dk)
+Networks and Spatial Economics, 22(4), 915-957.
+URL: https://doi.org/10.1007/s11067-022-09573-w
 
 <a id="Watling2018">:newspaper:</a>
 Watling, D. P., Rasmussen, T. K., Prato, C. G., & Nielsen, O. A. (2018). 

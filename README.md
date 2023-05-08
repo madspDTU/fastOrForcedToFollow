@@ -43,11 +43,11 @@ Results of large scale-experiments from Metropolitan Copenhagen and further deta
 
 ### Multi-modal right-of-way
 
-The methodology was further extended in [Paulsen et al. (2021)](#PaulsenRoW), where delays caused by right-of-way at (multi-modal) intersections were also included.
+The methodology was further extended in [Paulsen et al. (2022)](#PaulsenRoW), where delays caused by right-of-way at (multi-modal) intersections were also included.
 Nodes of the network are categorised into different node types, and at each of such nodes conflicts between different moves are determined before the simulation.
 During the simulation, the model ensures that no conflicting moves can take place simultaneously in any of the nodes of the network. 
 
-For further details, the reader is guided towards [Paulsen et al. (2021)](#PaulsenRoW) which also contains results of large-scale experiments from Metroplitan Copenhagen. 
+For further details, the reader is guided towards [Paulsen et al. (2022)](#PaulsenRoW) which also contains results of large-scale experiments from Metroplitan Copenhagen. 
 
 
 ## Technical details about the Java code
@@ -74,7 +74,7 @@ The framework comes with three possible setups for simulating traffic:
 
 * FFF with congestion and the standard MATSim node model (`prepareControlerForFFF(controler)`)
 * FFF without and with the standard MATSim node model (`prepareControlerForFFFWithoutCongestion(controler)`)
-* FFF with congestion and a newly proposed right-of-way node model (`prepareControlerForFFFWithRoW(controler)`), see [Paulsen et al. (2021)](#PaulsenRoW)
+* FFF with congestion and a newly proposed right-of-way node model (`prepareControlerForFFFWithRoW(controler)`), see [Paulsen et al. (2022)](#PaulsenRoW)
 
 In all cases, the network is simulated according to the default configurations of those setups. 
 These configurations can be adjusted in the config groups, `FFFConfigGroup`, `FFFNodeConfigGroup`.
@@ -122,11 +122,11 @@ However, the installment is the same as for simulating traffic without right-of-
 Some important classes for the extensions are:
 
 * `QVehicleAndMoveType`: Expanding QVehicle to also include a `moveType` (used for determining how the vehicle is processed).
-* `QFFFAbstractNode`:  A class contained as a field in the `QFFFNodes`. Different extensions exists for different nodetypes, see [Paulsen et al., (2021)](#PaulsenRoW). For all of such nodes a double matrices for motorised traffic and bicycle traffic - carTimeouts and bicycleTimeouts, respectively - that hold elements representing the time until which the move from bundle i to bundle j is blocked. 
+* `QFFFAbstractNode`:  A class contained as a field in the `QFFFNodes`. Different extensions exists for different nodetypes, see [Paulsen et al., (2022)](#PaulsenRoW). For all of such nodes a double matrices for motorised traffic and bicycle traffic - carTimeouts and bicycleTimeouts, respectively - that hold elements representing the time until which the move from bundle i to bundle j is blocked. 
 * `ConflictingMovesData`: A class containing for any move across the node, the set of conflicting moves with lower or equal prioritisation, and whether that conflicting move is of equal or lower prioritisation. 
 
 In order for the right-of-way modelling to find the best solutions during routing, it is highly recommended that linkToLinkRouting is enabled. 
-When this is the case the `addGeneralStuffToControler(controler)` will automatically enable the adjustments to the link to link routing mentioned in [Paulsen et al., (2021)](#PaulsenRoW).
+When this is the case the `addGeneralStuffToControler(controler)` will automatically enable the adjustments to the link to link routing mentioned in [Paulsen et al., (2022)](#PaulsenRoW).
 
 
 
@@ -140,7 +140,7 @@ Three different strategies are possible (introduced in the list further down).
 Common for all of the strategies, is that they are bounded. 
 This means, that after all iterations, if a plan has a score that is worse than  the score of the best plan times `threshold`, that plan is removed.
 Likewise, all plans that have not been used for the past `maximumMemory` iterations, are also removed. 
-See also [Paulsen et al. (2021)](#PaulsenRoW).
+See also [Paulsen et al. (2022)](#PaulsenRoW).
 
 The three different strategies are: 
 
